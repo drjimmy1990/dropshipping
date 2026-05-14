@@ -1,10 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { GlassCard, GradientButton, Badge, Icon } from "@/components/shared";
-
-/* ================================================================
-   MERCHANT MANAGEMENT — View, search, suspend merchants
-   ================================================================ */
+import { Card, Button, Badge, Icon } from "@/components/shared";
 
 const MERCHANTS = [
   { id: 1, name: "Ahmed K.", email: "ahmed@salla.sa", business: "Ahmed Electronics", platform: "Salla", plan: "Growth", wallet: "12,450", orders: 247, products: 89, status: "active", joined: "Jan 2024" },
@@ -30,53 +26,61 @@ export default function MerchantsPage() {
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold mb-1">Merchant Management</h2>
-          <p className="text-sm text-on-surface-variant">{MERCHANTS.length} total merchants</p>
+          <h1 className="text-xl font-semibold text-text">Merchant Management</h1>
+          <p className="text-sm text-text-secondary">{MERCHANTS.length} total merchants</p>
         </div>
-        <GradientButton size="sm"><span className="flex items-center gap-1"><Icon name="person_add" size="sm" />Add Merchant</span></GradientButton>
+        <Button size="sm">
+          <Icon name="person_add" className="text-sm" />
+          Add Merchant
+        </Button>
       </div>
 
       {/* Filters */}
-      <GlassCard className="p-4 rounded-xl mb-6">
-        <div className="flex flex-wrap gap-4">
+      <Card className="p-3 mb-4">
+        <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[200px]">
-            <Icon name="search" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email..." className="w-full bg-surface-container-lowest rounded-lg pl-10 pr-4 py-2.5 text-sm border border-outline-variant/30 focus:border-secondary-container focus:outline-none transition-colors" />
+            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email..." className="w-full bg-surface rounded-md pl-9 pr-3 py-2 text-sm border border-border focus:border-accent outline-none transition-colors text-text placeholder:text-text-muted" />
           </div>
-          <select value={filterPlan} onChange={(e) => setFilterPlan(e.target.value)} className="bg-surface-container-lowest rounded-lg px-4 py-2.5 text-sm border border-outline-variant/30">
-            <option value="all">All Plans</option><option value="starter">Starter</option><option value="growth">Growth</option><option value="pro">Pro</option>
+          <select value={filterPlan} onChange={(e) => setFilterPlan(e.target.value)} className="bg-surface rounded-md px-3 py-2 text-sm border border-border text-text-secondary outline-none">
+            <option value="all">All Plans</option>
+            <option value="starter">Starter</option>
+            <option value="growth">Growth</option>
+            <option value="pro">Pro</option>
           </select>
         </div>
-      </GlassCard>
+      </Card>
 
       {/* Table */}
-      <GlassCard className="rounded-xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-white/10">
-              {["Merchant", "Business", "Platform", "Plan", "Wallet", "Orders", "Products", "Status", "Joined", "Actions"].map((h) => (
-                <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{h}</th>
-              ))}
-            </tr></thead>
+            <thead>
+              <tr className="border-b border-border">
+                {["Merchant", "Business", "Platform", "Plan", "Wallet", "Orders", "Products", "Status", "Joined", "Actions"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-text-muted uppercase tracking-wider bg-surface-sunken">{h}</th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
               {filtered.map((m) => (
-                <tr key={m.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                <tr key={m.id} className="border-b border-border-subtle hover:bg-surface-sunken transition-colors">
                   <td className="px-4 py-3">
-                    <div><p className="font-medium">{m.name}</p><p className="text-xs text-on-surface-variant">{m.email}</p></div>
+                    <div><p className="font-medium text-text">{m.name}</p><p className="text-xs text-text-secondary">{m.email}</p></div>
                   </td>
-                  <td className="px-4 py-3">{m.business}</td>
+                  <td className="px-4 py-3 text-text">{m.business}</td>
                   <td className="px-4 py-3"><Badge variant="info">{m.platform}</Badge></td>
-                  <td className="px-4 py-3"><Badge variant={m.plan === "Pro" ? "info" : m.plan === "Growth" ? "success" : "warning"}>{m.plan}</Badge></td>
-                  <td className="px-4 py-3 font-medium">SAR {m.wallet}</td>
-                  <td className="px-4 py-3">{m.orders}</td>
-                  <td className="px-4 py-3">{m.products}</td>
-                  <td className="px-4 py-3"><Badge variant={m.status === "active" ? "success" : m.status === "suspended" ? "failed" : "warning"}>{m.status.replace("_", " ")}</Badge></td>
-                  <td className="px-4 py-3 text-xs text-on-surface-variant">{m.joined}</td>
+                  <td className="px-4 py-3"><Badge variant={m.plan === "Pro" ? "accent" : m.plan === "Growth" ? "success" : "neutral"}>{m.plan}</Badge></td>
+                  <td className="px-4 py-3 font-medium text-text">SAR {m.wallet}</td>
+                  <td className="px-4 py-3 text-text">{m.orders}</td>
+                  <td className="px-4 py-3 text-text">{m.products}</td>
+                  <td className="px-4 py-3"><Badge variant={m.status === "active" ? "success" : m.status === "suspended" ? "error" : "warning"}>{m.status.replace("_", " ")}</Badge></td>
+                  <td className="px-4 py-3 text-xs text-text-muted">{m.joined}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1.5 hover:bg-white/5 rounded-lg transition-colors"><Icon name="visibility" size="sm" /></button>
-                      <button className="p-1.5 hover:bg-white/5 rounded-lg transition-colors"><Icon name="edit" size="sm" /></button>
-                      <button className="p-1.5 hover:bg-error/10 rounded-lg transition-colors text-error"><Icon name="block" size="sm" /></button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm"><Icon name="visibility" className="text-sm" /></Button>
+                      <Button variant="ghost" size="sm"><Icon name="edit" className="text-sm" /></Button>
+                      <button className="p-1.5 rounded-md hover:bg-error-subtle transition-colors text-error"><Icon name="block" className="text-sm" /></button>
                     </div>
                   </td>
                 </tr>
@@ -84,7 +88,7 @@ export default function MerchantsPage() {
             </tbody>
           </table>
         </div>
-      </GlassCard>
+      </Card>
     </>
   );
 }

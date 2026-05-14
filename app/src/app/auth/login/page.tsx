@@ -2,150 +2,150 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { GlassCard, GradientButton, Icon } from "@/components/shared";
+import { Card, Button, Icon, ThemeToggle } from "@/components/shared";
 
-/* ================================================================
-   AUTH — Login & Register Pages
-   ================================================================ */
-
-export default function AuthPage() {
+export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left: Brand Panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center primary-gradient">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-        <div className="relative z-10 text-center px-12">
-          <Link href="/" className="text-4xl font-bold text-white mb-6 block tracking-tight">
+    <div className="min-h-screen flex">
+      {/* Left panel — branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-accent items-center justify-center p-12">
+        <div className="max-w-md text-accent-on">
+          <Link href="/" className="text-2xl font-bold mb-8 block">
             DropLinker
           </Link>
-          <p className="text-xl text-white/90 mb-8 max-w-md">
-            Automate your dropshipping business with the most powerful SaaS platform for Saudi merchants.
+          <h2 className="text-3xl font-bold mb-4 leading-tight">
+            Automate your dropshipping business
+          </h2>
+          <p className="text-accent-on/80 text-base leading-relaxed">
+            Connect your Salla or Zid store to global suppliers. Import products,
+            fulfill orders, and sync inventory — all on autopilot.
           </p>
-          <div className="flex flex-col gap-4 items-center">
+          <div className="mt-12 space-y-4">
             {[
-              { icon: "link", text: "Connect Salla & Zid" },
-              { icon: "auto_mode", text: "Auto-fulfill from AliExpress" },
-              { icon: "account_balance_wallet", text: "Smart Wallet Management" },
+              { icon: "check_circle", text: "One-click product imports" },
+              { icon: "check_circle", text: "Automatic order fulfillment" },
+              { icon: "check_circle", text: "Real-time inventory sync" },
             ].map((item) => (
-              <div key={item.text} className="flex items-center gap-3 text-white/80">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  <Icon name={item.icon} size="sm" className="text-white" />
-                </div>
-                <span className="text-sm">{item.text}</span>
+              <div key={item.text} className="flex items-center gap-3">
+                <Icon name={item.icon} className="text-accent-on/80 text-lg" />
+                <span className="text-accent-on/90 text-sm">{item.text}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right: Form */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-bg">
         <div className="w-full max-w-md">
-          <Link href="/" className="lg:hidden text-2xl font-bold text-on-surface mb-8 block text-center">
-            DropLinker
-          </Link>
-          
-          {/* Tab Toggle */}
-          <div className="flex mb-8 glass-card rounded-lg p-1">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/" className="lg:hidden text-xl font-bold text-text">
+              DropLinker
+            </Link>
+            <ThemeToggle />
+          </div>
+
+          {/* Toggle */}
+          <div className="flex bg-surface-sunken rounded-lg p-1 mb-8">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-all ${
-                isLogin ? "primary-gradient text-white" : "text-on-surface-variant"
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                isLogin
+                  ? "bg-accent text-accent-on"
+                  : "text-text-secondary hover:text-text"
               }`}
             >
-              Login
+              Sign In
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-all ${
-                !isLogin ? "primary-gradient text-white" : "text-on-surface-variant"
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                !isLogin
+                  ? "bg-accent text-accent-on"
+                  : "text-text-secondary hover:text-text"
               }`}
             >
-              Register
+              Sign Up
             </button>
           </div>
 
-          <GlassCard className="p-8 rounded-xl">
-            <h2 className="text-2xl font-bold mb-2">
-              {isLogin ? "Welcome back" : "Create your account"}
-            </h2>
-            <p className="text-sm text-on-surface-variant mb-6">
-              {isLogin
-                ? "Enter your credentials to access your dashboard"
-                : "Start automating your dropshipping business today"}
-            </p>
+          <h1 className="text-2xl font-bold text-text mb-2">
+            {isLogin ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="text-sm text-text-secondary mb-6">
+            {isLogin
+              ? "Sign in to manage your store."
+              : "Start automating in minutes."}
+          </p>
 
-            <div className="space-y-4">
-              {!isLogin && (
-                <div>
-                  <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2 block">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ahmed Mohammed"
-                    className="w-full bg-surface-container-lowest rounded-lg px-4 py-3 text-on-surface border border-outline-variant/30 focus:border-secondary-container focus:outline-none transition-colors placeholder:text-on-surface-variant/40"
-                  />
-                </div>
-              )}
+          <form className="space-y-4">
+            {!isLogin && (
               <div>
-                <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2 block">
-                  Email Address
+                <label className="block text-sm font-medium text-text mb-1.5">
+                  Store Name
                 </label>
                 <input
-                  type="email"
-                  placeholder="ahmed@example.com"
-                  className="w-full bg-surface-container-lowest rounded-lg px-4 py-3 text-on-surface border border-outline-variant/30 focus:border-secondary-container focus:outline-none transition-colors placeholder:text-on-surface-variant/40"
+                  type="text"
+                  placeholder="My Salla Store"
+                  className="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-text placeholder:text-text-muted text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
               </div>
-              <div>
-                <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2 block">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full bg-surface-container-lowest rounded-lg px-4 py-3 text-on-surface border border-outline-variant/30 focus:border-secondary-container focus:outline-none transition-colors placeholder:text-on-surface-variant/40"
-                />
-              </div>
-              {isLogin && (
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm text-on-surface-variant">
-                    <input type="checkbox" className="rounded border-outline-variant accent-primary-container" />
-                    Remember me
-                  </label>
-                  <a href="#" className="text-sm text-secondary hover:underline">
-                    Forgot password?
-                  </a>
-                </div>
-              )}
-              <GradientButton className="w-full" size="lg">
-                {isLogin ? "Sign In" : "Create Account"}
-              </GradientButton>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-text placeholder:text-text-muted text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+              />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-text placeholder:text-text-muted text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+              />
+            </div>
+            {isLogin && (
+              <div className="flex justify-end">
+                <a href="#" className="text-sm text-accent hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+            )}
+            <Button type="submit" className="w-full" size="lg">
+              {isLogin ? "Sign In" : "Create Account"}
+            </Button>
+          </form>
 
-            <div className="relative my-6">
+          {/* OAuth */}
+          <div className="mt-6">
+            <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-outline-variant/30" />
+                <div className="w-full border-t border-border-subtle" />
               </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-surface-container px-3 text-on-surface-variant">or continue with</span>
+              <div className="relative flex justify-center">
+                <span className="bg-bg px-3 text-xs text-text-muted">or continue with</span>
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
-              <button className="glass-card py-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
-                <Icon name="g_mobiledata" size="md" />
-                Google
-              </button>
-              <button className="glass-card py-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
-                <Icon name="apple" size="md" />
-                Apple
-              </button>
+              <Button variant="secondary" className="w-full">
+                <Icon name="storefront" className="text-base" />
+                Salla
+              </Button>
+              <Button variant="secondary" className="w-full">
+                <Icon name="store" className="text-base" />
+                Zid
+              </Button>
             </div>
-          </GlassCard>
+          </div>
         </div>
       </div>
     </div>

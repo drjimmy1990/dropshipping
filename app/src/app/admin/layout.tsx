@@ -1,80 +1,119 @@
 "use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icon } from "@/components/shared";
-
-/* ================================================================
-   SUPER ADMIN LAYOUT — Platform Owner Panel
-   Separate from merchant dashboard
-   ================================================================ */
+import { Icon, ThemeToggle } from "@/components/shared";
 
 const ADMIN_NAV = [
-  { href: "/admin", icon: "speed", label: "Dashboard" },
-  { href: "/admin/merchants", icon: "group", label: "Merchants" },
-  { href: "/admin/orders", icon: "receipt_long", label: "Order Monitor" },
-  { href: "/admin/revenue", icon: "payments", label: "Revenue Config" },
-  { href: "/admin/transfers", icon: "account_balance", label: "Bank Transfers" },
-  { href: "/admin/settings", icon: "manufacturing", label: "Platform Settings" },
+  { href: "/admin", icon: "dashboard", label: "Overview" },
+  { href: "/admin/merchants", icon: "storefront", label: "Merchants" },
+  { href: "/admin/orders", icon: "receipt_long", label: "Orders" },
+  { href: "/admin/revenue", icon: "payments", label: "Revenue" },
+  { href: "/admin/transfers", icon: "account_balance", label: "Transfers" },
+  { href: "/admin/settings", icon: "settings", label: "Settings" },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="flex h-screen overflow-hidden">
       {/* Admin Sidebar */}
-      <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0 border-r border-white/5 bg-surface-container-lowest flex flex-col transition-all duration-300`}>
-        <div className="h-16 flex items-center gap-3 px-4 border-b border-white/5">
-          <button onClick={() => setCollapsed(!collapsed)} className="p-1 hover:bg-white/5 rounded-lg transition-colors">
-            <Icon name="menu" size="md" />
-          </button>
-          {!collapsed && (
-            <Link href="/admin" className="font-bold text-lg">
-              <span className="primary-gradient-text">Admin</span>
-              <span className="text-on-surface-variant text-xs ml-1">Panel</span>
-            </Link>
-          )}
+      <aside
+        className={`${
+          collapsed ? "w-16" : "w-60"
+        } shrink-0 bg-surface border-r border-border flex flex-col transition-all duration-200`}
+      >
+        {/* Logo + Admin indicator */}
+        <div className="h-14 flex items-center px-4 border-b border-border-subtle">
+          <Link href="/admin" className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center text-accent-on text-xs font-bold shrink-0">
+              SA
+            </div>
+            {!collapsed && (
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold text-text truncate">
+                  DropLinker
+                </span>
+                <span className="text-xs text-accent font-medium">Admin</span>
+              </div>
+            )}
+          </Link>
         </div>
-        <nav className="flex-1 p-2 space-y-1">
+
+        {/* Nav */}
+        <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
           {ADMIN_NAV.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                  isActive ? "bg-primary/15 text-primary font-medium" : "text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
+                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors duration-150 ${
+                  isActive
+                    ? "bg-accent-subtle text-accent font-medium"
+                    : "text-text-secondary hover:bg-surface-sunken hover:text-text"
                 }`}
+                title={collapsed ? item.label : undefined}
               >
-                <Icon name={item.icon} size="sm" filled={isActive} />
-                {!collapsed && item.label}
+                <Icon
+                  name={item.icon}
+                  className={`text-lg shrink-0 ${isActive ? "text-accent" : ""}`}
+                />
+                {!collapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
         </nav>
-        <div className="p-4 border-t border-white/5">
-          <Link href="/dashboard" className="flex items-center gap-2 text-xs text-on-surface-variant hover:text-on-surface transition-colors">
-            <Icon name="arrow_back" size="sm" />
-            {!collapsed && "Back to Merchant"}
+
+        {/* Back to dashboard + collapse */}
+        <div className="border-t border-border-subtle p-2 space-y-1">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-surface-sunken transition-colors"
+          >
+            <Icon name="arrow_back" className="text-lg shrink-0" />
+            {!collapsed && <span>Back to Dashboard</span>}
           </Link>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex items-center justify-center p-2 rounded-md text-text-muted hover:bg-surface-sunken transition-colors"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <Icon
+              name={collapsed ? "chevron_right" : "chevron_left"}
+              className="text-lg"
+            />
+          </button>
         </div>
       </aside>
 
-      {/* Main Area */}
-      <div className="flex-1 min-w-0">
-        <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface-container-lowest/50 backdrop-blur-sm">
-          <h1 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">SuperAdmin Control Center</h1>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-error/10 border border-error/20">
-              <span className="w-2 h-2 rounded-full bg-error animate-pulse" />
-              <span className="text-xs font-medium text-error">ADMIN MODE</span>
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="h-14 shrink-0 bg-surface border-b border-border flex items-center justify-between px-6">
+          <span className="text-xs font-medium text-accent bg-accent-subtle px-2 py-1 rounded">
+            ADMIN MODE
+          </span>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-accent-on text-xs font-bold">
+              SA
             </div>
-            <div className="w-8 h-8 rounded-full primary-gradient flex items-center justify-center text-white text-xs font-bold">SA</div>
           </div>
         </header>
-        <main className="p-6 overflow-auto" style={{ maxHeight: "calc(100vh - 64px)" }}>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto p-6 bg-bg">
           {children}
         </main>
       </div>

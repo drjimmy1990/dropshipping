@@ -1,39 +1,35 @@
 "use client";
 
 import React from "react";
-import { GlassCard, GradientButton, Badge, Icon } from "@/components/shared";
+import { Card, Button, Badge, Icon } from "@/components/shared";
 import { PRODUCTS } from "@/data/mockData";
-
-/* ================================================================
-   PRODUCT DISCOVERY — Browse & Import Products from Suppliers
-   ================================================================ */
 
 function SearchFilters() {
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-3 bg-surface-container-low rounded-xl px-4 py-3 border border-outline-variant/30 focus-within:border-secondary-container transition-colors mb-4">
-        <Icon name="search" className="text-on-surface-variant" />
+      <div className="flex items-center gap-2 bg-surface rounded-md px-3 py-2.5 border border-border focus-within:border-accent transition-colors mb-4">
+        <Icon name="search" className="text-text-muted text-base" />
         <input
           type="text"
           placeholder="Search products by keyword..."
-          className="bg-transparent text-on-surface outline-none w-full placeholder:text-on-surface-variant/50"
+          className="bg-transparent text-text text-sm outline-none w-full placeholder:text-text-muted"
         />
       </div>
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="flex flex-wrap gap-2 mb-3">
         {["All Suppliers", "Category", "Price Range", "Ship To", "Min Rating"].map((f) => (
           <select
             key={f}
-            className="bg-surface-container-low text-on-surface-variant text-sm rounded-lg px-3 py-2 border border-outline-variant/30 outline-none"
+            className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none"
           >
             <option>{f}</option>
           </select>
         ))}
       </div>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         {["AliExpress", "Electronics", "SAR 0 - 500"].map((chip) => (
           <span
             key={chip}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-accent-subtle text-accent text-xs font-medium"
           >
             {chip}
             <button className="hover:text-error transition-colors">×</button>
@@ -41,8 +37,8 @@ function SearchFilters() {
         ))}
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-sm text-on-surface-variant">2,847 products found</span>
-        <select className="bg-surface-container-low text-on-surface-variant text-sm rounded-lg px-3 py-2 border border-outline-variant/30 outline-none">
+        <span className="text-sm text-text-secondary">2,847 products found</span>
+        <select className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none">
           <option>Sort: Relevance</option>
           <option>Price: Low to High</option>
           <option>Rating: High to Low</option>
@@ -54,45 +50,33 @@ function SearchFilters() {
 
 function ProductGrid() {
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
       {PRODUCTS.map((product) => (
-        <GlassCard
-          key={product.id}
-          hover
-          className="rounded-xl overflow-hidden group"
-        >
-          <div className="relative aspect-square bg-surface-container flex items-center justify-center">
-            <Icon name="image" size="xl" className="text-on-surface-variant/20" />
-            <span
-              className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-bold ${
-                product.supplier === "AliExpress"
-                  ? "bg-primary-container text-on-primary-container"
-                  : "bg-secondary-container/20 text-secondary"
-              }`}
-            >
+        <Card key={product.id} variant="interactive" className="overflow-hidden">
+          <div className="relative aspect-square bg-surface-sunken flex items-center justify-center">
+            <Icon name="image" className="text-text-muted text-3xl" />
+            <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-surface text-text-secondary text-xs font-medium border border-border-subtle">
               {product.supplier}
             </span>
           </div>
           <div className="p-4">
-            <h4 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            <h4 className="text-sm font-medium text-text mb-2 line-clamp-2">
               {product.name}
             </h4>
             <div className="flex items-center gap-1 mb-2">
-              <Icon name="star" filled className="text-yellow-400" size="sm" />
-              <span className="text-xs text-on-surface-variant">
+              <Icon name="star" className="text-warning text-sm" />
+              <span className="text-xs text-text-secondary">
                 {product.rating} ({product.reviews})
               </span>
             </div>
-            <div className="text-lg font-bold text-on-surface mb-1">{product.price}</div>
-            <div className="flex items-center gap-1 text-xs text-on-surface-variant mb-3">
-              <Icon name="local_shipping" size="sm" />
+            <div className="text-base font-bold text-text mb-1">{product.price}</div>
+            <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
+              <Icon name="local_shipping" className="text-sm" />
               {product.shipping}
             </div>
-            <GradientButton size="sm" className="w-full text-xs">
-              Import to Store
-            </GradientButton>
+            <Button size="sm" className="w-full">Import to Store</Button>
           </div>
-        </GlassCard>
+        </Card>
       ))}
     </div>
   );
@@ -100,20 +84,18 @@ function ProductGrid() {
 
 function Pagination() {
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex items-center justify-center gap-1">
       {[1, 2, 3, "...", 142].map((p, i) => (
         <button
           key={i}
-          className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
-            p === 1
-              ? "primary-gradient text-white"
-              : "text-on-surface-variant hover:bg-white/5"
+          className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
+            p === 1 ? "bg-accent text-accent-on" : "text-text-secondary hover:bg-surface-sunken"
           }`}
         >
           {p}
         </button>
       ))}
-      <button className="px-4 py-2 text-sm text-secondary hover:bg-white/5 rounded-lg transition-colors">
+      <button className="px-3 py-1.5 text-sm text-accent hover:bg-accent-subtle rounded-md transition-colors">
         Next →
       </button>
     </div>
@@ -124,8 +106,8 @@ export default function ProductDiscoveryPage() {
   return (
     <>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-1">Product Discovery</h2>
-        <p className="text-sm text-on-surface-variant">Browse millions of products from global suppliers</p>
+        <h1 className="text-xl font-semibold text-text">Product Discovery</h1>
+        <p className="text-sm text-text-secondary">Browse millions of products from global suppliers</p>
       </div>
       <SearchFilters />
       <ProductGrid />

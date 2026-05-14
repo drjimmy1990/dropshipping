@@ -1,37 +1,51 @@
 import React from "react";
-import type { OrderStatus } from "@/data/mockData";
-import { STATUS_COLORS } from "@/data/mockData";
+import { Icon } from "./Icon";
 
 interface BadgeProps {
   readonly children: React.ReactNode;
+  readonly variant?: "success" | "warning" | "error" | "info" | "neutral" | "accent";
+  readonly icon?: string;
   readonly className?: string;
-  readonly variant?: OrderStatus | "info" | "success" | "warning";
 }
 
-const EXTRA_COLORS: Record<string, { bg: string; text: string }> = {
-  info: { bg: "bg-secondary/10", text: "text-secondary" },
-  success: { bg: "bg-tertiary/10", text: "text-tertiary" },
-  warning: { bg: "bg-yellow-500/10", text: "text-yellow-400" },
+const variantStyles: Record<string, string> = {
+  success: "bg-success-subtle text-success",
+  warning: "bg-warning-subtle text-warning",
+  error: "bg-error-subtle text-error",
+  info: "bg-info-subtle text-info",
+  neutral: "bg-surface-sunken text-text-secondary",
+  accent: "bg-accent-subtle text-accent",
+};
+
+const variantIcons: Record<string, string> = {
+  success: "check_circle",
+  warning: "schedule",
+  error: "error",
+  info: "info",
+  neutral: "",
+  accent: "",
 };
 
 export const Badge: React.FC<BadgeProps> = ({
   children,
+  variant = "neutral",
+  icon,
   className = "",
-  variant = "info",
 }) => {
-  const colors =
-    STATUS_COLORS[variant as OrderStatus] ?? EXTRA_COLORS[variant] ?? EXTRA_COLORS.info;
+  const resolvedIcon = icon ?? variantIcons[variant];
 
   return (
     <span
       className={`
-        inline-flex items-center gap-1
-        px-2.5 py-1 rounded-full
-        text-xs font-semibold uppercase tracking-wider
-        ${colors.bg} ${colors.text}
+        inline-flex items-center gap-1 px-2 py-0.5
+        rounded-md text-xs font-medium
+        ${variantStyles[variant]}
         ${className}
       `}
     >
+      {resolvedIcon && (
+        <Icon name={resolvedIcon} className="!text-[14px]" />
+      )}
       {children}
     </span>
   );

@@ -1,43 +1,34 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "DropLinker — Automate Your Dropshipping Business",
   description:
-    "Connect your Salla or Zid store, import trending products from AliExpress and CJDropshipping, and auto-fulfill orders — all hands-free.",
-  keywords: [
-    "dropshipping",
-    "salla",
-    "zid",
-    "aliexpress",
-    "cjdropshipping",
-    "automation",
-    "saudi arabia",
-    "ecommerce",
-  ],
+    "DropLinker connects Saudi merchants on Salla and Zid to global suppliers. Automate product imports, order fulfillment, and inventory sync.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
+        {/* Prevent theme flash: apply stored preference before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.setAttribute('data-theme','light')}}catch(e){document.documentElement.setAttribute('data-theme','light')}})()`,
+          }}
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className="min-h-screen bg-bg text-text antialiased">
         {children}
       </body>
     </html>
