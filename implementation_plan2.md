@@ -1,6 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
+> **Last Updated:** 2026-05-15
 
 ## 1. Business Concept
 
@@ -37,7 +38,7 @@ graph LR
 
 | Layer | Technology | Role |
 |---|---|---|
-| **Frontend** | Next.js 15 (App Router) | Marketing pages (SSR) + Dashboard (CSR) |
+| **Frontend** | Next.js 16 (App Router) | Marketing pages (SSR) + Dashboard (CSR) |
 | **Styling** | Tailwind CSS v4 | RTL-friendly, rapid development |
 | **Database** | Supabase (PostgreSQL) | Auth, RLS, real-time, storage |
 | **Backend Workflows** | n8n (self-hosted) | Webhooks, API orchestration, AI, retries |
@@ -52,7 +53,7 @@ graph LR
 
 ```mermaid
 graph TB
-    subgraph "Frontend — Next.js 15"
+    subgraph "Frontend — Next.js 16"
         PUB["Public Site (Landing/Features/Pricing)"]
         DASH["Merchant Dashboard"]
         ADMIN["Admin Panel"]
@@ -320,6 +321,8 @@ Steps:
 
 ## 7. Database Schema
 
+> ✅ **IMPLEMENTED** — 19 tables deployed to Supabase
+
 ```mermaid
 erDiagram
     MERCHANT ||--|| WALLET : "has"
@@ -332,145 +335,42 @@ erDiagram
     ORDER_ITEM }o--|| PRODUCT : "refs"
     ORDER ||--o| FULFILLMENT : "triggers"
     FULFILLMENT ||--|| TRANSACTION : "deducts"
-
-    MERCHANT {
-        uuid id PK
-        string email
-        string business_name
-        string phone
-        enum plan "free|starter|growth|pro"
-        string locale "ar|en"
-        boolean is_active
-        timestamp created_at
-    }
-    WALLET {
-        uuid id PK
-        uuid merchant_id FK
-        decimal balance
-        decimal reserved
-        decimal auto_topup_threshold
-    }
-    TRANSACTION {
-        uuid id PK
-        uuid wallet_id FK
-        enum type "deposit|deduction|refund|commission"
-        enum method "moyasar|stripe|bank_transfer|auto"
-        decimal amount
-        decimal balance_after
-        uuid order_id FK
-        string description
-        timestamp created_at
-    }
-    STORE {
-        uuid id PK
-        uuid merchant_id FK
-        enum platform "salla|zid"
-        string store_name
-        string access_token
-        string refresh_token
-        string webhook_secret
-        boolean is_active
-        timestamp last_sync
-    }
-    SUPPLIER_ACCOUNT {
-        uuid id PK
-        uuid merchant_id FK
-        enum supplier "aliexpress|cj"
-        string api_key
-        string access_token
-        boolean is_active
-    }
-    PRODUCT {
-        uuid id PK
-        uuid merchant_id FK
-        uuid supplier_account_id FK
-        string supplier_product_id
-        enum supplier "aliexpress|cj"
-        string title_en
-        string title_ar
-        text description_en
-        text description_ar
-        decimal supplier_cost
-        decimal retail_price
-        jsonb variants
-        jsonb images
-        string store_product_id
-        uuid store_id FK
-        boolean is_active
-        boolean in_stock
-        timestamp last_stock_check
-    }
-    ORDER {
-        uuid id PK
-        uuid store_id FK
-        uuid merchant_id FK
-        string store_order_id
-        jsonb customer_info
-        decimal total_amount
-        enum status "new|processing|ordered|shipped|delivered|failed|held"
-        timestamp created_at
-    }
-    ORDER_ITEM {
-        uuid id PK
-        uuid order_id FK
-        uuid product_id FK
-        integer quantity
-        decimal unit_price
-        string variant_info
-    }
-    FULFILLMENT {
-        uuid id PK
-        uuid order_id FK
-        enum supplier "aliexpress|cj"
-        string supplier_order_id
-        string tracking_number
-        string carrier
-        decimal cost
-        decimal commission
-        enum status "pending|placed|shipped|delivered|failed"
-        timestamp created_at
-    }
-    BANK_TRANSFER {
-        uuid id PK
-        uuid merchant_id FK
-        decimal amount
-        string receipt_url
-        enum status "pending|approved|rejected"
-        uuid approved_by
-        timestamp created_at
-    }
-    SUBSCRIPTION_TIER {
-        uuid id PK
-        string name
-        decimal monthly_price
-        decimal yearly_price
-        integer max_stores
-        integer max_products
-        decimal commission_pct
-        boolean is_active
-    }
-    PLATFORM_CONFIG {
-        string key PK
-        jsonb value
-        string description
-    }
 ```
 
-### Key Tables Explained
+### Tables (19)
 
-| Table | Purpose |
+| # | Table | Purpose | Status |
+|---|---|---|---|
+| 1 | `merchants` | User accounts with plan, locale, fulfillment preferences | ✅ |
+| 2 | `wallets` | Balance + reserved + auto-topup config | ✅ |
+| 3 | `transactions` | Every money movement (audit trail) | ✅ |
+| 4 | `stores` | Connected Salla/Zid stores with tokens + `salla_merchant_id` | ✅ |
+| 5 | `supplier_accounts` | Connected AliExpress/CJ accounts | ✅ |
+| 6 | `products` | Imported products (bilingual, pricing, stock) | ✅ |
+| 7 | `orders` | Customer orders from webhooks | ✅ |
+| 8 | `order_items` | Line items per order | ✅ |
+| 9 | `fulfillments` | Supplier order tracking | ✅ |
+| 10 | `bank_transfers` | Manual transfer approval queue | ✅ |
+| 11 | `subscription_tiers` | Admin-managed pricing tiers | ✅ |
+| 12 | `platform_config` | Global settings (commission mode, keys) | ✅ |
+| 13 | `pricing_rules` | Per-product or merchant-wide margin rules | ✅ |
+| 14 | `price_sync_logs` | Price change audit trail | ✅ |
+| 15 | `stock_sync_logs` | Stock change audit trail | ✅ |
+| 16 | `product_inbox` | AI quality gate for content review | ✅ |
+| 17 | `analytics_daily` | Daily merchant metrics for P&L | ✅ |
+| 18 | `trend_reports` | Weekly niche/category trend analysis | ✅ |
+| 19 | `notifications` | In-app, email, SMS notification records | ✅ |
+
+### Key Functions
+
+| Function | Purpose |
 |---|---|
-| `MERCHANT` | User accounts with plan & locale |
-| `WALLET` | Balance tracking per merchant |
-| `TRANSACTION` | Every money movement (audit trail) |
-| `STORE` | Connected Salla/Zid stores with tokens |
-| `SUPPLIER_ACCOUNT` | Connected AliExpress/CJ accounts |
-| `PRODUCT` | Imported products (bilingual titles) |
-| `ORDER` / `ORDER_ITEM` | Customer orders from store webhooks |
-| `FULFILLMENT` | Supplier order tracking per order |
-| `BANK_TRANSFER` | Manual transfer approval queue |
-| `SUBSCRIPTION_TIER` | Admin-managed pricing tiers |
-| `PLATFORM_CONFIG` | Global settings (commission mode, keys, etc.) |
+| `wallet_credit()` | Atomic deposit with transaction logging |
+| `wallet_deduct()` | Atomic deduction with insufficient balance check |
+| `calculate_retail_price()` | Margin calculator (percentage or fixed) |
+| `is_admin()` | RLS helper — checks merchant role |
+| `create_merchant_wallet()` | Trigger — auto-create wallet on signup |
+| `update_timestamp()` | Trigger — auto-update `updated_at` |
 
 ---
 
@@ -508,7 +408,73 @@ sequenceDiagram
 
 ---
 
-## 9. Bilingual (i18n) Strategy
+## 9. Salla Webhook Payload Reference
+
+> Verified against `Merchant APIs V2.7.6.postman_collection.json`
+
+### Order Created (`order.created`) — Key Fields
+
+```json
+{
+  "event": "order.created",
+  "merchant": 964562487,
+  "data": {
+    "id": 418149270,
+    "reference_id": 3879219,
+    "status": {
+      "id": 1298199463,
+      "name": "بإنتظار المراجعة",
+      "slug": "under_review"
+    },
+    "payment_method": "mada",
+    "currency": "SAR",
+    "amounts": {
+      "sub_total": { "amount": 250, "currency": "SAR" },
+      "shipping_cost": { "amount": 13.04, "currency": "SAR" },
+      "tax": { "percent": "15.00", "amount": { "amount": 39.46, "currency": "SAR" } },
+      "total": { "amount": 302.5, "currency": "SAR" }
+    },
+    "customer": {
+      "id": 1473353380,
+      "first_name": "أحمد",
+      "last_name": "Conn",
+      "mobile": 501724227,
+      "mobile_code": "+966",
+      "email": "demo@demo.com"
+    },
+    "items": [
+      {
+        "id": 951850235,
+        "name": "فحم سداسي",
+        "sku": "6285579005111",
+        "quantity": 1,
+        "amounts": {
+          "total": { "amount": 45.22, "currency": "SAR" }
+        },
+        "product": { "id": 268564496, "type": "product" }
+      }
+    ]
+  }
+}
+```
+
+### Salla Order Status Slugs
+
+| Slug | Meaning |
+|---|---|
+| `under_review` | New, pending review |
+| `in_progress` | Being processed |
+| `completed` | Fulfilled/completed |
+| `canceled` | Cancelled by merchant/customer |
+| `payment_pending` | Awaiting payment |
+| `delivering` | In transit |
+| `delivered` | Delivered to customer |
+| `restoring` | Return in progress |
+| `restored` | Returned |
+
+---
+
+## 10. Bilingual (i18n) Strategy
 
 | Content Type | Strategy |
 |---|---|
@@ -520,54 +486,97 @@ sequenceDiagram
 
 ---
 
-## 10. Execution Roadmap
+## 11. Execution Roadmap
 
-### Phase 1 — MVP (5-6 weeks)
-> AliExpress + Salla + Core Dashboard
+### Phase 1 — Foundation ✅ DONE
+> Project setup, database, auth, Salla OAuth
 
-- [ ] Project setup: Next.js 15 + Tailwind + Supabase + next-intl
-- [ ] Public site: Landing page, Features, Pricing, Auth
-- [ ] Supabase: Schema, Auth, RLS policies
-- [ ] Merchant dashboard: Overview, Settings
-- [ ] AliExpress integration: Product search + detail via API
-- [ ] Product Discovery page + Import Wizard
-- [ ] My Products page (CRUD)
-- [ ] Salla OAuth + webhook (order.created)
-- [ ] Wallet system: balance display, manual bank transfer top-up
-- [ ] n8n WF1 + WF2: Order webhook → auto-fulfill via AliExpress
-- [ ] n8n WF3: Tracking sync (polling mode)
-- [ ] Orders page with status pipeline
-- [ ] Admin panel: Dashboard, Merchants, Bank Transfer Approvals
-- [ ] Admin: Revenue config (commission vs subscription toggle)
+- [x] Project setup: Next.js 16 + Tailwind + Supabase
+- [x] Public site: Landing page, Features, Pricing, Auth UI
+- [x] Supabase: Full schema (19 tables), RLS policies, triggers, functions
+- [x] Auth: Email/password signup + login + protected routes
+- [x] Admin client pattern for RLS bypass (signup, webhooks)
+- [x] Salla OAuth: Initiate → callback → store upsert → salla_merchant_id
+- [x] Dashboard integrations: Live status, disconnect/reconnect
+- [x] n8n webhook scaffold: Token validation, event router, app.uninstalled handler
+- [x] Frontend UI shell: All 22 routes (mock data)
 
-### Phase 2 — Expand (3-4 weeks)
-> CJDropshipping + Zid + Online Payments
+### Phase 2 — Live Data Migration (NEXT)
+> Replace mock data with real Supabase queries
 
-- [ ] CJDropshipping integration (product search + auto-order)
+- [ ] Dashboard overview → real stats (order count, wallet balance, products)
+- [ ] Wallet page → real balance + transaction history
+- [ ] Settings page → persist profile to `merchants` table
+- [ ] Admin dashboard → real cross-merchant aggregate stats
+- [ ] Admin merchants → list/search real merchants
+- [ ] Admin bank transfers → real transfer queue
+
+### Phase 3 — Order Processing Pipeline
+> n8n order.created + order.updated handlers
+
+- [ ] n8n: `order.created` → Find Store by salla_merchant_id → Insert order + items
+- [ ] n8n: `order.updated` → Find Store → PATCH order status
+- [ ] n8n: Fallback → Respond 200 for unknown events
+- [ ] Orders page → live orders from Supabase
+- [ ] Order detail modal/page with customer info + status
+
+### Phase 4 — AliExpress Integration
+> Product discovery, import, and sync
+
+- [ ] AliExpress API credentials + SDK setup
+- [ ] Product search endpoint (`/api/suppliers/aliexpress/search`)
+- [ ] Product detail fetch with variants/images
+- [ ] Import wizard → Supabase + push to Salla store via API
+- [ ] My Products → live CRUD against `products` table
+- [ ] AI product descriptions (n8n WF5 → GPT/Gemini)
+- [ ] Product inbox / quality gate workflow
+
+### Phase 5 — Wallet & Payments
+> Top-up flow + financial operations
+
+- [ ] Bank transfer: upload receipt → admin approval → wallet_credit()
+- [ ] Moyasar integration (Mada/Visa/MC wallet top-up)
+- [ ] Stripe integration (card top-up)
+- [ ] Transaction history with running balance
+- [ ] Auto top-up (charge when balance < threshold)
+
+### Phase 6 — Auto-Fulfillment Engine
+> The core value proposition
+
+- [ ] n8n WF2: Order → wallet check → AliExpress order → deduct
+- [ ] n8n WF3: Tracking sync (poll → push to Salla)
+- [ ] n8n WF4: Stock sync (cron every 6h → Supabase + Salla)
+- [ ] Auto-fulfill toggle + min balance config in settings
+- [ ] Order status pipeline with fulfillment details
+
+### Phase 7 — Expand (CJ + Zid)
+> Second supplier + second platform
+
+- [ ] CJDropshipping integration (search + auto-order)
 - [ ] Zid OAuth + webhook integration
-- [ ] Moyasar payment integration (wallet top-up)
-- [ ] Stripe payment integration (wallet top-up)
-- [ ] Auto top-up (charge card when balance < threshold)
-- [ ] n8n WF4: Stock sync (cron every 6h)
-- [ ] n8n WF5: AI product descriptions (GPT-4o)
-- [ ] n8n WF6: Email/SMS notifications
-- [ ] Multi-store support (connect multiple Salla/Zid stores)
-- [ ] Admin: Order Monitor, Platform Settings
+- [ ] Multi-store support (multiple stores per merchant)
+- [ ] Supplier fallback logic (AE → CJ)
 
-### Phase 3 — Scale (3-4 weeks)
-> Polish + Advanced Features
+### Phase 8 — i18n + Polish
+> Bilingual + production readiness
 
-- [ ] Supplier fallback logic (AliExpress out → try CJ)
-- [ ] Advanced analytics dashboard (revenue charts, order trends)
-- [ ] Team member access with roles
-- [ ] Subscription billing automation (Stripe recurring)
-- [ ] Mobile-responsive dashboard optimization
+- [ ] next-intl setup with AR/EN dictionaries
+- [ ] RTL layout (Tailwind RTL plugin)
+- [ ] Mobile-responsive dashboard
+- [ ] Email/SMS notifications (n8n WF6)
 - [ ] Performance optimization + caching
-- [ ] Gulf-wide expansion prep (multi-currency, additional gateways)
+
+### Phase 9 — Scale
+> Post-launch features
+
+- [ ] Subscription billing automation (Stripe recurring)
+- [ ] Team member access with roles
+- [ ] Advanced analytics + trend reports
+- [ ] Gulf-wide expansion (multi-currency, additional gateways)
 
 ---
 
-## 11. Verification Plan
+## 12. Verification Plan
 
 ### Automated
 - Unit tests: wallet logic (deposit, deduct, insufficient balance, concurrent)

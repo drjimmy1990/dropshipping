@@ -6,17 +6,29 @@
 -- ======================== ENUMS ========================
 
 CREATE TYPE merchant_role AS ENUM ('merchant', 'admin');
+
 CREATE TYPE merchant_plan AS ENUM ('free', 'starter', 'growth', 'pro');
+
 CREATE TYPE store_platform AS ENUM ('salla', 'zid');
+
 CREATE TYPE supplier_type AS ENUM ('aliexpress', 'cj', 'makhazen');
+
 CREATE TYPE margin_type AS ENUM ('percentage', 'fixed');
+
 CREATE TYPE transaction_type AS ENUM ('deposit', 'deduction', 'refund', 'commission');
+
 CREATE TYPE payment_method AS ENUM ('moyasar', 'stripe', 'bank_transfer', 'auto', 'system');
+
 CREATE TYPE order_status AS ENUM ('new', 'processing', 'ordered', 'shipped', 'delivered', 'failed', 'held', 'cancelled');
+
 CREATE TYPE fulfillment_status AS ENUM ('pending', 'placed', 'shipped', 'delivered', 'failed', 'cancelled');
+
 CREATE TYPE transfer_status AS ENUM ('pending', 'approved', 'rejected');
+
 CREATE TYPE inbox_status AS ENUM ('draft', 'ai_generated', 'pending_review', 'approved', 'rejected', 'published');
+
 CREATE TYPE notification_channel AS ENUM ('in_app', 'email', 'sms');
+
 CREATE TYPE sync_action AS ENUM ('price_updated', 'stock_updated', 'hidden', 'restored', 'no_change');
 
 -- ======================== 1. MERCHANTS ========================
@@ -31,18 +43,18 @@ CREATE TABLE merchants (
   locale TEXT NOT NULL DEFAULT 'ar' CHECK (locale IN ('ar', 'en')),
   is_active BOOLEAN NOT NULL DEFAULT true,
 
-  -- Default pricing rules
-  default_margin_type margin_type NOT NULL DEFAULT 'percentage',
-  default_margin_value NUMERIC(10,2) NOT NULL DEFAULT 30.00,
+-- Default pricing rules
+default_margin_type margin_type NOT NULL DEFAULT 'percentage',
+default_margin_value NUMERIC(10, 2) NOT NULL DEFAULT 30.00,
 
-  -- Fulfillment preferences
-  auto_fulfill_enabled BOOLEAN NOT NULL DEFAULT false,
-  min_wallet_balance NUMERIC(10,2) NOT NULL DEFAULT 50.00,
-  preferred_shipping TEXT DEFAULT 'standard',
-  fallback_supplier supplier_type,
+-- Fulfillment preferences
+auto_fulfill_enabled BOOLEAN NOT NULL DEFAULT false,
+min_wallet_balance NUMERIC(10, 2) NOT NULL DEFAULT 50.00,
+preferred_shipping TEXT DEFAULT 'standard',
+fallback_supplier supplier_type,
 
-  -- Sync preferences
-  price_sync_interval_hours INTEGER NOT NULL DEFAULT 4,
+-- Sync preferences
+price_sync_interval_hours INTEGER NOT NULL DEFAULT 4,
   stock_min_threshold INTEGER NOT NULL DEFAULT 5,
   stock_auto_hide BOOLEAN NOT NULL DEFAULT true,
 
@@ -53,65 +65,65 @@ CREATE TABLE merchants (
 -- ======================== 2. WALLETS ========================
 
 CREATE TABLE wallets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id UUID NOT NULL UNIQUE REFERENCES merchants(id) ON DELETE CASCADE,
-  balance NUMERIC(12,2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0),
-  reserved NUMERIC(12,2) NOT NULL DEFAULT 0.00 CHECK (reserved >= 0),
-  auto_topup_enabled BOOLEAN NOT NULL DEFAULT false,
-  auto_topup_threshold NUMERIC(10,2) DEFAULT 100.00,
-  auto_topup_amount NUMERIC(10,2) DEFAULT 500.00,
-  low_balance_alert NUMERIC(10,2) DEFAULT 50.00,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    merchant_id UUID NOT NULL UNIQUE REFERENCES merchants (id) ON DELETE CASCADE,
+    balance NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0),
+    reserved NUMERIC(12, 2) NOT NULL DEFAULT 0.00 CHECK (reserved >= 0),
+    auto_topup_enabled BOOLEAN NOT NULL DEFAULT false,
+    auto_topup_threshold NUMERIC(10, 2) DEFAULT 100.00,
+    auto_topup_amount NUMERIC(10, 2) DEFAULT 500.00,
+    low_balance_alert NUMERIC(10, 2) DEFAULT 50.00,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 3. TRANSACTIONS ========================
 
 CREATE TABLE transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  wallet_id UUID NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  type transaction_type NOT NULL,
-  method payment_method NOT NULL DEFAULT 'system',
-  amount NUMERIC(12,2) NOT NULL,
-  balance_after NUMERIC(12,2) NOT NULL,
-  order_id UUID, -- FK added after orders table
-  description TEXT,
-  reference_id TEXT, -- external payment ref
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    wallet_id UUID NOT NULL REFERENCES wallets (id) ON DELETE CASCADE,
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    type transaction_type NOT NULL,
+    method payment_method NOT NULL DEFAULT 'system',
+    amount NUMERIC(12, 2) NOT NULL,
+    balance_after NUMERIC(12, 2) NOT NULL,
+    order_id UUID, -- FK added after orders table
+    description TEXT,
+    reference_id TEXT, -- external payment ref
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 4. STORES ========================
 
 CREATE TABLE stores (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  platform store_platform NOT NULL,
-  store_name TEXT NOT NULL,
-  store_url TEXT,
-  access_token TEXT, -- encrypted at app level
-  refresh_token TEXT,
-  webhook_secret TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  last_sync TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    platform store_platform NOT NULL,
+    store_name TEXT NOT NULL,
+    store_url TEXT,
+    access_token TEXT, -- encrypted at app level
+    refresh_token TEXT,
+    webhook_secret TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    last_sync TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 5. SUPPLIER ACCOUNTS ========================
 
 CREATE TABLE supplier_accounts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  supplier supplier_type NOT NULL,
-  api_key TEXT,
-  access_token TEXT,
-  refresh_token TEXT,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  is_default BOOLEAN NOT NULL DEFAULT false,
-  last_health_check TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    supplier supplier_type NOT NULL,
+    api_key TEXT,
+    access_token TEXT,
+    refresh_token TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    is_default BOOLEAN NOT NULL DEFAULT false,
+    last_health_check TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 6. PRODUCTS ========================
@@ -122,42 +134,42 @@ CREATE TABLE products (
   supplier_account_id UUID REFERENCES supplier_accounts(id) ON DELETE SET NULL,
   store_id UUID REFERENCES stores(id) ON DELETE SET NULL,
 
-  -- Supplier info
-  supplier supplier_type NOT NULL,
-  supplier_product_id TEXT NOT NULL,
-  supplier_url TEXT,
+-- Supplier info
+supplier supplier_type NOT NULL,
+supplier_product_id TEXT NOT NULL,
+supplier_url TEXT,
 
-  -- Bilingual content
-  title_en TEXT,
-  title_ar TEXT,
-  description_en TEXT,
-  description_ar TEXT,
+-- Bilingual content
+title_en TEXT,
+title_ar TEXT,
+description_en TEXT,
+description_ar TEXT,
 
-  -- Pricing
-  supplier_cost NUMERIC(10,2) NOT NULL,
-  supplier_currency TEXT NOT NULL DEFAULT 'SAR',
-  retail_price NUMERIC(10,2) NOT NULL,
-  margin_type margin_type NOT NULL DEFAULT 'percentage',
-  margin_value NUMERIC(10,2) NOT NULL DEFAULT 30.00,
+-- Pricing
+supplier_cost NUMERIC(10, 2) NOT NULL,
+supplier_currency TEXT NOT NULL DEFAULT 'SAR',
+retail_price NUMERIC(10, 2) NOT NULL,
+margin_type margin_type NOT NULL DEFAULT 'percentage',
+margin_value NUMERIC(10, 2) NOT NULL DEFAULT 30.00,
 
-  -- Stock
-  stock_quantity INTEGER NOT NULL DEFAULT 0,
-  min_stock_threshold INTEGER NOT NULL DEFAULT 5,
-  auto_hide_when_low BOOLEAN NOT NULL DEFAULT true,
-  in_stock BOOLEAN NOT NULL DEFAULT true,
-  is_active BOOLEAN NOT NULL DEFAULT true,
+-- Stock
+stock_quantity INTEGER NOT NULL DEFAULT 0,
+min_stock_threshold INTEGER NOT NULL DEFAULT 5,
+auto_hide_when_low BOOLEAN NOT NULL DEFAULT true,
+in_stock BOOLEAN NOT NULL DEFAULT true,
+is_active BOOLEAN NOT NULL DEFAULT true,
 
-  -- Media & variants
-  images JSONB DEFAULT '[]'::jsonb,
+-- Media & variants
+images JSONB DEFAULT '[]'::jsonb,
   variants JSONB DEFAULT '[]'::jsonb,
   category TEXT,
   tags TEXT[],
 
-  -- Store sync
-  store_product_id TEXT, -- ID on Salla/Zid after publishing
+-- Store sync
+store_product_id TEXT, -- ID on Salla/Zid after publishing
 
-  -- Sync timestamps
-  last_price_check TIMESTAMPTZ,
+-- Sync timestamps
+last_price_check TIMESTAMPTZ,
   last_stock_check TIMESTAMPTZ,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -184,58 +196,58 @@ CREATE TABLE orders (
 );
 
 -- Add FK on transactions
-ALTER TABLE transactions ADD CONSTRAINT fk_transactions_order
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL;
+ALTER TABLE transactions
+ADD CONSTRAINT fk_transactions_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE SET NULL;
 
 -- ======================== 8. ORDER ITEMS ========================
 
 CREATE TABLE order_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
-  quantity INTEGER NOT NULL DEFAULT 1,
-  unit_price NUMERIC(10,2) NOT NULL,
-  supplier_cost NUMERIC(10,2) NOT NULL DEFAULT 0,
-  variant_info JSONB,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    order_id UUID NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products (id) ON DELETE SET NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    unit_price NUMERIC(10, 2) NOT NULL,
+    supplier_cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    variant_info JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 9. FULFILLMENTS ========================
 
 CREATE TABLE fulfillments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  supplier supplier_type NOT NULL,
-  supplier_order_id TEXT,
-  tracking_number TEXT,
-  carrier TEXT,
-  cost NUMERIC(10,2) NOT NULL DEFAULT 0,
-  commission NUMERIC(10,2) NOT NULL DEFAULT 0,
-  status fulfillment_status NOT NULL DEFAULT 'pending',
-  error_message TEXT,
-  placed_at TIMESTAMPTZ,
-  shipped_at TIMESTAMPTZ,
-  delivered_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    order_id UUID NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    supplier supplier_type NOT NULL,
+    supplier_order_id TEXT,
+    tracking_number TEXT,
+    carrier TEXT,
+    cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    commission NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    status fulfillment_status NOT NULL DEFAULT 'pending',
+    error_message TEXT,
+    placed_at TIMESTAMPTZ,
+    shipped_at TIMESTAMPTZ,
+    delivered_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 10. BANK TRANSFERS ========================
 
 CREATE TABLE bank_transfers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  amount NUMERIC(10,2) NOT NULL CHECK (amount > 0),
-  receipt_url TEXT NOT NULL,
-  bank_name TEXT,
-  sender_name TEXT,
-  reference_number TEXT,
-  status transfer_status NOT NULL DEFAULT 'pending',
-  admin_notes TEXT,
-  approved_by UUID REFERENCES merchants(id),
-  reviewed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    amount NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
+    receipt_url TEXT NOT NULL,
+    bank_name TEXT,
+    sender_name TEXT,
+    reference_number TEXT,
+    status transfer_status NOT NULL DEFAULT 'pending',
+    admin_notes TEXT,
+    approved_by UUID REFERENCES merchants (id),
+    reviewed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 11. SUBSCRIPTION TIERS ========================
@@ -268,49 +280,49 @@ CREATE TABLE platform_config (
 -- Automated Pricing Engine — per-product or merchant-wide rules
 
 CREATE TABLE pricing_rules (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  product_id UUID REFERENCES products(id) ON DELETE CASCADE, -- NULL = default rule
-  margin_type margin_type NOT NULL DEFAULT 'percentage',
-  margin_value NUMERIC(10,2) NOT NULL,
-  min_retail_price NUMERIC(10,2), -- floor price
-  max_retail_price NUMERIC(10,2), -- ceiling price
-  auto_sync_enabled BOOLEAN NOT NULL DEFAULT true,
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(merchant_id, product_id)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products (id) ON DELETE CASCADE, -- NULL = default rule
+    margin_type margin_type NOT NULL DEFAULT 'percentage',
+    margin_value NUMERIC(10, 2) NOT NULL,
+    min_retail_price NUMERIC(10, 2), -- floor price
+    max_retail_price NUMERIC(10, 2), -- ceiling price
+    auto_sync_enabled BOOLEAN NOT NULL DEFAULT true,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (merchant_id, product_id)
 );
 
 -- ======================== 14. PRICE SYNC LOGS ========================
 
 CREATE TABLE price_sync_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  old_supplier_cost NUMERIC(10,2) NOT NULL,
-  new_supplier_cost NUMERIC(10,2) NOT NULL,
-  old_retail_price NUMERIC(10,2) NOT NULL,
-  new_retail_price NUMERIC(10,2) NOT NULL,
-  margin_applied margin_type NOT NULL,
-  margin_value NUMERIC(10,2) NOT NULL,
-  store_updated BOOLEAN NOT NULL DEFAULT false,
-  action sync_action NOT NULL DEFAULT 'no_change',
-  synced_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    product_id UUID NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    old_supplier_cost NUMERIC(10, 2) NOT NULL,
+    new_supplier_cost NUMERIC(10, 2) NOT NULL,
+    old_retail_price NUMERIC(10, 2) NOT NULL,
+    new_retail_price NUMERIC(10, 2) NOT NULL,
+    margin_applied margin_type NOT NULL,
+    margin_value NUMERIC(10, 2) NOT NULL,
+    store_updated BOOLEAN NOT NULL DEFAULT false,
+    action sync_action NOT NULL DEFAULT 'no_change',
+    synced_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 15. STOCK SYNC LOGS ========================
 
 CREATE TABLE stock_sync_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
-  old_quantity INTEGER NOT NULL,
-  new_quantity INTEGER NOT NULL,
-  action sync_action NOT NULL,
-  store_updated BOOLEAN NOT NULL DEFAULT false,
-  reason TEXT, -- e.g. "Below threshold (5)", "Out of stock"
-  synced_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    product_id UUID NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+    merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    old_quantity INTEGER NOT NULL,
+    new_quantity INTEGER NOT NULL,
+    action sync_action NOT NULL,
+    store_updated BOOLEAN NOT NULL DEFAULT false,
+    reason TEXT, -- e.g. "Below threshold (5)", "Out of stock"
+    synced_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ======================== 16. PRODUCT INBOX ========================
@@ -322,8 +334,8 @@ CREATE TABLE product_inbox (
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
   store_id UUID REFERENCES stores(id) ON DELETE SET NULL,
 
-  -- Source product data (from supplier)
-  source_title TEXT NOT NULL,
+-- Source product data (from supplier)
+source_title TEXT NOT NULL,
   source_description TEXT,
   source_images JSONB DEFAULT '[]'::jsonb,
   source_price NUMERIC(10,2),
@@ -332,8 +344,8 @@ CREATE TABLE product_inbox (
   supplier supplier_type NOT NULL,
   supplier_product_id TEXT NOT NULL,
 
-  -- AI-generated content
-  ai_title_en TEXT,
+-- AI-generated content
+ai_title_en TEXT,
   ai_title_ar TEXT,
   ai_description_en TEXT,
   ai_description_ar TEXT,
@@ -341,12 +353,12 @@ CREATE TABLE product_inbox (
   ai_tags TEXT[],
   ai_category TEXT,
 
-  -- Conversion data
-  converted_price_sar NUMERIC(10,2), -- USD→SAR converted
-  measurements_converted BOOLEAN NOT NULL DEFAULT false, -- inch→cm done?
+-- Conversion data
+converted_price_sar NUMERIC(10, 2), -- USD→SAR converted
+measurements_converted BOOLEAN NOT NULL DEFAULT false, -- inch→cm done?
 
-  -- Review workflow
-  status inbox_status NOT NULL DEFAULT 'draft',
+-- Review workflow
+status inbox_status NOT NULL DEFAULT 'draft',
   reviewer_notes TEXT,
   reviewed_at TIMESTAMPTZ,
   published_at TIMESTAMPTZ,
@@ -412,59 +424,80 @@ CREATE TABLE notifications (
 -- ======================== INDEXES ========================
 
 -- Merchants
-CREATE INDEX idx_merchants_role ON merchants(role);
-CREATE INDEX idx_merchants_plan ON merchants(plan);
+CREATE INDEX idx_merchants_role ON merchants (role);
+
+CREATE INDEX idx_merchants_plan ON merchants (plan);
 
 -- Wallets
-CREATE INDEX idx_wallets_merchant ON wallets(merchant_id);
+CREATE INDEX idx_wallets_merchant ON wallets (merchant_id);
 
 -- Transactions
-CREATE INDEX idx_transactions_wallet ON transactions(wallet_id);
-CREATE INDEX idx_transactions_merchant ON transactions(merchant_id);
+CREATE INDEX idx_transactions_wallet ON transactions (wallet_id);
+
+CREATE INDEX idx_transactions_merchant ON transactions (merchant_id);
+
 CREATE INDEX idx_transactions_type ON transactions(type);
-CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
+
+CREATE INDEX idx_transactions_created ON transactions (created_at DESC);
 
 -- Stores
-CREATE INDEX idx_stores_merchant ON stores(merchant_id);
-CREATE INDEX idx_stores_platform ON stores(platform);
+CREATE INDEX idx_stores_merchant ON stores (merchant_id);
+
+CREATE INDEX idx_stores_platform ON stores (platform);
 
 -- Products
-CREATE INDEX idx_products_merchant ON products(merchant_id);
-CREATE INDEX idx_products_supplier ON products(supplier);
-CREATE INDEX idx_products_store ON products(store_id);
-CREATE INDEX idx_products_active ON products(is_active, in_stock);
-CREATE INDEX idx_products_category ON products(category);
-CREATE INDEX idx_products_last_price ON products(last_price_check);
-CREATE INDEX idx_products_last_stock ON products(last_stock_check);
+CREATE INDEX idx_products_merchant ON products (merchant_id);
+
+CREATE INDEX idx_products_supplier ON products (supplier);
+
+CREATE INDEX idx_products_store ON products (store_id);
+
+CREATE INDEX idx_products_active ON products (is_active, in_stock);
+
+CREATE INDEX idx_products_category ON products (category);
+
+CREATE INDEX idx_products_last_price ON products (last_price_check);
+
+CREATE INDEX idx_products_last_stock ON products (last_stock_check);
 
 -- Orders
-CREATE INDEX idx_orders_merchant ON orders(merchant_id);
-CREATE INDEX idx_orders_store ON orders(store_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_created ON orders(created_at DESC);
+CREATE INDEX idx_orders_merchant ON orders (merchant_id);
+
+CREATE INDEX idx_orders_store ON orders (store_id);
+
+CREATE INDEX idx_orders_status ON orders (status);
+
+CREATE INDEX idx_orders_created ON orders (created_at DESC);
 
 -- Fulfillments
-CREATE INDEX idx_fulfillments_order ON fulfillments(order_id);
-CREATE INDEX idx_fulfillments_status ON fulfillments(status);
+CREATE INDEX idx_fulfillments_order ON fulfillments (order_id);
+
+CREATE INDEX idx_fulfillments_status ON fulfillments (status);
 
 -- Bank Transfers
-CREATE INDEX idx_transfers_merchant ON bank_transfers(merchant_id);
-CREATE INDEX idx_transfers_status ON bank_transfers(status);
+CREATE INDEX idx_transfers_merchant ON bank_transfers (merchant_id);
+
+CREATE INDEX idx_transfers_status ON bank_transfers (status);
 
 -- Product Inbox
-CREATE INDEX idx_inbox_merchant ON product_inbox(merchant_id);
-CREATE INDEX idx_inbox_status ON product_inbox(status);
+CREATE INDEX idx_inbox_merchant ON product_inbox (merchant_id);
+
+CREATE INDEX idx_inbox_status ON product_inbox (status);
 
 -- Analytics
-CREATE INDEX idx_analytics_merchant_date ON analytics_daily(merchant_id, date DESC);
+CREATE INDEX idx_analytics_merchant_date ON analytics_daily (merchant_id, date DESC);
 
 -- Notifications
-CREATE INDEX idx_notifications_merchant ON notifications(merchant_id);
-CREATE INDEX idx_notifications_unread ON notifications(merchant_id, is_read) WHERE NOT is_read;
+CREATE INDEX idx_notifications_merchant ON notifications (merchant_id);
+
+CREATE INDEX idx_notifications_unread ON notifications (merchant_id, is_read)
+WHERE
+    NOT is_read;
 
 -- Sync logs
-CREATE INDEX idx_price_sync_product ON price_sync_logs(product_id);
-CREATE INDEX idx_stock_sync_product ON stock_sync_logs(product_id);
+CREATE INDEX idx_price_sync_product ON price_sync_logs (product_id);
+
+CREATE INDEX idx_stock_sync_product ON stock_sync_logs (product_id);
 
 -- ======================== FUNCTIONS ========================
 
@@ -566,31 +599,53 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_merchants_updated BEFORE UPDATE ON merchants FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
 CREATE TRIGGER trg_wallets_updated BEFORE UPDATE ON wallets FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
 CREATE TRIGGER trg_stores_updated BEFORE UPDATE ON stores FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
 CREATE TRIGGER trg_products_updated BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
 CREATE TRIGGER trg_orders_updated BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
 CREATE TRIGGER trg_fulfillments_updated BEFORE UPDATE ON fulfillments FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
 CREATE TRIGGER trg_inbox_updated BEFORE UPDATE ON product_inbox FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
 -- ======================== RLS POLICIES ========================
 
 ALTER TABLE merchants ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE supplier_accounts ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE fulfillments ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE bank_transfers ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE pricing_rules ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE price_sync_logs ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE stock_sync_logs ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE product_inbox ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE analytics_daily ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE trend_reports ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Helper: check if user is admin
@@ -602,65 +657,126 @@ RETURNS BOOLEAN AS $$
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 -- Merchants: own row or admin
-CREATE POLICY merchants_self ON merchants FOR ALL USING (id = auth.uid() OR is_admin());
+CREATE POLICY merchants_self ON merchants FOR ALL USING (
+    id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Wallets: own or admin
-CREATE POLICY wallets_self ON wallets FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY wallets_self ON wallets FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Transactions: own or admin
-CREATE POLICY txn_self ON transactions FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY txn_self ON transactions FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Stores: own or admin
-CREATE POLICY stores_self ON stores FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY stores_self ON stores FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Supplier accounts: own or admin
-CREATE POLICY suppliers_self ON supplier_accounts FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY suppliers_self ON supplier_accounts FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Products: own or admin
-CREATE POLICY products_self ON products FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY products_self ON products FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Orders: own or admin
-CREATE POLICY orders_self ON orders FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY orders_self ON orders FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Order items: via order ownership
 CREATE POLICY items_self ON order_items FOR ALL USING (
-  EXISTS (SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND (orders.merchant_id = auth.uid() OR is_admin()))
+    EXISTS (
+        SELECT 1
+        FROM orders
+        WHERE
+            orders.id = order_items.order_id
+            AND (
+                orders.merchant_id = auth.uid ()
+                OR is_admin ()
+            )
+    )
 );
 
 -- Fulfillments: own or admin
-CREATE POLICY fulfill_self ON fulfillments FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY fulfill_self ON fulfillments FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Bank transfers: own or admin
-CREATE POLICY transfers_self ON bank_transfers FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY transfers_self ON bank_transfers FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Pricing rules: own or admin
-CREATE POLICY pricing_self ON pricing_rules FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY pricing_self ON pricing_rules FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Sync logs: own or admin
-CREATE POLICY price_logs_self ON price_sync_logs FOR ALL USING (merchant_id = auth.uid() OR is_admin());
-CREATE POLICY stock_logs_self ON stock_sync_logs FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY price_logs_self ON price_sync_logs FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
+
+CREATE POLICY stock_logs_self ON stock_sync_logs FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Product inbox: own or admin
-CREATE POLICY inbox_self ON product_inbox FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY inbox_self ON product_inbox FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Analytics: own or admin
-CREATE POLICY analytics_self ON analytics_daily FOR ALL USING (merchant_id = auth.uid() OR is_admin());
+CREATE POLICY analytics_self ON analytics_daily FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR is_admin ()
+);
 
 -- Trends: own, global, or admin
-CREATE POLICY trends_self ON trend_reports FOR ALL USING (merchant_id = auth.uid() OR merchant_id IS NULL OR is_admin());
+CREATE POLICY trends_self ON trend_reports FOR ALL USING (
+    merchant_id = auth.uid ()
+    OR merchant_id IS NULL
+    OR is_admin ()
+);
 
 -- Notifications: own only
-CREATE POLICY notif_self ON notifications FOR ALL USING (merchant_id = auth.uid());
+CREATE POLICY notif_self ON notifications FOR ALL USING (merchant_id = auth.uid ());
 
 -- Platform config: read all, write admin only
 ALTER TABLE platform_config ENABLE ROW LEVEL SECURITY;
+
 CREATE POLICY config_read ON platform_config FOR SELECT USING (true);
-CREATE POLICY config_write ON platform_config FOR ALL USING (is_admin());
+
+CREATE POLICY config_write ON platform_config FOR ALL USING (is_admin ());
 
 -- Subscription tiers: read all, write admin only
 ALTER TABLE subscription_tiers ENABLE ROW LEVEL SECURITY;
-CREATE POLICY tiers_read ON subscription_tiers FOR SELECT USING (true);
-CREATE POLICY tiers_write ON subscription_tiers FOR ALL USING (is_admin());
+
+CREATE POLICY tiers_read ON subscription_tiers FOR
+SELECT USING (true);
+
+CREATE POLICY tiers_write ON subscription_tiers FOR ALL USING (is_admin ());
 
 -- ======================== SEED DATA ========================
 
@@ -684,3 +800,39 @@ INSERT INTO platform_config (key, value, description) VALUES
   ('stock_sync_global_interval', '1'::jsonb, 'Default hours between stock syncs'),
   ('platform_name', '"DropLinker"'::jsonb, 'Platform display name'),
   ('support_email', '"support@droplinker.com"'::jsonb, 'Support email');
+
+ALTER TABLE merchants ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "merchants_insert_own" ON merchants FOR INSERT
+
+WITH CHECK (id = auth.uid ());
+
+CREATE POLICY "merchants_select_own" ON merchants FOR
+SELECT USING (id = auth.uid ());
+
+CREATE POLICY "merchants_update_own" ON merchants FOR
+UPDATE USING (id = auth.uid ())
+WITH
+    CHECK (id = auth.uid ());
+
+-- Stores: merchants can see their own stores
+ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "stores_select_own" ON stores FOR
+SELECT USING (merchant_id = auth.uid ());
+
+CREATE POLICY "stores_insert_own" ON stores FOR
+INSERT
+WITH
+    CHECK (merchant_id = auth.uid ());
+
+CREATE POLICY "stores_update_own" ON stores FOR
+UPDATE USING (merchant_id = auth.uid ());
+
+-- Supplier Accounts: merchants can see their own
+ALTER TABLE supplier_accounts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "suppliers_select_own" ON supplier_accounts FOR
+SELECT USING (merchant_id = auth.uid ());
+
+ALTER TABLE stores ADD COLUMN salla_merchant_id TEXT;

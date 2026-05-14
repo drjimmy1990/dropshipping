@@ -1,0 +1,2154 @@
+{
+  "info": {
+    "_postman_id": "69beca40-c277-4b9d-b10a-894c5a88b10f",
+    "name": "Shipments APIs V2.0.6",
+    "description": "### Changed\n\n- Added the `shipping_route` in the following endpoints and webhook responses:\n    \n    - [Create Shipment](https://docs.salla.dev/5578808e0)\n        \n    - [List Shipments](https://docs.salla.dev/5578809e0)\n        \n    - [Shipment Details](https://docs.salla.dev/5578811e0)\n        \n    - [Update Shipment Details](https://docs.salla.dev/5578810e0)\n        \n    - [Cancel Shipment](https://docs.salla.dev/5578812e0)\n        \n    - [Return Shipment](https://docs.salla.dev/5578813e0)\n        \n    - [Shipments Webhook Events Model](https://docs.salla.dev/433807m0#shipments-webhook-events-model) in the following store events:\n        \n        - `shipment.creating`\n            \n        - `shipment.created`\n            \n        - `shipment.updated`\n            \n        - `shipment.cancelled`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42509167"
+  },
+  "item": [
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "Create Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courier_id\": \"<integer>\",\n  \"shipment_type\": \"return\",\n  \"payment_method\": \"pre_paid\",\n  \"packages\": [\n    {\n      \"external_id\": \"<string>\",\n      \"name\": \"<string>\",\n      \"sku\": \"<string>\",\n      \"price\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"quantity\": \"<integer>\",\n      \"weight\": {\n        \"value\": \"<integer>\",\n        \"units\": \"oz\"\n      }\n    },\n    {\n      \"external_id\": \"<string>\",\n      \"name\": \"<string>\",\n      \"sku\": \"<string>\",\n      \"price\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"quantity\": \"<integer>\",\n      \"weight\": {\n        \"value\": \"<integer>\",\n        \"units\": \"oz\"\n      }\n    }\n  ],\n  \"overwrite_exists_pending\": \"<boolean>\",\n  \"order_id\": \"<integer>\",\n  \"shipment_id\": \"<integer>\",\n  \"cash_on_delivery\": {\n    \"amount\": \"<number>\",\n    \"currency\": \"<string>\"\n  },\n  \"description\": \"<string>\",\n  \"remarks\": \"<string>\",\n  \"external_id\": \"<string>\",\n  \"external_additional_id\": \"<string>\",\n  \"external_company_name\": \"<string>\",\n  \"service_types\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"policy_options\": {},\n  \"ship_to\": {\n    \"name\": \"<string>\",\n    \"email\": \"<string>\",\n    \"phone\": \"<string>\",\n    \"address_line\": \"<string>\",\n    \"street_number\": \"<string>\",\n    \"block\": \"<string>\",\n    \"postal_code\": \"<string>\",\n    \"country\": \"<string>\",\n    \"city\": \"<string>\",\n    \"country_id\": \"<string>\",\n    \"city_id\": \"<string>\",\n    \"geo_coordinates\": {\n      \"lat\": \"<string>\",\n      \"lng\": \"<string>\"\n    }\n  },\n  \"ship_from\": {\n    \"type\": \"branch\",\n    \"branch_id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"email\": \"<string>\",\n    \"phone\": \"<string>\",\n    \"country\": \"<string>\",\n    \"city\": \"<string>\",\n    \"address_line\": \"<string>\",\n    \"street_number\": \"<string>\",\n    \"block\": \"<string>\",\n    \"postal_code\": \"<string>\",\n    \"country_id\": \"<string>\",\n    \"city_id\": \"<string>\",\n    \"geo_coordinates\": {\n      \"lat\": \"<string>\",\n      \"lng\": \"<string>\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shipments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments"
+              ]
+            },
+            "description": "This endpoint allows you to create a shipment related to your store directly from this endpoint.\n\n:::danger[]\nThe following variables are deprecated. Please update your implementation to use the recommended replacements:\n\n#### ship_to\n- `country_id` → use the `ship_to.country` variable\n- `city_id` → use the `ship_to.city` variable\n\n#### ship_from\n- `country_id` → use the `ship_from.country` variable\n- `country_code` → use the `ship_from.country` variable\n- `city_id` → use the `ship_from.city` variable\n:::\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write`- Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"courier_id\": \"<integer>\",\n  \"shipment_type\": \"return\",\n  \"payment_method\": \"pre_paid\",\n  \"packages\": [\n    {\n      \"external_id\": \"<string>\",\n      \"name\": \"<string>\",\n      \"sku\": \"<string>\",\n      \"price\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"quantity\": \"<integer>\",\n      \"weight\": {\n        \"value\": \"<integer>\",\n        \"units\": \"oz\"\n      }\n    },\n    {\n      \"external_id\": \"<string>\",\n      \"name\": \"<string>\",\n      \"sku\": \"<string>\",\n      \"price\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"quantity\": \"<integer>\",\n      \"weight\": {\n        \"value\": \"<integer>\",\n        \"units\": \"oz\"\n      }\n    }\n  ],\n  \"overwrite_exists_pending\": \"<boolean>\",\n  \"order_id\": \"<integer>\",\n  \"shipment_id\": \"<integer>\",\n  \"cash_on_delivery\": {\n    \"amount\": \"<number>\",\n    \"currency\": \"<string>\"\n  },\n  \"description\": \"<string>\",\n  \"remarks\": \"<string>\",\n  \"external_id\": \"<string>\",\n  \"external_additional_id\": \"<string>\",\n  \"external_company_name\": \"<string>\",\n  \"service_types\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"policy_options\": {},\n  \"ship_to\": {\n    \"name\": \"<string>\",\n    \"email\": \"<string>\",\n    \"phone\": \"<string>\",\n    \"address_line\": \"<string>\",\n    \"street_number\": \"<string>\",\n    \"block\": \"<string>\",\n    \"postal_code\": \"<string>\",\n    \"country\": \"<string>\",\n    \"city\": \"<string>\",\n    \"country_id\": \"<string>\",\n    \"city_id\": \"<string>\",\n    \"geo_coordinates\": {\n      \"lat\": \"<string>\",\n      \"lng\": \"<string>\"\n    }\n  },\n  \"ship_from\": {\n    \"type\": \"branch\",\n    \"branch_id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"email\": \"<string>\",\n    \"phone\": \"<string>\",\n    \"country\": \"<string>\",\n    \"city\": \"<string>\",\n    \"address_line\": \"<string>\",\n    \"street_number\": \"<string>\",\n    \"block\": \"<string>\",\n    \"postal_code\": \"<string>\",\n    \"country_id\": \"<string>\",\n    \"city_id\": \"<string>\",\n    \"geo_coordinates\": {\n      \"lat\": \"<string>\",\n      \"lng\": \"<string>\"\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<number>\",\n    \"order_id\": \"<number>\",\n    \"order_reference_id\": \"<number>\",\n    \"created_at\": {\n      \"date\": \"<string>\",\n      \"timezone_type\": \"<integer>\",\n      \"timezone\": \"<string>\"\n    },\n    \"type\": \"shipment\",\n    \"courier_id\": \"<integer>\",\n    \"courier_name\": \"<string>\",\n    \"courier_logo\": \"<string>\",\n    \"shipping_number\": \"<string>\",\n    \"tracking_number\": \"<string>\",\n    \"pickup_id\": \"<number>\",\n    \"trackable\": \"<boolean>\",\n    \"tracking_link\": \"<string>\",\n    \"label\": {\n      \"format\": \"<string>\",\n      \"url\": \"<string>\"\n    },\n    \"payment_method\": \"cod\",\n    \"source\": \"<string>\",\n    \"status\": \"reattempted\",\n    \"total\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"cash_on_delivery\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"is_international\": \"<boolean>\",\n    \"total_weight\": {\n      \"value\": \"<number>\",\n      \"units\": \"<string>\"\n    },\n    \"packages\": [\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"oz\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"kg\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"ship_from\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\",\n      \"branch_id\": \"<integer>\"\n    },\n    \"ship_to\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\"\n    },\n    \"meta\": {\n      \"app_id\": \"<integer>\",\n      \"policy_options\": {}\n    },\n    \"billing_account\": \"salla\",\n    \"reference\": {\n      \"external_id\": \"<string>\",\n      \"external_additional_id\": \"<string>\"\n    },\n    \"service_types\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"external_company_name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"remarks\": \"<string>\",\n    \"shipping_route\": {\n      \"id\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"courier_id\": \"<integer>\",\n  \"shipment_type\": \"return\",\n  \"payment_method\": \"pre_paid\",\n  \"packages\": [\n    {\n      \"external_id\": \"<string>\",\n      \"name\": \"<string>\",\n      \"sku\": \"<string>\",\n      \"price\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"quantity\": \"<integer>\",\n      \"weight\": {\n        \"value\": \"<integer>\",\n        \"units\": \"oz\"\n      }\n    },\n    {\n      \"external_id\": \"<string>\",\n      \"name\": \"<string>\",\n      \"sku\": \"<string>\",\n      \"price\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"quantity\": \"<integer>\",\n      \"weight\": {\n        \"value\": \"<integer>\",\n        \"units\": \"oz\"\n      }\n    }\n  ],\n  \"overwrite_exists_pending\": \"<boolean>\",\n  \"order_id\": \"<integer>\",\n  \"shipment_id\": \"<integer>\",\n  \"cash_on_delivery\": {\n    \"amount\": \"<number>\",\n    \"currency\": \"<string>\"\n  },\n  \"description\": \"<string>\",\n  \"remarks\": \"<string>\",\n  \"external_id\": \"<string>\",\n  \"external_additional_id\": \"<string>\",\n  \"external_company_name\": \"<string>\",\n  \"service_types\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"policy_options\": {},\n  \"ship_to\": {\n    \"name\": \"<string>\",\n    \"email\": \"<string>\",\n    \"phone\": \"<string>\",\n    \"address_line\": \"<string>\",\n    \"street_number\": \"<string>\",\n    \"block\": \"<string>\",\n    \"postal_code\": \"<string>\",\n    \"country\": \"<string>\",\n    \"city\": \"<string>\",\n    \"country_id\": \"<string>\",\n    \"city_id\": \"<string>\",\n    \"geo_coordinates\": {\n      \"lat\": \"<string>\",\n      \"lng\": \"<string>\"\n    }\n  },\n  \"ship_from\": {\n    \"type\": \"branch\",\n    \"branch_id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"email\": \"<string>\",\n    \"phone\": \"<string>\",\n    \"country\": \"<string>\",\n    \"city\": \"<string>\",\n    \"address_line\": \"<string>\",\n    \"street_number\": \"<string>\",\n    \"block\": \"<string>\",\n    \"postal_code\": \"<string>\",\n    \"country_id\": \"<string>\",\n    \"city_id\": \"<string>\",\n    \"geo_coordinates\": {\n      \"lat\": \"<string>\",\n      \"lng\": \"<string>\"\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments"
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Shipments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipments?order_id=<integer>&courier_id=<integer>&courier_slug=<string>&status=shipped&shipment_type=<string>&payment_method=<string>&from_date=<string>&to_date=<string>&ship_to[country_id]=<integer>&ship_to[country_code]=<string>&ship_to[city_id]=<integer>&ship_from[country_id]=<integer>&ship_from[country_code]=<string>&ship_from[city_id]=<integer>&source=<string>&per_page=<integer>",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments"
+              ],
+              "query": [
+                {
+                  "key": "order_id",
+                  "value": "<integer>",
+                  "description": "Order ID. Get a list of Order IDs from [here](https://docs.salla.dev/api-5394146/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "courier_id",
+                  "value": "<integer>",
+                  "description": "Courier ID. Get a list of Courier IDs from [here](https://docs.salla.dev/api-5578815/?nav=01HNA8MH78MVX1S0DRXDHE3A1K)"
+                },
+                {
+                  "key": "courier_slug",
+                  "value": "<string>",
+                  "description": "Courier Slug. Get a list of Courier Slugs from [here](https://docs.salla.dev/api-5578815/?nav=01HNA8MH78MVX1S0DRXDHE3A1K)"
+                },
+                {
+                  "key": "status",
+                  "value": "shipped",
+                  "description": "Shipment Status; value can be one of the listed enum variables"
+                },
+                {
+                  "key": "shipment_type",
+                  "value": "<string>",
+                  "description": "Shipment Type; value can either `\"shipment\"` or `\"return\"`"
+                },
+                {
+                  "key": "payment_method",
+                  "value": "<string>",
+                  "description": "Payment Method; value can either `\"pre_paid\"` or `\"cod\"`"
+                },
+                {
+                  "key": "from_date",
+                  "value": "<string>",
+                  "description": "Shipment starting date range"
+                },
+                {
+                  "key": "to_date",
+                  "value": "<string>",
+                  "description": "Shipment ending date range"
+                },
+                {
+                  "key": "ship_to[country_id]",
+                  "value": "<integer>",
+                  "description": "Shipment Country Destination. Get a list of Country IDs from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "ship_to[country_code]",
+                  "value": "<string>",
+                  "description": "Shipment Country Code Destination. Get a list of Country Codes from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "ship_to[city_id]",
+                  "value": "<integer>",
+                  "description": "Shipment City Destination. Get a list of City IDs from [here](https://docs.salla.dev/api-5394230/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "ship_from[country_id]",
+                  "value": "<integer>",
+                  "description": "Shipment Country Origin. Get a list of Country IDs from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "ship_from[country_code]",
+                  "value": "<string>",
+                  "description": "Shipment Country Code Origin. Get a list of Country Codes from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "ship_from[city_id]",
+                  "value": "<integer>",
+                  "description": "Shipment City Origin. Get a list of City IDs from [here](https://docs.salla.dev/api-5394230/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)"
+                },
+                {
+                  "key": "source",
+                  "value": "<string>",
+                  "description": "Shipment Source; value can be one of the listed enum variables"
+                },
+                {
+                  "key": "per_page",
+                  "value": "<integer>",
+                  "description": "Shipments limit per page"
+                }
+              ]
+            },
+            "description": "You can list all shipments related to your store directly from this endpoint. Also, it allows you to filter them using by shipping company slug.\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read Only\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments?order_id=<integer>&courier_id=<integer>&courier_slug=<string>&status=shipped&shipment_type=<string>&payment_method=<string>&from_date=<string>&to_date=<string>&ship_to[country_id]=<integer>&ship_to[country_code]=<string>&ship_to[city_id]=<integer>&ship_from[country_id]=<integer>&ship_from[country_code]=<string>&ship_from[city_id]=<integer>&source=<string>&per_page=<integer>",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments"
+                  ],
+                  "query": [
+                    {
+                      "description": "Order ID. Get a list of Order IDs from [here](https://docs.salla.dev/api-5394146/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "order_id",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Courier ID. Get a list of Courier IDs from [here](https://docs.salla.dev/api-5578815/?nav=01HNA8MH78MVX1S0DRXDHE3A1K)",
+                      "key": "courier_id",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Courier Slug. Get a list of Courier Slugs from [here](https://docs.salla.dev/api-5578815/?nav=01HNA8MH78MVX1S0DRXDHE3A1K)",
+                      "key": "courier_slug",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment Status; value can be one of the listed enum variables",
+                      "key": "status",
+                      "value": "shipped"
+                    },
+                    {
+                      "description": "Shipment Type; value can either `\"shipment\"` or `\"return\"`",
+                      "key": "shipment_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Payment Method; value can either `\"pre_paid\"` or `\"cod\"`",
+                      "key": "payment_method",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment starting date range",
+                      "key": "from_date",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment ending date range",
+                      "key": "to_date",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment Country Destination. Get a list of Country IDs from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_to[country_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Country Code Destination. Get a list of Country Codes from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_to[country_code]",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment City Destination. Get a list of City IDs from [here](https://docs.salla.dev/api-5394230/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_to[city_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Country Origin. Get a list of Country IDs from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_from[country_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Country Code Origin. Get a list of Country Codes from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_from[country_code]",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment City Origin. Get a list of City IDs from [here](https://docs.salla.dev/api-5394230/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_from[city_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Source; value can be one of the listed enum variables",
+                      "key": "source",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipments limit per page",
+                      "key": "per_page",
+                      "value": "<integer>"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<string>\",\n  \"success\": \"<boolean>\",\n  \"data\": [\n    {\n      \"id\": \"<number>\",\n      \"order_id\": \"<number>\",\n      \"order_reference_id\": \"<number>\",\n      \"created_at\": {\n        \"date\": \"<string>\",\n        \"timezone_type\": \"<integer>\",\n        \"timezone\": \"<string>\"\n      },\n      \"type\": \"shipment\",\n      \"courier_id\": \"<integer>\",\n      \"courier_name\": \"<string>\",\n      \"courier_logo\": \"<string>\",\n      \"shipping_number\": \"<string>\",\n      \"tracking_number\": \"<string>\",\n      \"pickup_id\": \"<null>\",\n      \"trackable\": \"<boolean>\",\n      \"tracking_link\": \"<string>\",\n      \"label\": {\n        \"format\": \"<string>\",\n        \"url\": \"<string>\"\n      },\n      \"payment_method\": \"pre_paid\",\n      \"source\": \"<string>\",\n      \"status\": \"created\",\n      \"total\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"cash_on_delivery\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"is_international\": \"<boolean>\",\n      \"total_weight\": {\n        \"value\": \"<number>\",\n        \"units\": \"<string>\"\n      },\n      \"packages\": [\n        {\n          \"item_id\": \"<integer>\",\n          \"external_id\": \"<integer>\",\n          \"name\": \"<string>\",\n          \"sku\": \"<string>\",\n          \"price\": {\n            \"amount\": \"<number>\",\n            \"currency\": \"<string>\"\n          },\n          \"quantity\": \"<integer>\",\n          \"weight\": {\n            \"value\": \"<integer>\",\n            \"units\": \"g\"\n          }\n        },\n        {\n          \"item_id\": \"<integer>\",\n          \"external_id\": \"<integer>\",\n          \"name\": \"<string>\",\n          \"sku\": \"<string>\",\n          \"price\": {\n            \"amount\": \"<number>\",\n            \"currency\": \"<string>\"\n          },\n          \"quantity\": \"<integer>\",\n          \"weight\": {\n            \"value\": \"<integer>\",\n            \"units\": \"oz\"\n          }\n        }\n      ],\n      \"ship_from\": {\n        \"type\": \"<string>\",\n        \"name\": \"<string>\",\n        \"email\": \"<string>\",\n        \"phone\": \"<string>\",\n        \"country\": \"<string>\",\n        \"city\": \"<string>\",\n        \"address_line\": \"<string>\",\n        \"street_number\": \"<null>\",\n        \"block\": \"<null>\",\n        \"postal_code\": \"<null>\",\n        \"latitude\": \"<number>\",\n        \"longitude\": \"<number>\",\n        \"branch_id\": \"<integer>\"\n      },\n      \"ship_to\": {\n        \"type\": \"<string>\",\n        \"name\": \"<string>\",\n        \"email\": \"<string>\",\n        \"phone\": \"<string>\",\n        \"country\": \"<string>\",\n        \"city\": \"<string>\",\n        \"address_line\": \"<string>\",\n        \"street_number\": \"<string>\",\n        \"block\": \"<string>\",\n        \"postal_code\": \"<string>\",\n        \"latitude\": \"<number>\",\n        \"longitude\": \"<number>\"\n      },\n      \"meta\": {\n        \"app_id\": \"<integer>\",\n        \"policy_options\": {\n          \"shipment_content_type\": [\n            \"document\",\n            \"food_stuff\"\n          ],\n          \"packaging_type\": [\n            \"box\",\n            \"pallet\"\n          ],\n          \"boxes\": \"<integer>\"\n        }\n      },\n      \"billing_account\": \"merchant\",\n      \"pagination\": {}\n    },\n    {\n      \"id\": \"<number>\",\n      \"order_id\": \"<number>\",\n      \"order_reference_id\": \"<number>\",\n      \"created_at\": {\n        \"date\": \"<string>\",\n        \"timezone_type\": \"<integer>\",\n        \"timezone\": \"<string>\"\n      },\n      \"type\": \"return\",\n      \"courier_id\": \"<integer>\",\n      \"courier_name\": \"<string>\",\n      \"courier_logo\": \"<string>\",\n      \"shipping_number\": \"<string>\",\n      \"tracking_number\": \"<string>\",\n      \"pickup_id\": \"<null>\",\n      \"trackable\": \"<boolean>\",\n      \"tracking_link\": \"<string>\",\n      \"label\": {\n        \"format\": \"<string>\",\n        \"url\": \"<string>\"\n      },\n      \"payment_method\": \"cod\",\n      \"source\": \"<string>\",\n      \"status\": \"pending\",\n      \"total\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"cash_on_delivery\": {\n        \"amount\": \"<number>\",\n        \"currency\": \"<string>\"\n      },\n      \"is_international\": \"<boolean>\",\n      \"total_weight\": {\n        \"value\": \"<number>\",\n        \"units\": \"<string>\"\n      },\n      \"packages\": [\n        {\n          \"item_id\": \"<integer>\",\n          \"external_id\": \"<integer>\",\n          \"name\": \"<string>\",\n          \"sku\": \"<string>\",\n          \"price\": {\n            \"amount\": \"<number>\",\n            \"currency\": \"<string>\"\n          },\n          \"quantity\": \"<integer>\",\n          \"weight\": {\n            \"value\": \"<integer>\",\n            \"units\": \"oz\"\n          }\n        },\n        {\n          \"item_id\": \"<integer>\",\n          \"external_id\": \"<integer>\",\n          \"name\": \"<string>\",\n          \"sku\": \"<string>\",\n          \"price\": {\n            \"amount\": \"<number>\",\n            \"currency\": \"<string>\"\n          },\n          \"quantity\": \"<integer>\",\n          \"weight\": {\n            \"value\": \"<integer>\",\n            \"units\": \"lb\"\n          }\n        }\n      ],\n      \"ship_from\": {\n        \"type\": \"<string>\",\n        \"name\": \"<string>\",\n        \"email\": \"<string>\",\n        \"phone\": \"<string>\",\n        \"country\": \"<string>\",\n        \"city\": \"<string>\",\n        \"address_line\": \"<string>\",\n        \"street_number\": \"<null>\",\n        \"block\": \"<null>\",\n        \"postal_code\": \"<null>\",\n        \"latitude\": \"<number>\",\n        \"longitude\": \"<number>\",\n        \"branch_id\": \"<integer>\"\n      },\n      \"ship_to\": {\n        \"type\": \"<string>\",\n        \"name\": \"<string>\",\n        \"email\": \"<string>\",\n        \"phone\": \"<string>\",\n        \"country\": \"<string>\",\n        \"city\": \"<string>\",\n        \"address_line\": \"<string>\",\n        \"street_number\": \"<string>\",\n        \"block\": \"<string>\",\n        \"postal_code\": \"<string>\",\n        \"latitude\": \"<number>\",\n        \"longitude\": \"<number>\"\n      },\n      \"meta\": {\n        \"app_id\": \"<integer>\",\n        \"policy_options\": {\n          \"shipment_content_type\": [\n            \"liquid\",\n            \"liquid\"\n          ],\n          \"packaging_type\": [\n            \"pallet\",\n            \"paper_wrapper\"\n          ],\n          \"boxes\": \"<integer>\"\n        }\n      },\n      \"billing_account\": \"merchant\",\n      \"pagination\": {}\n    }\n  ]\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments?order_id=<integer>&courier_id=<integer>&courier_slug=<string>&status=shipped&shipment_type=<string>&payment_method=<string>&from_date=<string>&to_date=<string>&ship_to[country_id]=<integer>&ship_to[country_code]=<string>&ship_to[city_id]=<integer>&ship_from[country_id]=<integer>&ship_from[country_code]=<string>&ship_from[city_id]=<integer>&source=<string>&per_page=<integer>",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments"
+                  ],
+                  "query": [
+                    {
+                      "description": "Order ID. Get a list of Order IDs from [here](https://docs.salla.dev/api-5394146/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "order_id",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Courier ID. Get a list of Courier IDs from [here](https://docs.salla.dev/api-5578815/?nav=01HNA8MH78MVX1S0DRXDHE3A1K)",
+                      "key": "courier_id",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Courier Slug. Get a list of Courier Slugs from [here](https://docs.salla.dev/api-5578815/?nav=01HNA8MH78MVX1S0DRXDHE3A1K)",
+                      "key": "courier_slug",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment Status; value can be one of the listed enum variables",
+                      "key": "status",
+                      "value": "shipped"
+                    },
+                    {
+                      "description": "Shipment Type; value can either `\"shipment\"` or `\"return\"`",
+                      "key": "shipment_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Payment Method; value can either `\"pre_paid\"` or `\"cod\"`",
+                      "key": "payment_method",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment starting date range",
+                      "key": "from_date",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment ending date range",
+                      "key": "to_date",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment Country Destination. Get a list of Country IDs from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_to[country_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Country Code Destination. Get a list of Country Codes from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_to[country_code]",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment City Destination. Get a list of City IDs from [here](https://docs.salla.dev/api-5394230/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_to[city_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Country Origin. Get a list of Country IDs from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_from[country_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Country Code Origin. Get a list of Country Codes from [here](https://docs.salla.dev/api-5394228/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_from[country_code]",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipment City Origin. Get a list of City IDs from [here](https://docs.salla.dev/api-5394230/?nav=01J1Y9KTRRDA57Q8ZSW95TTVDB)",
+                      "key": "ship_from[city_id]",
+                      "value": "<integer>"
+                    },
+                    {
+                      "description": "Shipment Source; value can be one of the listed enum variables",
+                      "key": "source",
+                      "value": "<string>"
+                    },
+                    {
+                      "description": "Shipments limit per page",
+                      "key": "per_page",
+                      "value": "<integer>"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Shipment Details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipment_number\": \"<string>\",\n  \"status\": \"damaged\",\n  \"order_id\": \"<integer>\",\n  \"tracking_number\": \"<string>\",\n  \"tracking_link\": \"<string>\",\n  \"pdf_label\": \"<string>\",\n  \"cost\": \"<integer>\",\n  \"status_note\": \"<string>\",\n  \"external_company_name\": \"<string>\",\n  \"policy_options\": {}\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shipments/:shipment_id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments",
+                ":shipment_id"
+              ],
+              "variable": [
+                {
+                  "key": "shipment_id",
+                  "value": "<number>",
+                  "description": "Shipment ID. Get a list of Shipment IDs from [here](https://docs.salla.dev/5578809e0?nav=01HNA8MH78MVX1S0DRXDHE3A1K)"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to update specific Shipment Details by providing the ID of the shipment you want to update its details.\n\n:::danger[Breaking Change Notice]\nEffective January 20th, 2025, the status variable will be a **required** field in the request payload.\n:::\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write`- Shipping Read & Write\n</Accordion>\n"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shipment_number\": \"<string>\",\n  \"status\": \"damaged\",\n  \"order_id\": \"<integer>\",\n  \"tracking_number\": \"<string>\",\n  \"tracking_link\": \"<string>\",\n  \"pdf_label\": \"<string>\",\n  \"cost\": \"<integer>\",\n  \"status_note\": \"<string>\",\n  \"external_company_name\": \"<string>\",\n  \"policy_options\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<number>\",\n    \"order_id\": \"<number>\",\n    \"order_reference_id\": \"<number>\",\n    \"created_at\": {\n      \"date\": \"<string>\",\n      \"timezone_type\": \"<integer>\",\n      \"timezone\": \"<string>\"\n    },\n    \"type\": \"shipment\",\n    \"courier_id\": \"<integer>\",\n    \"courier_name\": \"<string>\",\n    \"courier_logo\": \"<string>\",\n    \"shipping_number\": \"<string>\",\n    \"tracking_number\": \"<string>\",\n    \"pickup_id\": \"<number>\",\n    \"trackable\": \"<boolean>\",\n    \"tracking_link\": \"<string>\",\n    \"label\": {\n      \"format\": \"<string>\",\n      \"url\": \"<string>\"\n    },\n    \"payment_method\": \"cod\",\n    \"source\": \"<string>\",\n    \"status\": \"reattempted\",\n    \"total\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"cash_on_delivery\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"is_international\": \"<boolean>\",\n    \"total_weight\": {\n      \"value\": \"<number>\",\n      \"units\": \"<string>\"\n    },\n    \"packages\": [\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"oz\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"kg\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"ship_from\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\",\n      \"branch_id\": \"<integer>\"\n    },\n    \"ship_to\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\"\n    },\n    \"meta\": {\n      \"app_id\": \"<integer>\",\n      \"policy_options\": {}\n    },\n    \"billing_account\": \"salla\",\n    \"reference\": {\n      \"external_id\": \"<string>\",\n      \"external_additional_id\": \"<string>\"\n    },\n    \"service_types\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"external_company_name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"remarks\": \"<string>\",\n    \"shipping_route\": {\n      \"id\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"shipment_number\": \"<string>\",\n  \"status\": \"damaged\",\n  \"order_id\": \"<integer>\",\n  \"tracking_number\": \"<string>\",\n  \"tracking_link\": \"<string>\",\n  \"pdf_label\": \"<string>\",\n  \"cost\": \"<integer>\",\n  \"status_note\": \"<string>\",\n  \"external_company_name\": \"<string>\",\n  \"policy_options\": {}\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Shipment Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipments/:shipment_id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments",
+                ":shipment_id"
+              ],
+              "variable": [
+                {
+                  "key": "shipment_id",
+                  "value": "<number>",
+                  "description": "Shipment ID"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to return the complete details for a specific shipment by providing the ID of the shipment you want to get its details in the shipment path parameter.\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read Only\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<number>\",\n    \"order_id\": \"<number>\",\n    \"order_reference_id\": \"<number>\",\n    \"created_at\": {\n      \"date\": \"<string>\",\n      \"timezone_type\": \"<integer>\",\n      \"timezone\": \"<string>\"\n    },\n    \"type\": \"shipment\",\n    \"courier_id\": \"<integer>\",\n    \"courier_name\": \"<string>\",\n    \"courier_logo\": \"<string>\",\n    \"shipping_number\": \"<string>\",\n    \"tracking_number\": \"<string>\",\n    \"pickup_id\": \"<number>\",\n    \"trackable\": \"<boolean>\",\n    \"tracking_link\": \"<string>\",\n    \"label\": {\n      \"format\": \"<string>\",\n      \"url\": \"<string>\"\n    },\n    \"payment_method\": \"cod\",\n    \"source\": \"<string>\",\n    \"status\": \"reattempted\",\n    \"total\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"cash_on_delivery\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"is_international\": \"<boolean>\",\n    \"total_weight\": {\n      \"value\": \"<number>\",\n      \"units\": \"<string>\"\n    },\n    \"packages\": [\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"oz\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"kg\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"ship_from\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\",\n      \"branch_id\": \"<integer>\"\n    },\n    \"ship_to\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\"\n    },\n    \"meta\": {\n      \"app_id\": \"<integer>\",\n      \"policy_options\": {}\n    },\n    \"billing_account\": \"salla\",\n    \"reference\": {\n      \"external_id\": \"<string>\",\n      \"external_additional_id\": \"<string>\"\n    },\n    \"service_types\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"external_company_name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"remarks\": \"<string>\",\n    \"shipping_route\": {\n      \"id\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Shipments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipments/:shipment_id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments",
+                ":shipment_id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "shipment_id",
+                  "value": "<number>",
+                  "description": "Shipment ID"
+                }
+              ]
+            },
+            "description": "You can cancel specific Shipment by providing the ID of the shipment you want to cancel.\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write`- Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<number>\",\n    \"order_id\": \"<number>\",\n    \"order_reference_id\": \"<number>\",\n    \"created_at\": {\n      \"date\": \"<string>\",\n      \"timezone_type\": \"<integer>\",\n      \"timezone\": \"<string>\"\n    },\n    \"type\": \"shipment\",\n    \"courier_id\": \"<integer>\",\n    \"courier_name\": \"<string>\",\n    \"courier_logo\": \"<string>\",\n    \"shipping_number\": \"<string>\",\n    \"tracking_number\": \"<string>\",\n    \"pickup_id\": \"<number>\",\n    \"trackable\": \"<boolean>\",\n    \"tracking_link\": \"<string>\",\n    \"label\": {\n      \"format\": \"<string>\",\n      \"url\": \"<string>\"\n    },\n    \"payment_method\": \"cod\",\n    \"source\": \"<string>\",\n    \"status\": \"reattempted\",\n    \"total\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"cash_on_delivery\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"is_international\": \"<boolean>\",\n    \"total_weight\": {\n      \"value\": \"<number>\",\n      \"units\": \"<string>\"\n    },\n    \"packages\": [\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"oz\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"kg\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"ship_from\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\",\n      \"branch_id\": \"<integer>\"\n    },\n    \"ship_to\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\"\n    },\n    \"meta\": {\n      \"app_id\": \"<integer>\",\n      \"policy_options\": {}\n    },\n    \"billing_account\": \"salla\",\n    \"reference\": {\n      \"external_id\": \"<string>\",\n      \"external_additional_id\": \"<string>\"\n    },\n    \"service_types\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"external_company_name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"remarks\": \"<string>\",\n    \"shipping_route\": {\n      \"id\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<integer>\",\n    \"message\": \"<string>\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Return Shipments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipments/:shipment_id/return",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments",
+                ":shipment_id",
+                "return"
+              ],
+              "variable": [
+                {
+                  "key": "shipment_id",
+                  "value": "<number>",
+                  "description": "Shipment ID"
+                }
+              ]
+            },
+            "description": "You can return specific Shipment by providing the ID of the shipment you want to return.\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write`- Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id/return",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id",
+                    "return"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<number>\",\n    \"order_id\": \"<number>\",\n    \"order_reference_id\": \"<number>\",\n    \"created_at\": {\n      \"date\": \"<string>\",\n      \"timezone_type\": \"<integer>\",\n      \"timezone\": \"<string>\"\n    },\n    \"type\": \"shipment\",\n    \"courier_id\": \"<integer>\",\n    \"courier_name\": \"<string>\",\n    \"courier_logo\": \"<string>\",\n    \"shipping_number\": \"<string>\",\n    \"tracking_number\": \"<string>\",\n    \"pickup_id\": \"<number>\",\n    \"trackable\": \"<boolean>\",\n    \"tracking_link\": \"<string>\",\n    \"label\": {\n      \"format\": \"<string>\",\n      \"url\": \"<string>\"\n    },\n    \"payment_method\": \"cod\",\n    \"source\": \"<string>\",\n    \"status\": \"reattempted\",\n    \"total\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"cash_on_delivery\": {\n      \"amount\": \"<number>\",\n      \"currency\": \"<string>\"\n    },\n    \"is_international\": \"<boolean>\",\n    \"total_weight\": {\n      \"value\": \"<number>\",\n      \"units\": \"<string>\"\n    },\n    \"packages\": [\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"oz\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      },\n      {\n        \"item_id\": \"<integer>\",\n        \"external_id\": \"<integer>\",\n        \"name\": \"<string>\",\n        \"sku\": \"<string>\",\n        \"price\": {\n          \"amount\": \"<number>\",\n          \"currency\": \"<string>\"\n        },\n        \"quantity\": \"<integer>\",\n        \"weight\": {\n          \"value\": \"<integer>\",\n          \"units\": \"kg\"\n        },\n        \"options\": [\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          },\n          {\n            \"name\": \"<string>\",\n            \"values\": [\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              },\n              {\n                \"name\": \"<string>\",\n                \"price\": {\n                  \"amount\": \"<string>\",\n                  \"currency\": \"<string>\"\n                },\n                \"value\": \"<string>\"\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"ship_from\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\",\n      \"branch_id\": \"<integer>\"\n    },\n    \"ship_to\": {\n      \"type\": \"<string>\",\n      \"name\": \"<string>\",\n      \"email\": \"<string>\",\n      \"phone\": \"<string>\",\n      \"country\": \"<string>\",\n      \"city\": \"<string>\",\n      \"address_line\": \"<string>\",\n      \"street_number\": \"<string>\",\n      \"block\": \"<string>\",\n      \"postal_code\": \"<string>\",\n      \"latitude\": \"<number>\",\n      \"longitude\": \"<number>\"\n    },\n    \"meta\": {\n      \"app_id\": \"<integer>\",\n      \"policy_options\": {}\n    },\n    \"billing_account\": \"salla\",\n    \"reference\": {\n      \"external_id\": \"<string>\",\n      \"external_additional_id\": \"<string>\"\n    },\n    \"service_types\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"external_company_name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"remarks\": \"<string>\",\n    \"shipping_route\": {\n      \"id\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id/return",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id",
+                    "return"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Shipment Tracking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipments/:shipment_id/tracking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipments",
+                ":shipment_id",
+                "tracking"
+              ],
+              "variable": [
+                {
+                  "key": "shipment_id",
+                  "value": "<number>",
+                  "description": "Shipment ID"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to fetch tracking details for a specific shipment by providing the ID of the shipment the path parameter.\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read Only\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipments/:shipment_id/tracking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipments",
+                    ":shipment_id",
+                    "tracking"
+                  ],
+                  "variable": [
+                    {
+                      "key": "shipment_id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<integer>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<number>\",\n    \"order_id\": \"<integer>\",\n    \"order_reference_id\": \"<number>\",\n    \"type\": \"<string>\",\n    \"courier_id\": \"<integer>\",\n    \"courier_name\": \"<string>\",\n    \"courier_logo\": \"<string>\",\n    \"shipping_number\": \"<string>\",\n    \"tracking_number\": \"<string>\",\n    \"pickup_id\": \"<null>\",\n    \"trackable\": \"<boolean>\",\n    \"tracking_link\": \"<string>\",\n    \"label\": {\n      \"format\": \"<string>\",\n      \"url\": \"<string>\"\n    },\n    \"status\": \"<string>\",\n    \"history\": [\n      {\n        \"status\": \"<string>\",\n        \"note\": \"<string>\",\n        \"create_at\": {\n          \"date\": \"<string>\",\n          \"timezone_type\": \"<integer>\",\n          \"timezone\": \"<string>\"\n        }\n      },\n      {\n        \"status\": \"<string>\",\n        \"note\": \"<string>\",\n        \"create_at\": {\n          \"date\": \"<string>\",\n          \"timezone_type\": \"<integer>\",\n          \"timezone\": \"<string>\"\n        }\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shipping Companies",
+      "item": [
+        {
+          "name": "List Shipping Companies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipping/companies/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "companies",
+                ""
+              ]
+            },
+            "description": "This endpoint allows you to list all active shipping companies associated with the store. \n \n:::tip[Note]\nIf the `\"activation_type\"` is set to:\n\n  - ***manual*** : which means that the shipping company is from the merchant side *(not available to be linked from salla dashboard)*\n\n  - ***api*** : which means it has been linked through salla.\n  :::\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read Only\n</Accordion>\n"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/companies/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "companies",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": [\n    {\n      \"id\": \"<number>\",\n      \"name\": \"<string>\",\n      \"app_id\": \"<string>\",\n      \"activation_type\": \"manual\",\n      \"slug\": \"<string>\"\n    },\n    {\n      \"id\": \"<number>\",\n      \"name\": \"<string>\",\n      \"app_id\": \"<string>\",\n      \"activation_type\": \"manual\",\n      \"slug\": \"<string>\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Shipping Company Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipping/companies/:company_id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "companies",
+                ":company_id"
+              ],
+              "variable": [
+                {
+                  "key": "company_id",
+                  "value": "<number>",
+                  "description": "Shipping Company ID"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to fetch details of shipping companies for your store.\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read Only\n</Accordion>\n\n  "
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/companies/:company_id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "companies",
+                    ":company_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "company_id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": true,\n  \"data\": {\n    \"id\": \"<number>\",\n    \"name\": \"<string>\",\n    \"app_id\": \"<string>\",\n    \"activation_type\": \"manual\",\n    \"slug\": \"<string>\"\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/companies/:company_id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "companies",
+                    ":company_id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "company_id"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<integer>\",\n    \"message\": \"<string>\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shipping Routes",
+      "item": [
+        {
+          "name": "  Routes List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipping/routes?name=<string>",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "routes"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "<string>",
+                  "description": "The name assigned to the shipping route"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to fetch all shipping routes configured for the store.\nEach route includes its type (e.g., normal, auto, branded, default), status, priority, and combination strategy.\nThese routes control how shipping options appear to customers at checkout.\n\n:::warning[]\nThis endpoint is accessable only for allowed applications.\n:::\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes?name=<string>",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes"
+                  ],
+                  "query": [
+                    {
+                      "description": "The name assigned to the shipping route",
+                      "key": "name",
+                      "value": "<string>"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<integer>\",\n  \"success\": \"<boolean>\",\n  \"data\": [\n    {\n      \"id\": \"<integer>\",\n      \"name\": \"<string>\",\n      \"type\": \"auto\",\n      \"status\": \"<boolean>\",\n      \"priority\": \"<integer>\",\n      \"strategy\": \"<string>\",\n      \"combinable\": \"<boolean>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"name\": \"<string>\",\n      \"type\": \"branded\",\n      \"status\": \"<boolean>\",\n      \"priority\": \"<integer>\",\n      \"strategy\": \"<string>\",\n      \"combinable\": \"<boolean>\"\n    }\n  ],\n  \"pagination\": {\n    \"count\": \"<number>\",\n    \"total\": \"<number>\",\n    \"perPage\": \"<number>\",\n    \"currentPage\": \"<number>\",\n    \"totalPages\": \"<number>\",\n    \"links\": {\n      \"next\": \"<string>\",\n      \"previous\": \"<string>\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes?name=<string>",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes"
+                  ],
+                  "query": [
+                    {
+                      "description": "The name assigned to the shipping route",
+                      "key": "name",
+                      "value": "<string>"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\"\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes?name=<string>",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes"
+                  ],
+                  "query": [
+                    {
+                      "description": "The name assigned to the shipping route",
+                      "key": "name",
+                      "value": "<string>"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Route",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"quota\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"description\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"condition_match\": \"all\",\n  \"conditions\": [\n    {\n      \"type\": \"excluded\",\n      \"operator\": \">=\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Friday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"<\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Sunday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shipping/routes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "routes"
+              ]
+            },
+            "description": "This endpoint allows you to create a new shipping route with configurable behavior, type, and conditions.\nYou can define the route type (normal, auto, or branded), control its priority and visibility, assign eligible shipping companies, and optionally add branded settings.\nConditions and strategies let you customize when and how the route should apply during checkout.\n\n:::warning[]\nThis endpoint is accessable only for allowed applications.\n:::\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write` - Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"quota\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"description\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"condition_match\": \"all\",\n  \"conditions\": [\n    {\n      \"type\": \"excluded\",\n      \"operator\": \">=\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Friday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"<\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Sunday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<integer>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"status\": \"<boolean>\",\n    \"type\": \"default\",\n    \"strategy\": {\n      \"type\": \"manual\",\n      \"capacity_level\": \"<string>\",\n      \"alternative_companies\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    },\n    \"priority\": \"<integer>\",\n    \"branded\": {\n      \"name\": \"<string>\",\n      \"logo_url\": \"<string>\",\n      \"description\": \"<string>\",\n      \"combinable\": \"<boolean>\",\n      \"pricing\": {\n        \"type\": \"fixed\",\n        \"cost\": \"<integer>\",\n        \"amount_per_unit\": \"<integer>\",\n        \"up_to_weight\": \"<integer>\",\n        \"per_unit\": \"<integer>\"\n      }\n    },\n    \"companies\": [\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      },\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      }\n    ],\n    \"condition_match\": \"all\",\n    \"conditions\": [\n      {\n        \"type\": \"branches\",\n        \"operator\": \"between\",\n        \"value\": {\n          \"days\": [\n            \"Saturday\",\n            \"Thursday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      },\n      {\n        \"type\": \"specific_products_quantity\",\n        \"operator\": \"==\",\n        \"value\": {\n          \"days\": [\n            \"Sunday\",\n            \"Monday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"quota\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"description\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"condition_match\": \"all\",\n  \"conditions\": [\n    {\n      \"type\": \"excluded\",\n      \"operator\": \">=\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Friday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"<\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Sunday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\"\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"quota\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  },\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"description\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"condition_match\": \"all\",\n  \"conditions\": [\n    {\n      \"type\": \"excluded\",\n      \"operator\": \">=\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Friday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"<\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Sunday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes"
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Route Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipping/routes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "routes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "<integer>",
+                  "description": "Route ID. Get a list of Route IDs from [here](https://docs.salla.dev/api-19357016)"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to fetch detailed information about a specific shipping route, including\n- type\n- priority\n- branded configuration\n- assigned companies\n- shipping conditions\n- selection strategy, and\n- when or where it applies.\n\nThis helps you understand how the route behaves at checkout and under which criteria it becomes active.\n\n:::warning[]\nThis endpoint is accessable only for allowed applications.\n\n:::\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read`- Shipping Read\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<integer>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"status\": \"<boolean>\",\n    \"type\": \"default\",\n    \"strategy\": {\n      \"type\": \"manual\",\n      \"capacity_level\": \"<string>\",\n      \"alternative_companies\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    },\n    \"priority\": \"<integer>\",\n    \"branded\": {\n      \"name\": \"<string>\",\n      \"logo_url\": \"<string>\",\n      \"description\": \"<string>\",\n      \"combinable\": \"<boolean>\",\n      \"pricing\": {\n        \"type\": \"fixed\",\n        \"cost\": \"<integer>\",\n        \"amount_per_unit\": \"<integer>\",\n        \"up_to_weight\": \"<integer>\",\n        \"per_unit\": \"<integer>\"\n      }\n    },\n    \"companies\": [\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      },\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      }\n    ],\n    \"condition_match\": \"all\",\n    \"conditions\": [\n      {\n        \"type\": \"branches\",\n        \"operator\": \"between\",\n        \"value\": {\n          \"days\": [\n            \"Saturday\",\n            \"Thursday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      },\n      {\n        \"type\": \"specific_products_quantity\",\n        \"operator\": \"==\",\n        \"value\": {\n          \"days\": [\n            \"Sunday\",\n            \"Monday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<integer>\",\n    \"message\": \"<string>\"\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Route",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"condition_match\": \"any\",\n  \"conditions\": [\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"==\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Saturday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"areas\",\n      \"operator\": \"<=\",\n      \"value\": {\n        \"days\": [\n          \"Saturday\",\n          \"Monday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"ratio\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shipping/routes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "routes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "<integer>",
+                  "description": "Route ID. Get a list of Route IDs from [here](https://docs.salla.dev/api-19357016)"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to update the details of an existing shipping route by passing its `id` as a path parameter.\nYou can change the route name, type, status, and priority, and also update the list of companies, branded settings, conditions, and strategy.\nThis helps control how the route works and appears during checkout.\n\n:::warning[]\nThis endpoint is accessable only for allowed applications.\n:::\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write` - Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"condition_match\": \"any\",\n  \"conditions\": [\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"==\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Saturday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"areas\",\n      \"operator\": \"<=\",\n      \"value\": {\n        \"days\": [\n          \"Saturday\",\n          \"Monday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"ratio\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<integer>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"status\": \"<boolean>\",\n    \"type\": \"default\",\n    \"strategy\": {\n      \"type\": \"manual\",\n      \"capacity_level\": \"<string>\",\n      \"alternative_companies\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    },\n    \"priority\": \"<integer>\",\n    \"branded\": {\n      \"name\": \"<string>\",\n      \"logo_url\": \"<string>\",\n      \"description\": \"<string>\",\n      \"combinable\": \"<boolean>\",\n      \"pricing\": {\n        \"type\": \"fixed\",\n        \"cost\": \"<integer>\",\n        \"amount_per_unit\": \"<integer>\",\n        \"up_to_weight\": \"<integer>\",\n        \"per_unit\": \"<integer>\"\n      }\n    },\n    \"companies\": [\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      },\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      }\n    ],\n    \"condition_match\": \"all\",\n    \"conditions\": [\n      {\n        \"type\": \"branches\",\n        \"operator\": \"between\",\n        \"value\": {\n          \"days\": [\n            \"Saturday\",\n            \"Thursday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      },\n      {\n        \"type\": \"specific_products_quantity\",\n        \"operator\": \"==\",\n        \"value\": {\n          \"days\": [\n            \"Sunday\",\n            \"Monday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"condition_match\": \"any\",\n  \"conditions\": [\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"==\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Saturday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"areas\",\n      \"operator\": \"<=\",\n      \"value\": {\n        \"days\": [\n          \"Saturday\",\n          \"Monday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"ratio\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\"\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"<string>\",\n  \"type\": \"auto\",\n  \"status\": \"<integer>\",\n  \"priority\": \"<integer>\",\n  \"branded\": {\n    \"name\": \"<string>\",\n    \"description\": \"<string>\",\n    \"logo_url\": \"<string>\",\n    \"combinable\": \"<boolean>\",\n    \"pricing\": {\n      \"type\": \"rate\",\n      \"cost\": \"<integer>\",\n      \"amount_per_unit\": \"<integer>\",\n      \"up_to_weight\": \"<integer>\",\n      \"per_unit\": \"<integer>\"\n    }\n  },\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"condition_match\": \"any\",\n  \"conditions\": [\n    {\n      \"type\": \"allowed\",\n      \"operator\": \"==\",\n      \"value\": {\n        \"days\": [\n          \"Tuesday\",\n          \"Saturday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    },\n    {\n      \"type\": \"areas\",\n      \"operator\": \"<=\",\n      \"value\": {\n        \"days\": [\n          \"Saturday\",\n          \"Monday\"\n        ],\n        \"time_from\": \"<string>\",\n        \"time_to\": \"<string>\"\n      }\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"ratio\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\",\n    \"fields\": {\n      \"{field-name}\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Route",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shipping/routes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "routes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "<integer>",
+                  "description": "Route ID. Get a list of Route IDs from [here](https://docs.salla.dev/api-19357016)"
+                }
+              ]
+            },
+            "description": "This endpoint allows you to update an existing shipping route by passing its `id` as a path paraneter.\nYou can change the route’s name, type, status, priority, assigned companies, conditions, and pricing strategy.\n\n:::warning[]\nThis endpoint is accessable only for allowed applications.\n:::\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write` - Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"message\": \"<string>\",\n    \"code\": \"<number>\"\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Default Route",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"<boolean>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"manual\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shipping/routes/default",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shipping",
+                "routes",
+                "default"
+              ]
+            },
+            "description": "This endpoint allows you to view or update the default shipping route.\nYou can enable or disable the route, assign shipping companies, and set the selection strategy used at checkout.\n\n:::warning[]\nThis endpoint is accessable only for allowed applications.\n:::\n\n<Accordion title=\"Scopes\" defaultOpen={true} icon=\"lucide-key-round\">\n`shipping.read_write` - Shipping Read & Write\n</Accordion>"
+          },
+          "response": [
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"<boolean>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"manual\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/default",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    "default"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<integer>\",\n  \"success\": \"<boolean>\",\n  \"data\": {\n    \"id\": \"<integer>\",\n    \"name\": \"<string>\",\n    \"status\": \"<boolean>\",\n    \"type\": \"default\",\n    \"strategy\": {\n      \"type\": \"manual\",\n      \"capacity_level\": \"<string>\",\n      \"alternative_companies\": [\n        \"<string>\",\n        \"<string>\"\n      ]\n    },\n    \"priority\": \"<integer>\",\n    \"branded\": {\n      \"name\": \"<string>\",\n      \"logo_url\": \"<string>\",\n      \"description\": \"<string>\",\n      \"combinable\": \"<boolean>\",\n      \"pricing\": {\n        \"type\": \"fixed\",\n        \"cost\": \"<integer>\",\n        \"amount_per_unit\": \"<integer>\",\n        \"up_to_weight\": \"<integer>\",\n        \"per_unit\": \"<integer>\"\n      }\n    },\n    \"companies\": [\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      },\n      {\n        \"id\": \"<integer>\",\n        \"priority\": \"<integer>\",\n        \"capacity\": \"<integer>\"\n      }\n    ],\n    \"condition_match\": \"all\",\n    \"conditions\": [\n      {\n        \"type\": \"branches\",\n        \"operator\": \"between\",\n        \"value\": {\n          \"days\": [\n            \"Saturday\",\n            \"Thursday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      },\n      {\n        \"type\": \"specific_products_quantity\",\n        \"operator\": \"==\",\n        \"value\": {\n          \"days\": [\n            \"Sunday\",\n            \"Monday\"\n          ],\n          \"time_from\": \"<string>\",\n          \"time_to\": \"<string>\"\n        }\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "Untitled Response",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"<boolean>\",\n  \"companies\": [\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    },\n    {\n      \"id\": \"<integer>\",\n      \"priority\": \"<integer>\",\n      \"capacity\": \"<integer>\"\n    }\n  ],\n  \"strategy\": {\n    \"type\": \"manual\",\n    \"capacity_level\": \"<string>\",\n    \"alternative_companies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/shipping/routes/default",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "shipping",
+                    "routes",
+                    "default"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"<number>\",\n  \"success\": \"<boolean>\",\n  \"error\": {\n    \"code\": \"<string>\",\n    \"message\": \"<string>\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "/"
+    }
+  ]
+}

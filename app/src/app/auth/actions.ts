@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 /* ================================================================
    AUTH SERVER ACTIONS
@@ -31,9 +31,10 @@ export async function signUp(formData: FormData) {
     return { error: error.message };
   }
 
-  // 2. Insert merchant row (RLS allows insert when id = auth.uid())
+  // 2. Insert merchant row using admin client (bypasses RLS)
   if (data.user) {
-    const { error: merchantError } = await supabase.from("merchants").insert({
+    const adminClient = createAdminClient();
+    const { error: merchantError } = await adminClient.from("merchants").insert({
       id: data.user.id,
       email,
       business_name: businessName || "My Store",

@@ -1,0 +1,690 @@
+{
+  "name": "WF1: Salla Webhook (DropLinker)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "salla-webhook",
+        "options": {
+          "rawBody": true
+        },
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-trigger",
+      "name": "Salla Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 340],
+      "webhookId": "salla-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "token-check",
+              "leftValue": "={{ $json.headers.authorization }}",
+              "rightValue": "={{ $env.SALLA_WEBHOOK_SECRET }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "validate-token",
+      "name": "Validate Token",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 340]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"error\": \"Unauthorized\" }",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "reject-unauthorized",
+      "name": "401 Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [660, 540]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "app.store.authorize",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "app.store.authorize"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "order.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "order.created"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "order.updated",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "order.updated"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "app.installed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "app.installed"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "app.uninstalled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "app.uninstalled"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "route-event",
+      "name": "Route by Event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [660, 340]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://accounts.salla.sa/oauth2/user/info",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Route by Event').item.json.body.data.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-store-info",
+      "name": "Fetch Store Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/stores' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"merchant_id\": \"64df34a7-32f6-4c70-953e-7f54d6bdf81b\",\n  \"platform\": \"salla\",\n  \"store_name\": {{ JSON.stringify($json.data?.name || $('Route by Event').item.json.body.data.app_name || 'Salla Store') }},\n  \"store_url\": {{ JSON.stringify($json.data?.domain || '') }},\n  \"access_token\": {{ JSON.stringify($('Route by Event').item.json.body.data.access_token) }},\n  \"refresh_token\": {{ JSON.stringify($('Route by Event').item.json.body.data.refresh_token) }},\n  \"is_active\": true\n}",
+        "options": {}
+      },
+      "id": "upsert-store",
+      "name": "Upsert Store in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"Store authorized and saved\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-authorized",
+      "name": "200 Store Saved",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1320, 100]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "stores",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "string",
+        "filterString": "platform=eq.salla,is_active=eq.true"
+      },
+      "id": "find-store",
+      "name": "Find Salla Store",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [880, 260],
+      "credentials": {
+        "supabaseApi": {
+          "id": "CONFIGURE_ME",
+          "name": "DropLinker Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "store-found",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-store-exists",
+      "name": "Store Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1100, 260]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "orders",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "store_id",
+              "fieldValue": "={{ $('Find Salla Store').item.json.id }}"
+            },
+            {
+              "fieldName": "merchant_id",
+              "fieldValue": "={{ $('Find Salla Store').item.json.merchant_id }}"
+            },
+            {
+              "fieldName": "store_order_id",
+              "fieldValue": "={{ String($('Route by Event').item.json.body.data.id || $('Route by Event').item.json.body.data.reference_id || '') }}"
+            },
+            {
+              "fieldName": "customer_info",
+              "fieldValue": "={{ JSON.stringify({ name: (($('Route by Event').item.json.body.data.customer?.first_name || '') + ' ' + ($('Route by Event').item.json.body.data.customer?.last_name || '')).trim(), email: $('Route by Event').item.json.body.data.customer?.email || '', phone: $('Route by Event').item.json.body.data.customer?.mobile || '', address: $('Route by Event').item.json.body.data.shipping?.address?.shipping_address || '' }) }}"
+            },
+            {
+              "fieldName": "total_amount",
+              "fieldValue": "={{ Number($('Route by Event').item.json.body.data.amounts?.total?.amount || $('Route by Event').item.json.body.data.total?.amount || 0) }}"
+            },
+            {
+              "fieldName": "total_cost",
+              "fieldValue": "0"
+            },
+            {
+              "fieldName": "commission_amount",
+              "fieldValue": "0"
+            },
+            {
+              "fieldName": "status",
+              "fieldValue": "new"
+            },
+            {
+              "fieldName": "notes",
+              "fieldValue": "={{ 'Salla order #' + ($('Route by Event').item.json.body.data.id || 'unknown') }}"
+            }
+          ]
+        }
+      },
+      "id": "insert-order",
+      "name": "Insert Order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1320, 180],
+      "credentials": {
+        "supabaseApi": {
+          "id": "CONFIGURE_ME",
+          "name": "DropLinker Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"Order created\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-created",
+      "name": "200 Order Created",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1540, 180]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"error\", \"message\": \"No active Salla store found\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-no-store",
+      "name": "200 No Store",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1320, 360]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "stores",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "string",
+        "filterString": "platform=eq.salla,is_active=eq.true"
+      },
+      "id": "find-store-update",
+      "name": "Find Store (Update)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [880, 440],
+      "credentials": {
+        "supabaseApi": {
+          "id": "CONFIGURE_ME",
+          "name": "DropLinker Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/orders?store_id=eq.' + $('Find Store (Update)').item.json.id + '&store_order_id=eq.' + $('Route by Event').item.json.body.data.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": {{ JSON.stringify({'created':'new','in_progress':'processing','completed':'delivered','canceled':'cancelled','refunded':'cancelled'}[$json.body?.data?.status?.slug || $('Route by Event').item.json.body.data.status] || 'processing') }},\n  \"total_amount\": {{ Number($('Route by Event').item.json.body.data.amounts?.total?.amount || $('Route by Event').item.json.body.data.total?.amount || 0) }},\n  \"updated_at\": {{ JSON.stringify(new Date().toISOString()) }}\n}",
+        "options": {}
+      },
+      "id": "update-order",
+      "name": "Update Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"Order updated\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-updated",
+      "name": "200 Updated",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1320, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"App installed - logged\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-installed",
+      "name": "200 Installed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [880, 580]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/stores?platform=eq.salla&is_active=eq.true' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"is_active\": false }",
+        "options": {}
+      },
+      "id": "deactivate-store",
+      "name": "Deactivate Store",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 720]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"Store deactivated\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-uninstalled",
+      "name": "200 Uninstalled",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1100, 720]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"Event received\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-fallback",
+      "name": "200 Fallback",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [880, 860]
+    }
+  ],
+  "connections": {
+    "Salla Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Token": {
+      "main": [
+        [
+          {
+            "node": "Route by Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "401 Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Event": {
+      "main": [
+        [
+          {
+            "node": "Fetch Store Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Salla Store",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Store (Update)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "200 Installed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deactivate Store",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "200 Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Store Info": {
+      "main": [
+        [
+          {
+            "node": "Upsert Store in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Store in Supabase": {
+      "main": [
+        [
+          {
+            "node": "200 Store Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Salla Store": {
+      "main": [
+        [
+          {
+            "node": "Store Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Found?": {
+      "main": [
+        [
+          {
+            "node": "Insert Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "200 No Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Order": {
+      "main": [
+        [
+          {
+            "node": "200 Order Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Store (Update)": {
+      "main": [
+        [
+          {
+            "node": "Update Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order": {
+      "main": [
+        [
+          {
+            "node": "200 Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate Store": {
+      "main": [
+        [
+          {
+            "node": "200 Uninstalled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "DropLinker",
+      "id": "droplinker"
+    },
+    {
+      "name": "Salla",
+      "id": "salla"
+    }
+  ]
+}

@@ -1,11 +1,91 @@
 "use client";
 
-import React from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
 import { useIntegrations } from "@/hooks/use-integrations";
+import { useSearchParams } from "next/navigation";
 
 export default function IntegrationsPage() {
-  const { stores, suppliers, loading, error } = useIntegrations();
+  return (
+    <Suspense fallback={<IntegrationsSkeleton />}>
+      <IntegrationsContent />
+    </Suspense>
+  );
+}
+
+function IntegrationsSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <div className="grid md:grid-cols-2 gap-4">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Card key={i} className="p-5">
+            <Skeleton className="h-10 w-full mb-3" />
+            <Skeleton className="h-4 w-32 mb-3" />
+            <Skeleton className="h-8 w-24" />
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IntegrationsContent() {
+  const { stores, suppliers, loading, error, refetch } = useIntegrations();
+  const searchParams = useSearchParams();
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [disconnecting, setDisconnecting] = useState<string | null>(null);
+
+  const handleDisconnect = async (storeId: string, storeName: string) => {
+    if (!confirm(`Disconnect "${storeName}"? You can reconnect later.`)) return;
+    setDisconnecting(storeId);
+    try {
+      const res = await fetch(`/api/stores/${storeId}/disconnect`, { method: "POST" });
+      if (res.ok) {
+        setToast({ type: "success", message: `${storeName} disconnected.` });
+        refetch();
+      } else {
+        setToast({ type: "error", message: "Failed to disconnect. Try again." });
+      }
+    } catch {
+      setToast({ type: "error", message: "Network error. Try again." });
+    } finally {
+      setDisconnecting(null);
+    }
+  };
+
+  // Handle redirect query params from OAuth callback
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const errorParam = searchParams.get("error");
+
+    if (success === "salla_connected") {
+      setToast({ type: "success", message: "✅ Salla store connected successfully!" });
+      refetch(); // Refresh the stores list
+    } else if (errorParam) {
+      const errorMessages: Record<string, string> = {
+        salla_denied: "Authorization was denied. Please try again.",
+        salla_not_configured: "Salla is not configured. Contact support.",
+        salla_token_failed: "Failed to get access token from Salla.",
+        salla_userinfo_failed: "Failed to fetch store info from Salla.",
+        salla_invalid_callback: "Invalid callback. Please try again.",
+        salla_unexpected: "An unexpected error occurred. Please try again.",
+      };
+      setToast({
+        type: "error",
+        message: errorMessages[errorParam] || "An error occurred connecting to Salla.",
+      });
+    }
+
+    // Auto-dismiss toast after 8 seconds
+    if (success || errorParam) {
+      const timer = setTimeout(() => setToast(null), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, refetch]);
+
+  const hasSallaStore = stores.some((s) => s.platform === "salla");
+  const hasZidStore = stores.some((s) => s.platform === "zid");
 
   return (
     <>
@@ -14,11 +94,24 @@ export default function IntegrationsPage() {
           <h1 className="text-xl font-semibold text-text">Integrations</h1>
           <p className="text-sm text-text-secondary">Connect your stores and supplier accounts</p>
         </div>
-        <Button size="sm">
-          <Icon name="add" className="text-sm" />
-          Add Connection
-        </Button>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`mb-4 p-3 rounded-md text-sm flex items-center gap-2 transition-all ${
+            toast.type === "success"
+              ? "bg-success/10 border border-success/30 text-success"
+              : "bg-error/10 border border-error/30 text-error"
+          }`}
+        >
+          <Icon name={toast.type === "success" ? "check_circle" : "error"} className="text-base" />
+          {toast.message}
+          <button onClick={() => setToast(null)} className="ml-auto hover:opacity-70">
+            <Icon name="close" className="text-base" />
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm flex items-center gap-2">
@@ -40,40 +133,142 @@ export default function IntegrationsPage() {
               <Skeleton className="h-8 w-24" />
             </Card>
           ))
-        ) : stores.length === 0 ? (
-          <Card className="p-8 md:col-span-2 text-center">
-            <Icon name="storefront" className="text-3xl text-text-muted mb-2 mx-auto block" />
-            <p className="text-sm text-text-muted">No stores connected yet</p>
-            <Button size="sm" className="mt-3">Connect Salla or Zid</Button>
-          </Card>
         ) : (
-          stores.map((store) => (
-            <Card key={store.id} className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
-                    <Icon name={store.platform === "salla" ? "shopping_basket" : "storefront"} className="text-accent text-base" />
+          <>
+            {/* Connected Salla stores */}
+            {stores
+              .filter((s) => s.platform === "salla")
+              .map((store) => (
+                <Card key={store.id} className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
+                        <Icon name="shopping_basket" className="text-accent text-base" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-text text-sm">{store.store_name}</div>
+                        <div className="text-xs text-text-secondary">
+                          {store.store_url || "Salla"}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant={store.is_active ? "success" : "warning"}>
+                      {store.is_active ? "connected" : "disconnected"}
+                    </Badge>
                   </div>
-                  <div>
-                    <div className="font-medium text-text text-sm">{store.store_name}</div>
-                    <div className="text-xs text-text-secondary">{store.store_url || store.platform}</div>
+                  {store.last_sync && (
+                    <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
+                      <Icon name="sync" className="text-sm" />
+                      Last synced:{" "}
+                      {new Date(store.last_sync).toLocaleString("en", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  )}
+                  {store.is_active ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleDisconnect(store.id, store.store_name)}
+                      disabled={disconnecting === store.id}
+                    >
+                      {disconnecting === store.id ? "Disconnecting..." : "Disconnect"}
+                    </Button>
+                  ) : (
+                    <a href="/api/auth/salla">
+                      <Button size="sm" className="w-full">
+                        <Icon name="link" className="text-sm" />
+                        Reconnect
+                      </Button>
+                    </a>
+                  )}
+                </Card>
+              ))}
+
+            {/* Salla connect card (if not connected) */}
+            {!hasSallaStore && (
+              <Card className="p-5 border-dashed">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
+                      <Icon name="shopping_basket" className="text-accent text-base" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-text text-sm">Salla</div>
+                      <div className="text-xs text-text-secondary">
+                        Connect your Salla store
+                      </div>
+                    </div>
                   </div>
+                  <Badge variant="neutral">not connected</Badge>
                 </div>
-                <Badge variant={store.is_active ? "success" : "warning"}>
-                  {store.is_active ? "connected" : "disconnected"}
-                </Badge>
-              </div>
-              {store.last_sync && (
-                <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
-                  <Icon name="sync" className="text-sm" />
-                  Last synced: {new Date(store.last_sync).toLocaleString("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                <p className="text-xs text-text-muted mb-3">
+                  Link your Salla store to automatically sync orders, products, and inventory.
+                </p>
+                <a href="/api/auth/salla">
+                  <Button size="sm" className="w-full">
+                    <Icon name="link" className="text-sm" />
+                    Connect Salla
+                  </Button>
+                </a>
+              </Card>
+            )}
+
+            {/* Connected Zid stores */}
+            {stores
+              .filter((s) => s.platform === "zid")
+              .map((store) => (
+                <Card key={store.id} className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
+                        <Icon name="storefront" className="text-accent text-base" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-text text-sm">{store.store_name}</div>
+                        <div className="text-xs text-text-secondary">
+                          {store.store_url || "Zid"}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant={store.is_active ? "success" : "warning"}>
+                      {store.is_active ? "connected" : "disconnected"}
+                    </Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" className="w-full">
+                    Manage
+                  </Button>
+                </Card>
+              ))}
+
+            {/* Zid connect card (if not connected) */}
+            {!hasZidStore && (
+              <Card className="p-5 border-dashed">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-surface-sunken flex items-center justify-center">
+                      <Icon name="storefront" className="text-text-muted text-base" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-text text-sm">Zid</div>
+                      <div className="text-xs text-text-secondary">Coming soon</div>
+                    </div>
+                  </div>
+                  <Badge variant="neutral">soon</Badge>
                 </div>
-              )}
-              <Button variant={store.is_active ? "ghost" : "primary"} size="sm" className="w-full">
-                {store.is_active ? "Manage" : "Connect"}
-              </Button>
-            </Card>
-          ))
+                <p className="text-xs text-text-muted mb-3">
+                  Zid integration is coming in a future update.
+                </p>
+                <Button size="sm" variant="ghost" className="w-full" disabled>
+                  Coming Soon
+                </Button>
+              </Card>
+            )}
+          </>
         )}
       </div>
 
