@@ -1,10 +1,19 @@
 "use client";
 
 import React from "react";
-import { Card, Button, Badge, Icon } from "@/components/shared";
-import { PRODUCTS } from "@/data/mockData";
+import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
+import { useProducts } from "@/hooks/use-products";
 
 export default function MyProductsPage() {
+  const { products, total, activeCount, outOfStockCount, loading, error } = useProducts();
+
+  const stats = [
+    { label: "Total Products", value: loading ? "…" : `${total}`, icon: "inventory_2" },
+    { label: "Active", value: loading ? "…" : `${activeCount}`, icon: "check_circle" },
+    { label: "Out of Stock", value: loading ? "…" : `${outOfStockCount}`, icon: "error" },
+    { label: "Pending Sync", value: "—", icon: "sync" },
+  ];
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -26,12 +35,7 @@ export default function MyProductsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {[
-          { label: "Total Products", value: "156", icon: "inventory_2" },
-          { label: "Active", value: "132", icon: "check_circle" },
-          { label: "Out of Stock", value: "12", icon: "error" },
-          { label: "Pending Sync", value: "8", icon: "sync" },
-        ].map((s) => (
+        {stats.map((s) => (
           <Card key={s.label} className="p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-accent-subtle flex items-center justify-center">
               <Icon name={s.icon} className="text-accent text-base" />
@@ -62,46 +66,72 @@ export default function MyProductsPage() {
         </select>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm flex items-center gap-2">
+          <Icon name="error" className="text-base" />
+          {error}
+        </div>
+      )}
+
       {/* Products Table */}
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                {["", "Product", "Supplier", "Price", "Stock", "Status", "Last Synced", "Actions"].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-medium text-text-muted uppercase tracking-wider bg-surface-sunken">{h}</th>
+                {["", "Product", "Supplier", "Cost", "Retail", "Stock", "Status", "Actions"].map((h, i) => (
+                  <th key={i} className="text-left px-4 py-3 text-xs font-medium text-text-muted uppercase tracking-wider bg-surface-sunken">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {PRODUCTS.map((p, i) => (
-                <tr key={p.id} className="border-b border-border-subtle hover:bg-surface-sunken transition-colors">
-                  <td className="px-4 py-3"><input type="checkbox" className="rounded border-border accent-accent" /></td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-md bg-surface-sunken flex items-center justify-center shrink-0">
-                        <Icon name="image" className="text-sm text-text-muted" />
-                      </div>
-                      <span className="font-medium text-text max-w-[200px] truncate">{p.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-text-secondary text-xs">{p.supplier}</td>
-                  <td className="px-4 py-3 font-medium text-text">{p.price}</td>
-                  <td className="px-4 py-3 text-text">{i % 3 === 0 ? "0" : `${(i + 1) * 15}`}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={i % 3 === 0 ? "error" : "success"}>
-                      {i % 3 === 0 ? "Out of Stock" : "Active"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-text-muted text-xs">2 min ago</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm"><Icon name="edit" className="text-sm" /></Button>
-                      <Button variant="ghost" size="sm"><Icon name="sync" className="text-sm" /></Button>
-                    </div>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-border-subtle">
+                    {Array.from({ length: 8 }).map((_, j) => (
+                      <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
+                    ))}
+                  </tr>
+                ))
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center text-text-muted text-sm">
+                    No products imported yet. Go to Discover to find products.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                products.map((p) => (
+                  <tr key={p.id} className="border-b border-border-subtle hover:bg-surface-sunken transition-colors">
+                    <td className="px-4 py-3"><input type="checkbox" className="rounded border-border accent-accent" /></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-md bg-surface-sunken flex items-center justify-center shrink-0">
+                          <Icon name="image" className="text-sm text-text-muted" />
+                        </div>
+                        <span className="font-medium text-text max-w-[200px] truncate">
+                          {p.title_en || p.title_ar || "Untitled"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-text-secondary text-xs capitalize">{p.supplier}</td>
+                    <td className="px-4 py-3 text-text-secondary">SAR {p.supplier_cost}</td>
+                    <td className="px-4 py-3 font-medium text-text">SAR {p.retail_price}</td>
+                    <td className="px-4 py-3 text-text">{p.stock_quantity}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={!p.in_stock ? "error" : p.is_active ? "success" : "warning"}>
+                        {!p.in_stock ? "Out of Stock" : p.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm"><Icon name="edit" className="text-sm" /></Button>
+                        <Button variant="ghost" size="sm"><Icon name="sync" className="text-sm" /></Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

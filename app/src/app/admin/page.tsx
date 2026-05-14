@@ -1,7 +1,17 @@
+"use client";
+
 import React from "react";
-import { Card, Badge, Icon } from "@/components/shared";
+import { Card, Badge, Icon, Skeleton } from "@/components/shared";
+import { useAdminMerchants, useAdminOrders, useAdminTransfers } from "@/hooks/use-admin";
 
 export default function AdminDashboardPage() {
+  const { merchants, loading: mLoad } = useAdminMerchants();
+  const { orders, loading: oLoad } = useAdminOrders();
+  const { transfers, loading: tLoad } = useAdminTransfers();
+
+  const pendingTransfers = transfers.filter((t) => t.status === "pending").length;
+  const failedOrders = orders.filter((o) => o.status === "failed").length;
+
   return (
     <>
       <div className="mb-6">
@@ -12,20 +22,23 @@ export default function AdminDashboardPage() {
       {/* KPI Row */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
         {[
-          { label: "Total Merchants", value: "5,247", icon: "group", change: "+12%" },
-          { label: "Active Subscriptions", value: "3,891", icon: "card_membership", change: "+8%" },
-          { label: "Platform Revenue", value: "SAR 1.2M", icon: "account_balance", change: "+24%" },
-          { label: "Orders Today", value: "8,432", icon: "receipt_long", change: "+15%" },
+          { label: "Total Merchants", value: mLoad ? null : `${merchants.length}`, icon: "group" },
+          { label: "Active Subscriptions", value: mLoad ? null : `${merchants.filter((m) => m.is_active).length}`, icon: "card_membership" },
+          { label: "Total Orders", value: oLoad ? null : `${orders.length}`, icon: "receipt_long" },
+          { label: "Pending Transfers", value: tLoad ? null : `${pendingTransfers}`, icon: "hourglass_top" },
         ].map((s) => (
           <Card key={s.label} className="p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="w-9 h-9 rounded-lg bg-accent-subtle flex items-center justify-center">
                 <Icon name={s.icon} className="text-accent text-base" />
               </div>
-              <Badge variant="success">{s.change}</Badge>
             </div>
             <div className="text-xs text-text-secondary mb-0.5">{s.label}</div>
-            <div className="text-xl font-bold text-text">{s.value}</div>
+            {s.value === null ? (
+              <Skeleton className="h-7 w-20 mt-1" />
+            ) : (
+              <div className="text-xl font-bold text-text">{s.value}</div>
+            )}
           </Card>
         ))}
       </div>
@@ -33,10 +46,10 @@ export default function AdminDashboardPage() {
       {/* Alerts Row */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Pending Transfers", value: "14", icon: "hourglass_top", type: "warning" },
-          { label: "Failed Orders", value: "23", icon: "error_outline", type: "error" },
-          { label: "Low Balance Merchants", value: "67", icon: "warning", type: "warning" },
-          { label: "Active Workflows", value: "7/7", icon: "check_circle", type: "success" },
+          { label: "Pending Transfers", value: tLoad ? "…" : `${pendingTransfers}`, icon: "hourglass_top", type: "warning" },
+          { label: "Failed Orders", value: oLoad ? "…" : `${failedOrders}`, icon: "error_outline", type: "error" },
+          { label: "Inactive Merchants", value: mLoad ? "…" : `${merchants.filter((m) => !m.is_active).length}`, icon: "warning", type: "warning" },
+          { label: "System Status", value: "OK", icon: "check_circle", type: "success" },
         ].map((s) => (
           <Card key={s.label} className="p-4 flex items-center gap-3">
             <Icon
@@ -54,7 +67,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mb-4">
-        {/* Revenue Chart */}
+        {/* Revenue Chart (still illustrative) */}
         <Card className="p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-text">Revenue Overview</h3>
@@ -77,10 +90,6 @@ export default function AdminDashboardPage() {
               </div>
             ))}
           </div>
-          <div className="flex gap-6 mt-4 pt-4 border-t border-border-subtle text-sm">
-            <div><span className="text-text-secondary">Subscriptions:</span> <span className="font-medium text-text">SAR 842K</span></div>
-            <div><span className="text-text-secondary">Commissions:</span> <span className="font-medium text-text">SAR 358K</span></div>
-          </div>
         </Card>
 
         {/* System Health */}
@@ -90,12 +99,10 @@ export default function AdminDashboardPage() {
             {[
               { label: "n8n Engine", status: "Operational", ok: true },
               { label: "AliExpress API", status: "Operational", ok: true },
-              { label: "CJ API", status: "Degraded", ok: false },
+              { label: "CJ API", status: "Ready", ok: true },
               { label: "Supabase", status: "Operational", ok: true },
-              { label: "Stripe Gateway", status: "Operational", ok: true },
-              { label: "Moyasar Gateway", status: "Operational", ok: true },
-              { label: "Salla Webhooks", status: "Operational", ok: true },
-              { label: "Zid Webhooks", status: "Maintenance", ok: false },
+              { label: "Salla Webhooks", status: "Ready", ok: true },
+              { label: "Zid Webhooks", status: "Ready", ok: true },
             ].map((s) => (
               <div key={s.label} className="flex items-center justify-between py-2 border-b border-border-subtle last:border-0">
                 <span className="text-sm text-text">{s.label}</span>
@@ -109,33 +116,33 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Merchants */}
       <Card className="p-5">
-        <h3 className="text-base font-semibold text-text mb-4">Recent Platform Activity</h3>
+        <h3 className="text-base font-semibold text-text mb-4">Recent Merchants</h3>
         <div className="space-y-1">
-          {[
-            { time: "2 min ago", event: "New merchant registered", detail: "Fatima H. — fatima@store.sa", icon: "person_add", type: "info" },
-            { time: "8 min ago", event: "Bank transfer pending", detail: "Omar A. — SAR 5,000 receipt uploaded", icon: "account_balance", type: "warning" },
-            { time: "15 min ago", event: "Order fulfillment failed", detail: "Order #DL-2847 — AliExpress API timeout", icon: "error_outline", type: "error" },
-            { time: "22 min ago", event: "Merchant upgraded plan", detail: "Sara M. — Starter → Growth", icon: "upgrade", type: "success" },
-            { time: "1h ago", event: "Bulk stock sync completed", detail: "1,247 products checked across 89 merchants", icon: "sync", type: "info" },
-          ].map((a) => (
-            <div key={a.time} className="flex items-center gap-3 py-2.5 border-b border-border-subtle last:border-0">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                a.type === "error" ? "bg-error-subtle text-error"
-                : a.type === "warning" ? "bg-warning-subtle text-warning"
-                : a.type === "success" ? "bg-success-subtle text-success"
-                : "bg-info-subtle text-info"
-              }`}>
-                <Icon name={a.icon} className="text-sm" />
+          {mLoad ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="py-2.5"><Skeleton className="h-4 w-64" /></div>
+            ))
+          ) : (
+            merchants.slice(0, 5).map((m) => (
+              <div key={m.id} className="flex items-center gap-3 py-2.5 border-b border-border-subtle last:border-0">
+                <div className="w-8 h-8 rounded-lg bg-accent-subtle flex items-center justify-center shrink-0">
+                  <span className="text-accent text-sm font-medium">{m.business_name?.[0] || "M"}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text">{m.business_name}</p>
+                  <p className="text-xs text-text-secondary truncate">{m.email}</p>
+                </div>
+                <Badge variant={m.is_active ? "success" : "warning"}>
+                  {m.is_active ? "Active" : "Inactive"}
+                </Badge>
+                <span className="text-xs text-text-muted shrink-0">
+                  {new Date(m.created_at).toLocaleDateString("en", { month: "short", day: "numeric" })}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text">{a.event}</p>
-                <p className="text-xs text-text-secondary truncate">{a.detail}</p>
-              </div>
-              <span className="text-xs text-text-muted shrink-0">{a.time}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </Card>
     </>

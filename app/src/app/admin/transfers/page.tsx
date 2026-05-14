@@ -1,82 +1,85 @@
 "use client";
 import React, { useState } from "react";
-import { Card, Button, Badge, Icon } from "@/components/shared";
-
-const TRANSFERS = [
-  { id: 1, merchant: "Ahmed K.", email: "ahmed@salla.sa", amount: "5,000", date: "May 14, 2026", bank: "Al Rajhi Bank", ref: "TXN-7842", note: "Monthly top-up", status: "pending" },
-  { id: 2, merchant: "Sara M.", email: "sara@zid.store", amount: "2,500", date: "May 14, 2026", bank: "SNB", ref: "TXN-7843", note: "", status: "pending" },
-  { id: 3, merchant: "Fatima H.", email: "fatima@outlook.com", amount: "10,000", date: "May 13, 2026", bank: "Al Rajhi Bank", ref: "TXN-7839", note: "Urgent — orders on hold", status: "pending" },
-  { id: 4, merchant: "Omar A.", email: "omar@gmail.com", amount: "3,000", date: "May 13, 2026", bank: "Riyad Bank", ref: "TXN-7835", note: "", status: "approved" },
-  { id: 5, merchant: "Noor S.", email: "noor@store.sa", amount: "1,500", date: "May 12, 2026", bank: "Al Ahli Bank", ref: "TXN-7830", note: "", status: "approved" },
-  { id: 6, merchant: "Khalid R.", email: "khalid@yahoo.com", amount: "500", date: "May 12, 2026", bank: "Al Rajhi Bank", ref: "TXN-7828", note: "Test transfer", status: "rejected" },
-];
+import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
+import { useAdminTransfers } from "@/hooks/use-admin";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function TransfersPage() {
+  const { transfers, loading, error, approve, reject } = useAdminTransfers();
+  const { user } = useAuth();
   const [tab, setTab] = useState<"pending" | "all">("pending");
-  const data = tab === "pending" ? TRANSFERS.filter((t) => t.status === "pending") : TRANSFERS;
+  const data = tab === "pending" ? transfers.filter((t) => t.status === "pending") : transfers;
+  const pendingCount = transfers.filter((t) => t.status === "pending").length;
 
   return (
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-text">Bank Transfer Approvals</h1>
-          <p className="text-sm text-text-secondary">{TRANSFERS.filter((t) => t.status === "pending").length} pending approvals</p>
+          <p className="text-sm text-text-secondary">{loading ? "…" : `${pendingCount} pending approvals`}</p>
         </div>
       </div>
 
       <div className="flex gap-1 mb-4">
         {(["pending", "all"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${tab === t ? "bg-accent text-accent-on" : "text-text-secondary hover:bg-surface-sunken"}`}>
-            {t === "pending" ? `Pending (${TRANSFERS.filter((x) => x.status === "pending").length})` : "All Transfers"}
+            {t === "pending" ? `Pending (${loading ? "…" : pendingCount})` : "All Transfers"}
           </button>
         ))}
       </div>
 
+      {error && (
+        <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm">
+          <Icon name="error" className="text-base" /> {error}
+        </div>
+      )}
+
       <div className="space-y-3">
-        {data.map((t) => (
-          <Card key={t.id} className="p-5">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center shrink-0">
-                  <Icon name="receipt" className="text-accent text-base" />
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="p-5"><Skeleton className="h-16 w-full" /></Card>
+          ))
+        ) : data.length === 0 ? (
+          <Card className="p-8 text-center text-text-muted text-sm">No transfers found.</Card>
+        ) : (
+          data.map((t) => (
+            <Card key={t.id} className="p-5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center shrink-0">
+                    <Icon name="receipt" className="text-accent text-base" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-text">
+                        {(t.merchant as any)?.business_name || t.sender_name || "Merchant"}
+                      </span>
+                      <span className="text-xs text-text-secondary">
+                        {(t.merchant as any)?.email || ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-text-muted mb-1">
+                      {t.bank_name && <span>🏦 {t.bank_name}</span>}
+                      {t.reference_number && <span>Ref: {t.reference_number}</span>}
+                      <span>{new Date(t.created_at).toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-text">{t.merchant}</span>
-                    <span className="text-xs text-text-secondary">{t.email}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-text-muted mb-1">
-                    <span>🏦 {t.bank}</span>
-                    <span>Ref: {t.ref}</span>
-                    <span>{t.date}</span>
-                  </div>
-                  {t.note && <p className="text-xs text-text-secondary italic">&quot;{t.note}&quot;</p>}
+                <div className="text-right">
+                  <div className="text-xl font-bold text-text mb-2">SAR {t.amount.toLocaleString()}</div>
+                  {t.status === "pending" ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => user && approve(t.id, user.id)}>Approve</Button>
+                      <Button size="sm" variant="secondary" className="!border-error/30 !text-error hover:!bg-error/10" onClick={() => user && reject(t.id, user.id, "Rejected by admin")}>Reject</Button>
+                    </div>
+                  ) : (
+                    <Badge variant={t.status === "approved" ? "success" : "error"}>{t.status}</Badge>
+                  )}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-xl font-bold text-text mb-2">SAR {t.amount}</div>
-                {t.status === "pending" ? (
-                  <div className="flex gap-2">
-                    <Button size="sm">Approve</Button>
-                    <Button size="sm" variant="secondary" className="!border-error/30 !text-error hover:!bg-error-subtle">Reject</Button>
-                  </div>
-                ) : (
-                  <Badge variant={t.status === "approved" ? "success" : "error"}>{t.status}</Badge>
-                )}
-              </div>
-            </div>
-            {t.status === "pending" && (
-              <div className="mt-3 pt-3 border-t border-border-subtle flex items-center gap-3">
-                <button className="flex items-center gap-1 text-xs text-accent hover:underline">
-                  <Icon name="image" className="text-sm" />View Receipt
-                </button>
-                <button className="flex items-center gap-1 text-xs text-text-muted hover:text-text">
-                  <Icon name="history" className="text-sm" />Transaction History
-                </button>
-              </div>
-            )}
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
     </>
   );

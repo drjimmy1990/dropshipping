@@ -1,155 +1,39 @@
 "use client";
 
-import React from "react";
-import { Card, Button, Badge, Icon, EmptyState } from "@/components/shared";
-import { ORDERS } from "@/data/mockData";
-import type { OrderStatus } from "@/data/mockData";
+import React, { useState } from "react";
+import { Card, Button, Badge, Icon, Skeleton, EmptyState } from "@/components/shared";
+import { useOrders } from "@/hooks/use-orders";
+import type { OrderStatus } from "@/lib/supabase/types";
 
 /* ================================================================
    ORDERS MANAGEMENT — Track, filter, and manage all orders
    ================================================================ */
 
 const statusVariant: Record<string, "success" | "warning" | "error" | "neutral" | "info"> = {
-  fulfilled: "success",
   delivered: "success",
   shipped: "info",
   processing: "warning",
   ordered: "info",
-  new: "accent" as "info",
+  new: "info",
   failed: "error",
-  pending: "neutral",
+  held: "warning",
+  cancelled: "error",
 };
 
-const ORDER_TABS: { label: string; count: number; status?: OrderStatus }[] = [
-  { label: "All", count: 147 },
-  { label: "New", count: 12, status: "new" },
-  { label: "Processing", count: 28, status: "processing" },
-  { label: "Ordered", count: 45, status: "ordered" },
-  { label: "Shipped", count: 52, status: "shipped" },
-  { label: "Delivered", count: 8, status: "delivered" },
-  { label: "Failed", count: 2, status: "failed" },
+const TAB_STATUSES: { label: string; status?: OrderStatus }[] = [
+  { label: "All" },
+  { label: "New", status: "new" },
+  { label: "Processing", status: "processing" },
+  { label: "Ordered", status: "ordered" },
+  { label: "Shipped", status: "shipped" },
+  { label: "Delivered", status: "delivered" },
+  { label: "Failed", status: "failed" },
 ];
 
-function StatusTabs() {
-  return (
-    <div className="flex gap-1 overflow-x-auto pb-2 mb-4">
-      {ORDER_TABS.map((tab, i) => (
-        <button
-          key={tab.label}
-          className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            i === 0
-              ? "bg-accent text-accent-on"
-              : "text-text-secondary hover:bg-surface-sunken border border-border-subtle"
-          }`}
-        >
-          {tab.label}
-          <span className="ml-1 text-xs opacity-70">({tab.count})</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function OrderPipeline() {
-  const steps = [
-    { label: "New", count: 12, icon: "fiber_new" },
-    { label: "Processing", count: 28, icon: "schedule" },
-    { label: "Ordered", count: 45, icon: "shopping_cart" },
-    { label: "Shipped", count: 52, icon: "local_shipping" },
-    { label: "Delivered", count: 8, icon: "check_circle" },
-  ];
-
-  return (
-    <Card className="p-4 mb-4">
-      <h3 className="text-xs font-medium text-text-muted mb-3 uppercase tracking-wider">
-        Order Pipeline
-      </h3>
-      <div className="flex items-center gap-3 overflow-x-auto">
-        {steps.map((step, i) => (
-          <React.Fragment key={step.label}>
-            <div className="flex items-center gap-2 shrink-0">
-              <Icon name={step.icon} className="text-base text-text-secondary" />
-              <span className="text-sm font-medium text-text">{step.label}</span>
-              <span className="text-xs text-text-muted">({step.count})</span>
-            </div>
-            {i < steps.length - 1 && (
-              <Icon name="arrow_forward" className="text-sm text-text-muted shrink-0" />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function OrdersTable() {
-  return (
-    <Card className="overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              {["", "Order #", "Date", "Customer", "Products", "Total", "Cost", "Profit", "Supplier", "Status", ""].map(
-                (h, i) => (
-                  <th key={i} className="text-left px-4 py-3 text-xs font-medium text-text-muted uppercase tracking-wider bg-surface-sunken">
-                    {h}
-                  </th>
-                )
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {ORDERS.map((order) => (
-              <tr
-                key={order.id}
-                className="border-b border-border-subtle hover:bg-surface-sunken transition-colors"
-              >
-                <td className="px-4 py-3">
-                  <input type="checkbox" className="rounded border-border accent-accent" />
-                </td>
-                <td className="px-4 py-3 font-medium text-text">{order.id}</td>
-                <td className="px-4 py-3 text-text-secondary">{order.date}</td>
-                <td className="px-4 py-3 text-text">{order.customer}</td>
-                <td className="px-4 py-3 text-text-secondary max-w-[180px] truncate">
-                  {order.products}
-                </td>
-                <td className="px-4 py-3 font-medium text-text">SAR {order.total}</td>
-                <td className="px-4 py-3 text-text-secondary">SAR {order.cost}</td>
-                <td className="px-4 py-3 text-success font-medium">SAR {order.profit}</td>
-                <td className="px-4 py-3 text-text-secondary text-xs">{order.supplier}</td>
-                <td className="px-4 py-3">
-                  <Badge variant={statusVariant[order.status] || "neutral"}>
-                    {order.status}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <Button variant="ghost" size="sm">View</Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t border-border-subtle">
-        <span className="text-xs text-text-muted">Showing 1-8 of 147 orders</span>
-        <div className="flex gap-1">
-          {[1, 2, 3, "...", 19].map((p, i) => (
-            <button
-              key={i}
-              className={`w-7 h-7 rounded text-xs font-medium transition-colors ${
-                p === 1 ? "bg-accent text-accent-on" : "text-text-secondary hover:bg-surface-sunken"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 export default function OrdersPage() {
+  const [activeStatus, setActiveStatus] = useState<OrderStatus | null>(null);
+  const { orders, counts, loading, error } = useOrders(activeStatus);
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -162,9 +46,135 @@ export default function OrdersPage() {
           Export CSV
         </Button>
       </div>
-      <StatusTabs />
-      <OrderPipeline />
-      <OrdersTable />
+
+      {/* Status Tabs */}
+      <div className="flex gap-1 overflow-x-auto pb-2 mb-4">
+        {TAB_STATUSES.map((tab) => {
+          const isActive = tab.status ? activeStatus === tab.status : activeStatus === null;
+          const count = tab.status ? (counts[tab.status] || 0) : counts.all;
+          return (
+            <button
+              key={tab.label}
+              onClick={() => setActiveStatus(tab.status || null)}
+              className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-accent text-accent-on"
+                  : "text-text-secondary hover:bg-surface-sunken border border-border-subtle"
+              }`}
+            >
+              {tab.label}
+              <span className="ml-1 text-xs opacity-70">({loading ? "…" : count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Pipeline */}
+      <Card className="p-4 mb-4">
+        <h3 className="text-xs font-medium text-text-muted mb-3 uppercase tracking-wider">
+          Order Pipeline
+        </h3>
+        <div className="flex items-center gap-3 overflow-x-auto">
+          {[
+            { label: "New", icon: "fiber_new", status: "new" as OrderStatus },
+            { label: "Processing", icon: "schedule", status: "processing" as OrderStatus },
+            { label: "Ordered", icon: "shopping_cart", status: "ordered" as OrderStatus },
+            { label: "Shipped", icon: "local_shipping", status: "shipped" as OrderStatus },
+            { label: "Delivered", icon: "check_circle", status: "delivered" as OrderStatus },
+          ].map((step, i, arr) => (
+            <React.Fragment key={step.label}>
+              <div className="flex items-center gap-2 shrink-0">
+                <Icon name={step.icon} className="text-base text-text-secondary" />
+                <span className="text-sm font-medium text-text">{step.label}</span>
+                <span className="text-xs text-text-muted">
+                  ({loading ? "…" : counts[step.status] || 0})
+                </span>
+              </div>
+              {i < arr.length - 1 && (
+                <Icon name="arrow_forward" className="text-sm text-text-muted shrink-0" />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </Card>
+
+      {/* Error state */}
+      {error && (
+        <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm flex items-center gap-2">
+          <Icon name="error" className="text-base" />
+          {error}
+        </div>
+      )}
+
+      {/* Table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                {["", "Order #", "Date", "Customer", "Total", "Cost", "Profit", "Status", ""].map(
+                  (h, i) => (
+                    <th key={i} className="text-left px-4 py-3 text-xs font-medium text-text-muted uppercase tracking-wider bg-surface-sunken">
+                      {h}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-border-subtle">
+                    {Array.from({ length: 9 }).map((_, j) => (
+                      <td key={j} className="px-4 py-3">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-12 text-center text-text-muted text-sm">
+                    No orders found. When customers purchase, orders will appear here.
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="border-b border-border-subtle hover:bg-surface-sunken transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <input type="checkbox" className="rounded border-border accent-accent" />
+                    </td>
+                    <td className="px-4 py-3 font-medium text-text">#{order.store_order_id}</td>
+                    <td className="px-4 py-3 text-text-secondary">
+                      {new Date(order.created_at).toLocaleDateString("en", { month: "short", day: "numeric" })}
+                    </td>
+                    <td className="px-4 py-3 text-text">{order.customer_info?.name || "—"}</td>
+                    <td className="px-4 py-3 font-medium text-text">SAR {order.total_amount}</td>
+                    <td className="px-4 py-3 text-text-secondary">SAR {order.total_cost}</td>
+                    <td className="px-4 py-3 text-success font-medium">SAR {order.net_profit}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={statusVariant[order.status] || "neutral"}>
+                        {order.status}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button variant="ghost" size="sm">View</Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border-subtle">
+          <span className="text-xs text-text-muted">
+            Showing {orders.length} of {counts.all} orders
+          </span>
+        </div>
+      </Card>
     </>
   );
 }

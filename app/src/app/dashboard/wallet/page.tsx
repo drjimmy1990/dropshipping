@@ -1,10 +1,21 @@
 "use client";
 
 import React from "react";
-import { Card, Button, Badge, Icon } from "@/components/shared";
-import { WALLET_TRANSACTIONS } from "@/data/mockData";
+import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
+import { useWallet } from "@/hooks/use-wallet";
 
 export default function WalletPage() {
+  const { wallet, transactions, loading, error } = useWallet();
+
+  const balance = wallet?.balance ?? 0;
+  const reserved = wallet?.reserved ?? 0;
+
+  // Calculate month's spending from transactions
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const monthSpent = transactions
+    .filter((t) => t.type === "deduction" && t.created_at?.slice(0, 7) === thisMonth)
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
   return (
     <>
       <div className="mb-6">
@@ -16,7 +27,13 @@ export default function WalletPage() {
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         <Card className="p-6 md:col-span-2">
           <div className="text-sm text-text-secondary mb-1">Available Balance</div>
-          <div className="text-4xl font-bold text-text mb-4 tracking-tight">SAR 12,450.00</div>
+          {loading ? (
+            <Skeleton className="h-10 w-48 mb-4" />
+          ) : (
+            <div className="text-4xl font-bold text-text mb-4 tracking-tight">
+              SAR {balance.toLocaleString("en", { minimumFractionDigits: 2 })}
+            </div>
+          )}
           <div className="flex gap-2">
             <Button size="md">
               <Icon name="add" className="text-sm" />
@@ -35,17 +52,33 @@ export default function WalletPage() {
               <Icon name="trending_up" className="text-warning text-base" />
               <span className="text-sm text-text-secondary">This Month Spent</span>
             </div>
-            <div className="text-xl font-bold text-text">SAR 8,320</div>
+            {loading ? (
+              <Skeleton className="h-6 w-24" />
+            ) : (
+              <div className="text-xl font-bold text-text">SAR {monthSpent.toLocaleString()}</div>
+            )}
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3 mb-1">
               <Icon name="receipt" className="text-info text-base" />
-              <span className="text-sm text-text-secondary">Pending Orders</span>
+              <span className="text-sm text-text-secondary">Reserved</span>
             </div>
-            <div className="text-xl font-bold text-text">SAR 1,240</div>
+            {loading ? (
+              <Skeleton className="h-6 w-24" />
+            ) : (
+              <div className="text-xl font-bold text-text">SAR {reserved.toLocaleString()}</div>
+            )}
           </Card>
         </div>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm flex items-center gap-2">
+          <Icon name="error" className="text-base" />
+          {error}
+        </div>
+      )}
 
       {/* Transaction History */}
       <Card className="overflow-hidden">
@@ -68,24 +101,42 @@ export default function WalletPage() {
               </tr>
             </thead>
             <tbody>
-              {WALLET_TRANSACTIONS.map((tx) => (
-                <tr key={tx.id} className="border-b border-border-subtle hover:bg-surface-sunken transition-colors">
-                  <td className="px-5 py-3 text-text-secondary">{tx.date}</td>
-                  <td className="px-5 py-3 text-text">{tx.description}</td>
-                  <td className="px-5 py-3">
-                    <Badge
-                      variant={tx.type === "top_up" ? "success" : tx.type === "refund" ? "info" : "error"}
-                      icon={tx.type === "top_up" ? "arrow_upward" : tx.type === "refund" ? "replay" : "arrow_downward"}
-                    >
-                      {tx.type === "top_up" ? "Top Up" : tx.type === "refund" ? "Refund" : "Deduction"}
-                    </Badge>
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <tr key={i} className="border-b border-border-subtle">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <td key={j} className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
+                    ))}
+                  </tr>
+                ))
+              ) : transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-12 text-center text-text-muted text-sm">
+                    No transactions yet. Top up your wallet to get started.
                   </td>
-                  <td className={`px-5 py-3 font-medium ${tx.amount > 0 ? "text-success" : "text-error"}`}>
-                    {tx.amount > 0 ? "+" : ""}SAR {Math.abs(tx.amount).toLocaleString()}
-                  </td>
-                  <td className="px-5 py-3 text-text-secondary">SAR {tx.balance.toLocaleString()}</td>
                 </tr>
-              ))}
+              ) : (
+                transactions.map((tx) => (
+                  <tr key={tx.id} className="border-b border-border-subtle hover:bg-surface-sunken transition-colors">
+                    <td className="px-5 py-3 text-text-secondary">
+                      {new Date(tx.created_at).toLocaleDateString("en", { month: "short", day: "numeric" })}
+                    </td>
+                    <td className="px-5 py-3 text-text">{tx.description || "—"}</td>
+                    <td className="px-5 py-3">
+                      <Badge
+                        variant={tx.type === "deposit" ? "success" : tx.type === "refund" ? "info" : "error"}
+                        icon={tx.type === "deposit" ? "arrow_upward" : tx.type === "refund" ? "replay" : "arrow_downward"}
+                      >
+                        {tx.type === "deposit" ? "Top Up" : tx.type === "refund" ? "Refund" : "Deduction"}
+                      </Badge>
+                    </td>
+                    <td className={`px-5 py-3 font-medium ${tx.amount > 0 ? "text-success" : "text-error"}`}>
+                      {tx.amount > 0 ? "+" : ""}SAR {Math.abs(tx.amount).toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3 text-text-secondary">SAR {tx.balance_after.toLocaleString()}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
