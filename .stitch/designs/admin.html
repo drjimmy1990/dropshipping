@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DropLinker Admin - Dashboard Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#e5e0ee",
+                        "on-primary-fixed-variant": "#4029ba",
+                        "secondary-container": "#00d2ff",
+                        "primary": "#c6bfff",
+                        "on-secondary-fixed": "#001f28",
+                        "surface-dim": "#13121b",
+                        "on-tertiary-fixed-variant": "#005140",
+                        "tertiary-fixed": "#6dfad2",
+                        "surface-container-lowest": "#0e0d16",
+                        "outline-variant": "#474554",
+                        "on-surface": "#e5e0ee",
+                        "on-secondary": "#003543",
+                        "on-primary-fixed": "#160066",
+                        "on-background": "#e5e0ee",
+                        "on-surface-variant": "#c8c4d7",
+                        "inverse-on-surface": "#312f39",
+                        "tertiary-fixed-dim": "#4bddb7",
+                        "primary-fixed-dim": "#c6bfff",
+                        "surface": "#13121b",
+                        "surface-bright": "#3a3842",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "on-primary": "#2900a0",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#35333e",
+                        "surface-container-high": "#2a2933",
+                        "on-error-container": "#ffdad6",
+                        "background": "#13121b",
+                        "secondary": "#a5e7ff",
+                        "surface-container-low": "#1c1a24",
+                        "on-secondary-container": "#00566a",
+                        "primary-container": "#6c5ce7",
+                        "secondary-fixed": "#b6ebff",
+                        "on-tertiary-fixed": "#002018",
+                        "outline": "#928ea0",
+                        "on-primary-container": "#faf6ff",
+                        "on-tertiary": "#00382b",
+                        "secondary-fixed-dim": "#47d6ff",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#008167",
+                        "inverse-primary": "#5847d2",
+                        "surface-tint": "#c6bfff",
+                        "surface-container": "#201e28",
+                        "on-tertiary-container": "#dffff1",
+                        "on-error": "#690005",
+                        "tertiary": "#4bddb7",
+                        "surface-variant": "#35333e",
+                        "primary-fixed": "#e4dfff",
+                        "admin-amber": "#F59E0B"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "lg": "40px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "48px",
+                        "xl": "64px",
+                        "gutter": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["13px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0F0E17;
+            color: #e5e0ee;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .primary-gradient-bg {
+            background: linear-gradient(to right, #6C5CE7, #00D2FF);
+        }
+        .admin-glow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-white/10 backdrop-blur-md bg-surface shadow-xl flex flex-col py-md px-sm z-50">
+<div class="mb-lg px-md">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">DropLinker Admin</h1>
+<p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest mt-xs">Management Hub</p>
+</div>
+<nav class="flex-grow space-y-xs">
+<!-- Dashboard Active -->
+<a class="flex items-center gap-base px-md py-sm bg-primary-container text-on-primary-container rounded-lg font-bold transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-body-md text-body-md">Merchants</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-body-md text-body-md">Revenue Config</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-body-md text-body-md">Bank Transfers</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-body-md text-body-md">Order Monitor</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-md py-md border-t border-white/5">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full primary-gradient-bg flex items-center justify-center font-bold text-white">AD</div>
+<div>
+<p class="font-label-sm text-label-sm font-bold">Admin User</p>
+<p class="text-on-surface-variant text-[11px]">System Superuser</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 backdrop-blur-lg border-b border-white/10 bg-surface/40 flex justify-between items-center px-lg py-sm">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-[#050505] border-none rounded-lg py-2 pl-10 pr-4 text-body-md focus:ring-2 focus:ring-secondary transition-all outline-none" placeholder="Search merchants, orders, or transactions..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md ml-md">
+<button class="relative text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-admin-amber rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+</button>
+<div class="h-8 w-[1px] bg-white/10"></div>
+<div class="flex items-center gap-sm cursor-pointer hover:opacity-80 transition-opacity">
+<div class="text-right">
+<p class="font-label-sm text-label-sm font-bold">DropLinker Admin</p>
+<p class="text-admin-amber text-[10px] font-bold tracking-tighter uppercase">Operational Status: Optimal</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 px-lg pb-xl">
+<!-- TOP STATS -->
+<section class="grid grid-cols-1 md:grid-cols-5 gap-gutter mb-md">
+<!-- Total Merchants -->
+<div class="glass-card p-md">
+<div class="flex justify-between items-start mb-sm">
+<span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+<span class="text-[11px] font-bold text-tertiary px-2 py-0.5 bg-tertiary/10 rounded-full">+28%</span>
+</div>
+<h3 class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wide">Total Merchants</h3>
+<p class="font-headline-md text-headline-md font-bold mt-xs">342</p>
+<p class="text-[12px] text-on-surface-variant mt-1">+28 this month</p>
+</div>
+<!-- Active Orders -->
+<div class="glass-card p-md">
+<div class="flex justify-between items-start mb-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="shopping_cart">shopping_cart</span>
+<span class="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+</div>
+<h3 class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wide">Active Orders</h3>
+<p class="font-headline-md text-headline-md font-bold mt-xs">1,847</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Live tracking active</p>
+</div>
+<!-- Platform Revenue -->
+<div class="glass-card p-md">
+<div class="flex justify-between items-start mb-sm">
+<span class="material-symbols-outlined text-tertiary" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<h3 class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wide">Platform Revenue</h3>
+<p class="font-headline-md text-headline-md font-bold mt-xs">SAR 125,400</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Net earnings this month</p>
+</div>
+<!-- Wallet Deposits -->
+<div class="glass-card p-md">
+<div class="flex justify-between items-start mb-sm">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+</div>
+<h3 class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wide">Wallet Deposits</h3>
+<p class="font-headline-md text-headline-md font-bold mt-xs">SAR 890,000</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Total ecosystem liquidity</p>
+</div>
+<!-- Failed Orders -->
+<div class="glass-card p-md border-error/20 bg-error/5">
+<div class="flex justify-between items-start mb-sm">
+<span class="material-symbols-outlined text-error" data-icon="report_problem">report_problem</span>
+<span class="text-[10px] font-bold text-error px-2 py-0.5 bg-error/20 rounded-full uppercase">Action Required</span>
+</div>
+<h3 class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wide">Failed Orders</h3>
+<p class="font-headline-md text-headline-md font-bold mt-xs text-error">12</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Requires admin review</p>
+</div>
+</section>
+<!-- REVENUE BREAKDOWN -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-md">
+<!-- Left: Bar Chart (Simplified visualization with CSS) -->
+<div class="lg:col-span-2 glass-card p-md flex flex-col h-[340px]">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-headline-md">Revenue Growth Breakdown</h2>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-primary rounded-sm"></div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Commissions</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-secondary rounded-sm"></div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Subscriptions</span>
+</div>
+</div>
+</div>
+<div class="flex-grow flex items-end justify-around gap-4 px-4 pb-4">
+<!-- Fake Bars representing last 6 months -->
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-12 w-full rounded-t-sm opacity-60"></div>
+<div class="bg-secondary h-20 w-full rounded-b-sm"></div>
+</div>
+<span class="text-label-sm text-on-surface-variant">Jan</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-16 w-full rounded-t-sm opacity-60"></div>
+<div class="bg-secondary h-24 w-full rounded-b-sm"></div>
+</div>
+<span class="text-label-sm text-on-surface-variant">Feb</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-20 w-full rounded-t-sm opacity-60"></div>
+<div class="bg-secondary h-28 w-full rounded-b-sm"></div>
+</div>
+<span class="text-label-sm text-on-surface-variant">Mar</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-24 w-full rounded-t-sm opacity-60"></div>
+<div class="bg-secondary h-32 w-full rounded-b-sm"></div>
+</div>
+<span class="text-label-sm text-on-surface-variant">Apr</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-28 w-full rounded-t-sm opacity-60"></div>
+<div class="bg-secondary h-40 w-full rounded-b-sm"></div>
+</div>
+<span class="text-label-sm text-on-surface-variant">May</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-36 w-full rounded-t-sm opacity-60"></div>
+<div class="bg-secondary h-48 w-full rounded-b-sm"></div>
+</div>
+<span class="text-label-sm text-on-surface-variant">Jun</span>
+</div>
+</div>
+</div>
+<!-- Right: Pie Chart (Simplified visualization with CSS) -->
+<div class="glass-card p-md flex flex-col h-[340px]">
+<h2 class="font-headline-md text-headline-md mb-md">Revenue Split</h2>
+<div class="flex-grow flex items-center justify-center relative">
+<div class="w-48 h-48 rounded-full border-[16px] border-secondary flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 border-[16px] border-primary border-t-transparent border-l-transparent -rotate-45"></div>
+<div class="text-center">
+<p class="font-headline-md text-headline-md font-bold">100%</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Total Share</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-sm mt-md">
+<div class="flex justify-between items-center">
+<span class="flex items-center gap-2 text-on-surface-variant text-label-sm"><div class="w-2 h-2 rounded-full bg-secondary"></div> Subscriptions</span>
+<span class="font-bold">65%</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="flex items-center gap-2 text-on-surface-variant text-label-sm"><div class="w-2 h-2 rounded-full bg-primary"></div> Commissions</span>
+<span class="font-bold">35%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- MIDDLE ROW -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-md">
+<!-- Left: Recent Merchants Table -->
+<div class="lg:col-span-2 glass-card overflow-hidden">
+<div class="px-md py-md border-b border-white/5 flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md">Recent Merchants</h2>
+<button class="text-primary font-label-sm text-label-sm hover:underline">View All Merchants</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-white/5 text-[11px] uppercase tracking-widest text-on-surface-variant">
+<tr>
+<th class="px-md py-sm font-semibold">Name</th>
+<th class="px-md py-sm font-semibold">Plan</th>
+<th class="px-md py-sm font-semibold">Stores</th>
+<th class="px-md py-sm font-semibold">Wallet</th>
+<th class="px-md py-sm font-semibold">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-md py-md">
+<p class="font-bold">Ahmad Al-Harbi</p>
+<p class="text-[12px] text-on-surface-variant">ahmad.h@gmail.com</p>
+</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded-full font-bold">PRO</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">3 connected</td>
+<td class="px-md py-md font-medium">SAR 12,450</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] rounded-full font-bold">ACTIVE</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-md py-md">
+<p class="font-bold">Sara Williams</p>
+<p class="text-[12px] text-on-surface-variant">sara.w@outlook.com</p>
+</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded-full font-bold">GROWTH</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">1 connected</td>
+<td class="px-md py-md font-medium">SAR 3,200</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] rounded-full font-bold">ACTIVE</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-md py-md">
+<p class="font-bold">Omar Farooq</p>
+<p class="text-[12px] text-on-surface-variant">omar.far@me.com</p>
+</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-white/10 text-on-surface-variant text-[10px] rounded-full font-bold">STARTER</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">2 connected</td>
+<td class="px-md py-md font-medium">SAR 850</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-admin-amber/10 text-admin-amber text-[10px] rounded-full font-bold">PENDING</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-md py-md">
+<p class="font-bold">Elena Rodriguez</p>
+<p class="text-[12px] text-on-surface-variant">elena.r@agency.net</p>
+</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded-full font-bold">PRO</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">8 connected</td>
+<td class="px-md py-md font-medium">SAR 45,900</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] rounded-full font-bold">ACTIVE</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-md py-md">
+<p class="font-bold">Khalid Nasser</p>
+<p class="text-[12px] text-on-surface-variant">khalid@nasser.sa</p>
+</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded-full font-bold">GROWTH</span>
+</td>
+<td class="px-md py-md text-on-surface-variant">0 connected</td>
+<td class="px-md py-md font-medium">SAR 0</td>
+<td class="px-md py-md">
+<span class="px-2 py-0.5 bg-white/10 text-on-surface-variant text-[10px] rounded-full font-bold">SETUP</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right: Pending Bank Transfers -->
+<div class="glass-card flex flex-col">
+<div class="px-md py-md border-b border-white/5">
+<h2 class="font-headline-md text-headline-md">Pending Withdrawals</h2>
+</div>
+<div class="p-md flex flex-col gap-md">
+<div class="p-sm bg-white/5 rounded-lg border border-white/5 hover:border-admin-amber/30 transition-all">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold">Mazen Boutique</p>
+<p class="text-[12px] text-on-surface-variant">June 12, 2024</p>
+</div>
+<p class="text-primary font-bold">SAR 8,400</p>
+</div>
+<div class="flex gap-2 mt-sm">
+<button class="flex-1 py-2 bg-tertiary/20 text-tertiary text-label-sm font-bold rounded-lg hover:bg-tertiary hover:text-on-tertiary transition-all">Approve</button>
+<button class="flex-1 py-2 bg-error/10 text-error text-label-sm font-bold rounded-lg hover:bg-error hover:text-on-error transition-all">Reject</button>
+</div>
+</div>
+<div class="p-sm bg-white/5 rounded-lg border border-white/5 hover:border-admin-amber/30 transition-all">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold">Tech Deals KSA</p>
+<p class="text-[12px] text-on-surface-variant">June 11, 2024</p>
+</div>
+<p class="text-primary font-bold">SAR 15,200</p>
+</div>
+<div class="flex gap-2 mt-sm">
+<button class="flex-1 py-2 bg-tertiary/20 text-tertiary text-label-sm font-bold rounded-lg hover:bg-tertiary hover:text-on-tertiary transition-all">Approve</button>
+<button class="flex-1 py-2 bg-error/10 text-error text-label-sm font-bold rounded-lg hover:bg-error hover:text-on-error transition-all">Reject</button>
+</div>
+</div>
+<div class="p-sm bg-white/5 rounded-lg border border-white/5 hover:border-admin-amber/30 transition-all">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="font-bold">Eco Life Shop</p>
+<p class="text-[12px] text-on-surface-variant">June 11, 2024</p>
+</div>
+<p class="text-primary font-bold">SAR 2,100</p>
+</div>
+<div class="flex gap-2 mt-sm">
+<button class="flex-1 py-2 bg-tertiary/20 text-tertiary text-label-sm font-bold rounded-lg hover:bg-tertiary hover:text-on-tertiary transition-all">Approve</button>
+<button class="flex-1 py-2 bg-error/10 text-error text-label-sm font-bold rounded-lg hover:bg-error hover:text-on-error transition-all">Reject</button>
+</div>
+</div>
+</div>
+<div class="mt-auto p-md border-t border-white/5">
+<button class="w-full py-2 primary-gradient-bg text-white font-bold rounded-lg shadow-lg shadow-primary-container/20 hover:brightness-110 active:scale-95 transition-all">Manage All Transfers</button>
+</div>
+</div>
+</section>
+<!-- BOTTOM ROW -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Left: Subscription Breakdown -->
+<div class="glass-card p-md">
+<h2 class="font-headline-md text-headline-md mb-md">Subscription Plans</h2>
+<div class="flex flex-col gap-md">
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-body-md font-medium">Starter Plan</span>
+<span class="text-body-md font-bold">180 merchants</span>
+</div>
+<div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-on-surface-variant w-[55%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-body-md font-medium">Growth Plan</span>
+<span class="text-body-md font-bold">120 merchants</span>
+</div>
+<div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[36%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-body-md font-medium">Pro Plan</span>
+<span class="text-body-md font-bold">42 merchants</span>
+</div>
+<div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[13%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-lg pt-md border-t border-white/5 flex gap-md">
+<div class="flex-1 p-sm rounded-lg bg-white/5 text-center">
+<p class="text-[11px] text-on-surface-variant uppercase font-bold">Monthly Recurring</p>
+<p class="text-headline-md font-bold text-tertiary">SAR 64K</p>
+</div>
+<div class="flex-1 p-sm rounded-lg bg-white/5 text-center">
+<p class="text-[11px] text-on-surface-variant uppercase font-bold">Churn Rate</p>
+<p class="text-headline-md font-bold text-error">1.2%</p>
+</div>
+</div>
+</div>
+<!-- Right: System Health -->
+<div class="glass-card p-md">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-headline-md">Integration Status</h2>
+<span class="flex items-center gap-2 text-label-sm text-tertiary"><div class="w-2 h-2 rounded-full bg-tertiary animate-ping"></div> System Healthy</span>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="p-md rounded-xl bg-white/5 border border-white/5 flex flex-col items-center justify-center gap-2">
+<img alt="AliExpress" class="h-8 object-contain mb-2" data-alt="High-quality minimalist 3D render of the AliExpress logo floating in a dark, tech-oriented space with soft ambient lighting and cyan accents. The style is ultra-modern and corporate, with smooth surfaces and high-definition detail reflecting a sophisticated global commerce platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTxrpEyVtrU49tjzzv7j2RM03ZzStWmDLRmm8fm7sV5-msl7esTWgxP8wuF8quiwl740TA4yTCc8WggNsWOI6NWERCaajuhtvTmJdzIm64jkp607BaNlgcXAU6d69zaQVQqlrPcQPpwtmxHf0FlWk-GfG6zZLmFGhEYm6Ofks6A0IwN2Z-jF71GQFujPmxNuZN-AhvbC-NGzbvlh-TywA4z39kpI8R_wSCDKTYJ75Yqvz41kxYM4I9XsLZ9v5p5pBkayR55XGL4Fk"/>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#4bddb7]"></div>
+<span class="text-body-md font-bold">AliExpress</span>
+</div>
+<p class="text-[11px] text-on-surface-variant">API Latency: 42ms</p>
+</div>
+<div class="p-md rounded-xl bg-white/5 border border-white/5 flex flex-col items-center justify-center gap-2">
+<img alt="CJ Dropshipping" class="h-8 object-contain mb-2" data-alt="A professional 3D graphic of the CJ Dropshipping corporate logo centered in a dark, blurred tech environment. Soft glowing primary colors like purple and blue illuminate the logo's edges, emphasizing a secure and fast logistics supply chain for global e-commerce dropshippers." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDolsr2nze5s0bjcyxZBsdy0r01qf8qyy2_-gyfuFO9-3LdtNvO4r-k7G-OmUBt8JqUFfB0x0jO2FeEsZF4DlVw0817iItq03XZFmut1-BPpd0LnnF8sKkZoaVnZpa8ZcEX3R9CbIwNSsIWz5S4bGaYhtKksV-djVysnqtagP5fQdul0lRnYZ_hwIU_ozo4gRGL_3NtnMRcFckc-g5fGGQknmz-eWJIH5AwHFX5aKxOnw41L2rDbn_NhZiOAPz7AVm4F6D0XYyhF1A"/>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#4bddb7]"></div>
+<span class="text-body-md font-bold">CJ Sync</span>
+</div>
+<p class="text-[11px] text-on-surface-variant">API Latency: 68ms</p>
+</div>
+<div class="p-md rounded-xl bg-white/5 border border-white/5 flex flex-col items-center justify-center gap-2">
+<img alt="Salla" class="h-8 object-contain mb-2" data-alt="The Salla e-commerce platform logo rendered as a luminous, glossy 3D icon against a deep black glass background. Emerald green lighting effects highlight the curves of the Arabic typography-based logo, projecting a premium and reliable Middle Eastern technology brand image." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkQk2bInGqd1tnjcubWjNTZPPzQhXjW9QfvF1FZhtZrNXDlrwiGxVhgFMtVgzWkPaGoCm9CcYo23lduTMcP07Dzjta5K7mdlOmwqDc3e6fOH8XrlPBjeE6k9-W7C9XfjOr9xdE216Ek7gRfKIA2lZqUQks9UM42dYX50cAxMnEHwzBUi79vFn6DUN_w_ozX6jnacCxp5c6NZ0U8Ui4fTjyKchkiHJMNSG9Zx9hF7I9iJcleORyBRSQaa1-CM1p0_JNzO3k_wVgFoA"/>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#4bddb7]"></div>
+<span class="text-body-md font-bold">Salla KSA</span>
+</div>
+<p class="text-[11px] text-on-surface-variant">Orders Connected: 12.4k</p>
+</div>
+<div class="p-md rounded-xl bg-admin-amber/5 border border-admin-amber/20 flex flex-col items-center justify-center gap-2">
+<img alt="Zid" class="h-8 object-contain mb-2" data-alt="The Zid marketplace logo presented in a futuristic digital dashboard style. The background is a dark purple space with golden amber light rays touching the logo edges. One corner of the screen shows a subtle glitch or warning highlight to indicate maintenance mode or high latency." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANvB3Gjquh_gO9-7JHoUlEVbxam0Uw1COBvVlB22j2QFl9h5orCR1_gGjqMAxt5I9lGzSpnGeFrDJJ3nWxgZj9liGnV7_Y2dh4Pt7YtrmGrMDdc9UV9KWyo15-JdLdXtvkQamqNKQljZUvPR9JdrYiQKh0QjvX9M81mITs_WDhJZmj8z34CFS5yulCVI_Ev8rayyaKBWNxvoKnFMLd4ZVwkJLcWE872y_LrCjbf_8kx6nX55Gj7fKhn95XbVuKpysmJtitz0l28lI"/>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-admin-amber shadow-[0_0_8px_#F59E0B]"></div>
+<span class="text-body-md font-bold">Zid Platform</span>
+</div>
+<p class="text-[11px] text-admin-amber font-bold">High Latency (1.2s)</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button for Admin Tasks -->
+<button class="fixed bottom-md right-md w-14 h-14 primary-gradient-bg rounded-full flex items-center justify-center text-white shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>

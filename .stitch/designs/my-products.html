@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DropLinker - My Products</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#005140",
+                        "background": "#13121b",
+                        "on-secondary-fixed": "#001f28",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#003543",
+                        "secondary-fixed-dim": "#47d6ff",
+                        "on-primary-container": "#faf6ff",
+                        "inverse-surface": "#e5e0ee",
+                        "on-tertiary": "#00382b",
+                        "tertiary-fixed-dim": "#4bddb7",
+                        "surface-container-highest": "#35333e",
+                        "surface-container": "#201e28",
+                        "primary-container": "#6c5ce7",
+                        "on-primary-fixed-variant": "#4029ba",
+                        "inverse-on-surface": "#312f39",
+                        "surface-tint": "#c6bfff",
+                        "surface-bright": "#3a3842",
+                        "error": "#ffb4ab",
+                        "surface-container-high": "#2a2933",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "primary": "#c6bfff",
+                        "outline-variant": "#474554",
+                        "surface-dim": "#13121b",
+                        "surface-container-low": "#1c1a24",
+                        "primary-fixed-dim": "#c6bfff",
+                        "on-primary": "#2900a0",
+                        "on-secondary-container": "#00566a",
+                        "on-surface-variant": "#c8c4d7",
+                        "secondary": "#a5e7ff",
+                        "on-tertiary-fixed": "#002018",
+                        "outline": "#928ea0",
+                        "surface-variant": "#35333e",
+                        "surface": "#13121b",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-background": "#e5e0ee",
+                        "on-surface": "#e5e0ee",
+                        "on-primary-fixed": "#160066",
+                        "primary-fixed": "#e4dfff",
+                        "tertiary": "#4bddb7",
+                        "tertiary-fixed": "#6dfad2",
+                        "secondary-container": "#00d2ff",
+                        "on-tertiary-container": "#dffff1",
+                        "secondary-fixed": "#b6ebff",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "tertiary-container": "#008167",
+                        "inverse-primary": "#5847d2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["13px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0F0E17;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card-hover:hover {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(32px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .primary-gradient {
+            background: linear-gradient(to right, #6C5CE7, #00D2FF);
+        }
+        .primary-gradient-text {
+            background: linear-gradient(to right, #6C5CE7, #00D2FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glow-shadow {
+            box-shadow: 0 0 64px 0 rgba(108, 92, 231, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-white/10 bg-surface/40 backdrop-blur-md flex flex-col py-8 px-4 z-50">
+<div class="mb-12 px-2">
+<span class="font-display-lg text-display-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">DropLinker</span>
+<p class="text-on-surface-variant text-xs tracking-widest mt-1 opacity-70 uppercase">Automation Hub</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-white/10 hover:text-on-surface transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- My Products (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-2 border-primary bg-white/5 active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-body-md text-body-md">My Products</span>
+</a>
+<!-- Orders -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-white/10 hover:text-on-surface transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-body-md text-body-md">Orders</span>
+</a>
+<!-- Suppliers -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-white/10 hover:text-on-surface transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="conveyor_belt">conveyor_belt</span>
+<span class="font-body-md text-body-md">Suppliers</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-white/10 hover:text-on-surface transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-4 flex items-center gap-3 glass-card rounded-xl">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/30">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLEDMf5RXRndvhU4BVgkiz4acGucBAbQHCpdfxftuetghzn3HBC7dq7Vxppu45zNfqhr-ibiPoI6HHub3Pb9acHQ3Z4VMRsiVegj29kiOsyezhPd0rnvxEeH66Ov95QL5KODOs3qqqnLHkopRoF-WI0RrtAbZh5KuFZ-W21hfTASuQKKgjbb4dSJcs6M0XzOA-2mEAst_Z_qm8zpakh55PTFr0TB7lSWhjNNjgIS2u2CZUDbKwaWSZjVCr-NXTayvHl6S8yYzbEuQ"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Alex River</p>
+<p class="text-[10px] text-on-surface-variant">Pro Plan</p>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 border-b border-white/10 bg-surface/40 backdrop-blur-md flex justify-between items-center px-8 z-40">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-[#050505] border-none rounded-lg py-2 pl-10 text-sm focus:ring-1 focus:ring-secondary text-on-surface" placeholder="Search catalog..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="help_outline">help_outline</span></button>
+</div>
+<button class="primary-gradient text-white px-6 py-2 rounded-lg font-bold text-sm hover:brightness-110 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                Add Product
+            </button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-24 px-8 pb-32">
+<!-- Header -->
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">My Products</h1>
+<p class="text-on-surface-variant font-body-md text-body-md">Manage your imported product catalog</p>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<div class="glass-card p-6 rounded-xl">
+<p class="text-on-surface-variant text-xs uppercase tracking-widest font-semibold mb-2">Total Products</p>
+<h3 class="text-3xl font-bold text-on-surface">156</h3>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<p class="text-on-surface-variant text-xs uppercase tracking-widest font-semibold mb-2">Active</p>
+<h3 class="text-3xl font-bold text-tertiary">132</h3>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<p class="text-on-surface-variant text-xs uppercase tracking-widest font-semibold mb-2">Out of Stock</p>
+<h3 class="text-3xl font-bold text-error">12</h3>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<p class="text-on-surface-variant text-xs uppercase tracking-widest font-semibold mb-2">Draft</p>
+<h3 class="text-3xl font-bold text-on-surface-variant">12</h3>
+</div>
+</div>
+<!-- Controls Area -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div class="flex items-center gap-3">
+<!-- Dropdowns -->
+<div class="relative">
+<select class="bg-[#050505] border-none text-xs rounded-lg py-2 pl-4 pr-10 appearance-none focus:ring-1 focus:ring-secondary text-on-surface-variant">
+<option>All Stores</option>
+<option>My Salla Store</option>
+<option>My Zid Store</option>
+</select>
+</div>
+<div class="relative">
+<select class="bg-[#050505] border-none text-xs rounded-lg py-2 pl-4 pr-10 appearance-none focus:ring-1 focus:ring-secondary text-on-surface-variant">
+<option>All Suppliers</option>
+<option>AliExpress</option>
+<option>CJ</option>
+</select>
+</div>
+<div class="relative">
+<select class="bg-[#050505] border-none text-xs rounded-lg py-2 pl-4 pr-10 appearance-none focus:ring-1 focus:ring-secondary text-on-surface-variant">
+<option>All Status</option>
+<option>Active</option>
+<option>Out of Stock</option>
+<option>Draft</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-[#050505] rounded-lg p-1">
+<button class="p-1.5 rounded-md hover:text-primary transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">grid_view</span></button>
+<button class="p-1.5 rounded-md bg-primary-container text-white shadow-sm"><span class="material-symbols-outlined text-sm">format_list_bulleted</span></button>
+</div>
+<button class="border border-primary/50 text-primary px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary/10 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sync</span>
+                    Sync All Stock
+                </button>
+</div>
+</div>
+<!-- Product Table View -->
+<div class="glass-card rounded-xl overflow-hidden border border-white/10">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-white/10 bg-white/5">
+<th class="p-4 w-12"><input class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">IMAGE</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">PRODUCT NAME</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">SUPPLIER</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">STORE</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">RETAIL (SAR)</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">COST (SAR)</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">MARGIN</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">STOCK</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">STATUS</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant">ACTIONS</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/10">
+<!-- Row 1 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input checked="" class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up macro shot of sleek, matte black wireless earbuds sitting in their charging case. The lighting is low and moody with a sharp violet neon rim light, emphasizing the premium tech aesthetic in a dark studio setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEJkHX0PHtOgnruqVucZO19Xf-XtI4-aED17F3A45ZE5dfsdqNy1B_VyINV3MDMxRBMiiYtSaom9O9S9M9WEnPXkbfdC-l6IbRynqbe-DybpslDwpFpxqM2jSu5V75yypbTSmp4JBXyyOJ4wutGgXnVZavkCP2g27ed1fCv5urWXlT2zRFoW_MvSUMV8xnYlOFPSttSy3VD-dFxfiU2bQb_CWq0e1KiqdifCHoHi6AqfMC0vvkkTVPACjBU_J6iPpFVFGI4BOxoRI"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Wireless Bluetooth Earbuds Pro</td>
+<td class="p-4 text-sm text-on-surface-variant">AliExpress</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-primary/10 text-primary rounded text-[10px] font-bold">SALLA</span></td>
+<td class="p-4 text-sm font-bold">180</td>
+<td class="p-4 text-sm">45</td>
+<td class="p-4 text-sm text-tertiary">75%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shadow-[0_0_8px_#4bddb7]"></span>
+                                    In Stock
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Elegant cosmetic amber glass dropper bottle of vitamin C serum placed on a frosted glass surface. Soft diffused glowing orange and white light creating a clean, medical-grade pharmaceutical aesthetic against a deep dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAejVUBS5R-lvQNAKIjSwf059PRYYWgmpiQC2HIiGZEg8uCqvtBd2_ZLbKQoS_T93qWurzTo31x7cRAjl-bkXtYp4eAu-e9e7WDFHCZVM6ygpLRbVXPRX6t2ESUcTlv5U3JHbK_1P7e-n8s_REjJdCJYtc8ZKS0IhxIwamLE_DvBuXePfYyQgpeKYRsrQiwOOcBxzUmGH_3J4WCEHFFJj1CY_V0DuowKHEm0ZqeMkDAli_JOURH55PrCGgwyxMM8HSevjZJGCoQY4Y"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Vitamin C Serum 30ml</td>
+<td class="p-4 text-sm text-on-surface-variant">CJ</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-primary/10 text-primary rounded text-[10px] font-bold">SALLA</span></td>
+<td class="p-4 text-sm font-bold">95</td>
+<td class="p-4 text-sm">22</td>
+<td class="p-4 text-sm text-tertiary">77%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shadow-[0_0_8px_#4bddb7]"></span>
+                                    In Stock
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input checked="" class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Futuristic high-tech smartwatch with a vibrant digital display screen glowing in a dark environment. The watch band is made of fine mesh metallic material. Electric blue neon highlights reflect off the watch glass in a professional tech-product photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKXTrFkCNv1_s4CSsSpg4ykBT0ixoMxSsAJ7oE_oKpN1MET2vZIhGL-6It_sjWHCnl8dUEJRj1YnYgRx6NVrtoZMnPttEeAjZIVXmCNWhLTagnV_cNkqgNwNWtSCyp2mTC_ISLXW3OHrIQHFz1a7XFC070Fj8U8NiZumagHd1M7CHL3a5REGdIxKtjhKCgULZ7g09wS5E-_1MmJ_TZ42s3eNF3aBrARLGY4hK36l1rhYrwgP5rdcSslHXz1zNBM7faFlzN0R6spLk"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Smart Watch Series X</td>
+<td class="p-4 text-sm text-on-surface-variant">AliExpress</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-secondary/10 text-secondary rounded text-[10px] font-bold">ZID</span></td>
+<td class="p-4 text-sm font-bold">320</td>
+<td class="p-4 text-sm">145</td>
+<td class="p-4 text-sm text-tertiary">55%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-error font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+                                    3 left
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A coiled roll of RGB LED strip lights glowing with a spectrum of neon colors: blue, pink, and green. The light illuminates a dark tech workshop setting with sharp reflections on a black surface. Professional high-contrast lighting highlighting the individual LED components." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuT5wOmyxXuazmfXNVIDaf3eU3n8VdnNp8Jw0MdS5IITcN9p583PmmqHffv02k0qspm01rSkDv6WSbsSp8aFhi2Qm0A7uXN9Y_4NlBCM7YFNdcy5BotQhdNVBx5c_6LZdsOG_NAx5sagjTWyqCEvMieHqCd4Z0TU1miz-PRqfXNQalzb7mOxb8ickW3QoLgQx2ruXyACIAl62W28lbKLqcE25D5_6IDAGbIKtVI7G1mVwkqzhEtwkAUwZQb9sGLKdllTKywWJV9-4"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">LED Strip Lights 10m</td>
+<td class="p-4 text-sm text-on-surface-variant">CJ</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-primary/10 text-primary rounded text-[10px] font-bold">SALLA</span></td>
+<td class="p-4 text-sm font-bold">65</td>
+<td class="p-4 text-sm">18</td>
+<td class="p-4 text-sm text-tertiary">72%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-on-surface-variant/50">
+<span class="w-1.5 h-1.5 rounded-full bg-error opacity-40"></span>
+                                    Out of Stock
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-white/10 text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-bold">PAUSED</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-tertiary"><span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">play_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A luxurious collection of hair growth oil bottles with gold caps arranged on a dark reflective surface. Soft warm spotlighting from above creates highlights on the oil consistency inside the glass. A clean, sophisticated health and beauty aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACmI4dTF8tv8-JDuZtBz-nJFUUp5kJTHLQrNgOUg7RcNujEwQyXZ9N3epS038u0tKhMyG2FY3ncyoT9fX7Oh3DHhVIftkyNqCaQjhvCAnEqQSlNOHqrMZWhVtrMiVDIKrAFgK_Ciq87yIwyxLJMI49friTEDmGLDEZlxEQcVYwL-M1HVtAoLkQK1q1AcAr_DmJV2bbaABWWeN9VcnZXnc4kKLDT5TJPyMCHD4OMYvQzJ18mFFOBisZE4akwtMkKj3ItLPgwG6WwCg"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Hair Growth Oil Set</td>
+<td class="p-4 text-sm text-on-surface-variant">AliExpress</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-primary/10 text-primary rounded text-[10px] font-bold">SALLA</span></td>
+<td class="p-4 text-sm font-bold">120</td>
+<td class="p-4 text-sm">38</td>
+<td class="p-4 text-sm text-tertiary">68%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                    In Stock
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input checked="" class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A modern, portable cordless blender in a vibrant mint green color sitting on a kitchen counter. The shot is captured in high-key lighting but with a dark background to make the color pop. Sharp focus on the stainless steel blades and clean plastic body." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsgPIuRUTvh24QocXDKLOpSvQwnUr59RNnHGL_x_kkPyytXw8f_Z9CmqWhBdhgahofnGK0qGiJtb0yCsY_nbgFC9vbclhXCYtrgoWtLFU2Z7Soff69B73Q0XFdfTPW1Jt3i9V5j7xHIhCOtB7SU_HZi5T4swoFsx0fShlfuf8-sPDzmwvvSHVkNdhWcKf4du--yJ3KaUes22phsKJ0d3hR0NF7Q-IQNA34fiStvtp0-25_NHg6eYWF3waTdBRT1JWiAYslkWlRxm8"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Portable Blender</td>
+<td class="p-4 text-sm text-on-surface-variant">AliExpress</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-primary/10 text-primary rounded text-[10px] font-bold">SALLA</span></td>
+<td class="p-4 text-sm font-bold">150</td>
+<td class="p-4 text-sm">60</td>
+<td class="p-4 text-sm text-tertiary">60%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                    In Stock
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A minimalist ultrasonic humidifier emitting a fine, illuminated cool mist into a dark room. The device has a soft blue internal LED glow. Soft focus background with high-end lifestyle product lighting focusing on the vapor movement." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV8_JSKwN4UyUtFLZqzirSWJhulz_EJrLy4S3c2FjpeurGE21PwzcrnfVp_1KORAbPRACbYXqcDN2u5sl7ujKEFW57hbpiGn0nH4Cjcljdu_5m_XeNvCzo55xicWoDqE5qt1iSDzUm2yMIoHOeVtEf-HQGsEJEuYvZeWzxjQGS8YnnB1jw5gLNPtQqUz3HgMUrhn_X7MYGMEJ244wrfLpSlNLYqa206vV32FYvvgTRWGrd_NaC2AE0pwGprVKHBAiFplw5A8hh5zo"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Ultrasonic Humidifier</td>
+<td class="p-4 text-sm text-on-surface-variant">CJ</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-secondary/10 text-secondary rounded text-[10px] font-bold">ZID</span></td>
+<td class="p-4 text-sm font-bold">210</td>
+<td class="p-4 text-sm">85</td>
+<td class="p-4 text-sm text-tertiary">59.5%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-error font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                    5 left
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="p-4"><input class="rounded bg-[#050505] border-white/10 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-4">
+<div class="w-12 h-12 rounded bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="An ergonomic white and gray neck massager with metallic nodes, shown against a dark, tech-inspired background. The lighting is crisp and cool-toned, emphasizing the clean industrial design and sophisticated recovery technology." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIIy7X1__pt1kHhxFpFHgFm4d0ONokVYopC9q97VISrC4rN6KOwzp3UbZgo-2dVOknU7LWUVzJ7SGlDySVAKT23zv4D4cto3qwEa45yrRkWiBq8HXkWTBWsCFgBBtmsh6HFGHwaKqyNF8T0sOaCVx_KFA4sxNP3IspkKKbQ7_3aHwDo-aqrBKTddr0L5T54TSRUpOSa8RBiohoi6FKhl6r1d1bHnSmBsg2OyveUUbtGrK4GEsoBATtHwexvV-Oz56YLJ0UlvimG4M"/>
+</div>
+</td>
+<td class="p-4 font-medium text-sm">Neck Massager Pro</td>
+<td class="p-4 text-sm text-on-surface-variant">AliExpress</td>
+<td class="p-4 text-sm"><span class="px-2 py-1 bg-secondary/10 text-secondary rounded text-[10px] font-bold">ZID</span></td>
+<td class="p-4 text-sm font-bold">280</td>
+<td class="p-4 text-sm">110</td>
+<td class="p-4 text-sm text-tertiary">60.7%</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-xs text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                    In Stock
+                                </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">ACTIVE</span>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="hover:text-primary"><span class="material-symbols-outlined text-lg">sync</span></button>
+<button class="hover:text-error"><span class="material-symbols-outlined text-lg">pause_circle</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-8 flex items-center justify-between">
+<p class="text-sm text-on-surface-variant">Showing 1-8 of 156 products</p>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg glass-card hover:bg-white/10 transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold text-xs">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg glass-card hover:bg-white/10 transition-colors text-on-surface-variant text-xs">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg glass-card hover:bg-white/10 transition-colors text-on-surface-variant text-xs">3</button>
+<span class="text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg glass-card hover:bg-white/10 transition-colors text-on-surface-variant text-xs">20</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg glass-card hover:bg-white/10 transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</main>
+<!-- Floating Bulk Action Bar -->
+<div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-50">
+<div class="glass-card px-6 py-4 rounded-full flex items-center gap-8 shadow-2xl border-primary/30 glow-shadow">
+<span class="text-sm font-bold text-on-surface flex items-center gap-2">
+<span class="w-6 h-6 flex items-center justify-center bg-primary text-on-primary rounded-full text-[10px]">3</span>
+                selected
+            </span>
+<div class="h-6 w-px bg-white/10"></div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 text-xs font-bold text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">sync</span>
+                    Sync Stock
+                </button>
+<button class="flex items-center gap-2 text-xs font-bold text-on-surface hover:text-error transition-colors">
+<span class="material-symbols-outlined text-sm">pause_circle</span>
+                    Pause
+                </button>
+<button class="flex items-center gap-2 text-xs font-bold text-error hover:brightness-125 transition-colors">
+<span class="material-symbols-outlined text-sm">delete</span>
+                    Delete
+                </button>
+</div>
+<button class="ml-4 text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-sm">close</span></button>
+</div>
+</div>
+</body></html>

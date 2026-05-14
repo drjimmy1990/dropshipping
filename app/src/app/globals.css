@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+/* ================================================================
+   ETHEREAL VELOCITY — DropLinker Design System
+   Glassmorphic Dark SaaS Theme
+   ================================================================ */
+
+@theme inline {
+  /* --- Font Family --- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Semantic Colors (Material 3 Tonal Surface System) --- */
+  --color-surface: #13121b;
+  --color-surface-dim: #13121b;
+  --color-surface-bright: #3a3842;
+  --color-surface-container-lowest: #0e0d16;
+  --color-surface-container-low: #1c1a24;
+  --color-surface-container: #201e28;
+  --color-surface-container-high: #2a2933;
+  --color-surface-container-highest: #35333e;
+  --color-on-surface: #e5e0ee;
+  --color-on-surface-variant: #c8c4d7;
+  --color-inverse-surface: #e5e0ee;
+  --color-inverse-on-surface: #312f39;
+  --color-outline: #928ea0;
+  --color-outline-variant: #474554;
+  --color-surface-tint: #c6bfff;
+  --color-surface-variant: #35333e;
+  --color-background: #0f0e17;
+  --color-on-background: #e5e0ee;
+
+  /* --- Primary --- */
+  --color-primary: #c6bfff;
+  --color-on-primary: #2900a0;
+  --color-primary-container: #6c5ce7;
+  --color-on-primary-container: #faf6ff;
+  --color-inverse-primary: #5847d2;
+  --color-primary-fixed: #e4dfff;
+  --color-primary-fixed-dim: #c6bfff;
+  --color-on-primary-fixed: #160066;
+  --color-on-primary-fixed-variant: #4029ba;
+
+  /* --- Secondary (Cyan Flare) --- */
+  --color-secondary: #a5e7ff;
+  --color-on-secondary: #003543;
+  --color-secondary-container: #00d2ff;
+  --color-on-secondary-container: #00566a;
+  --color-secondary-fixed: #b6ebff;
+  --color-secondary-fixed-dim: #47d6ff;
+  --color-on-secondary-fixed: #001f28;
+  --color-on-secondary-fixed-variant: #004e60;
+
+  /* --- Tertiary (Emerald Flux) --- */
+  --color-tertiary: #4bddb7;
+  --color-on-tertiary: #00382b;
+  --color-tertiary-container: #008167;
+  --color-on-tertiary-container: #dffff1;
+  --color-tertiary-fixed: #6dfad2;
+  --color-tertiary-fixed-dim: #4bddb7;
+  --color-on-tertiary-fixed: #002018;
+  --color-on-tertiary-fixed-variant: #005140;
+
+  /* --- Error --- */
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  /* NOTE: Spacing, radius, and font-size tokens are intentionally kept
+     in :root (below) and NOT in @theme inline, because Tailwind v4 maps
+     --spacing-* to ALL size utilities (max-w, w, h, gap, p, m).
+     Overriding --spacing-lg here would turn max-w-lg from 32rem to 40px,
+     breaking all layouts. */
+}
+
+/* --- Design System Reference Tokens (non-Tailwind) --- */
+:root {
+  --ds-spacing-xs: 4px;
+  --ds-spacing-sm: 12px;
+  --ds-spacing-base: 8px;
+  --ds-spacing-md: 24px;
+  --ds-spacing-lg: 40px;
+  --ds-spacing-xl: 64px;
+  --ds-spacing-gutter: 24px;
+  --ds-margin-mobile: 20px;
+  --ds-margin-desktop: 48px;
+}
+
+/* --- Base Styles --- */
+body {
+  background-color: var(--color-background);
+  font-family: var(--font-sans);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Glassmorphism Utility Classes --- */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card-hover:hover,
+.glass-card-active {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-card-overlay {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 64px rgba(108, 92, 231, 0.4);
+}
+
+/* --- Gradient Utilities --- */
+.primary-gradient {
+  background: linear-gradient(135deg, #6c5ce7 0%, #00d2ff 100%);
+}
+
+.primary-gradient-text {
+  background: linear-gradient(135deg, #6c5ce7 0%, #00d2ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.primary-outline {
+  border: 1px solid transparent;
+  background-image: linear-gradient(var(--color-background), var(--color-background)),
+    linear-gradient(135deg, #6c5ce7 0%, #00d2ff 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container-lowest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+/* --- Focus Ring --- */
+*:focus-visible {
+  outline: 2px solid var(--color-secondary-container);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- Material Symbols --- */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}

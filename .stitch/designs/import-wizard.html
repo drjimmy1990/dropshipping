@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#a5e7ff",
+                        "tertiary-container": "#008167",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed": "#160066",
+                        "on-primary": "#2900a0",
+                        "error-container": "#93000a",
+                        "outline-variant": "#474554",
+                        "outline": "#928ea0",
+                        "surface-container-highest": "#35333e",
+                        "surface-container": "#201e28",
+                        "secondary-fixed-dim": "#47d6ff",
+                        "inverse-surface": "#e5e0ee",
+                        "primary": "#c6bfff",
+                        "on-secondary-container": "#00566a",
+                        "primary-fixed": "#e4dfff",
+                        "on-tertiary-container": "#dffff1",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "inverse-primary": "#5847d2",
+                        "surface-tint": "#c6bfff",
+                        "on-primary-container": "#faf6ff",
+                        "background": "#13121b",
+                        "secondary-container": "#00d2ff",
+                        "surface-dim": "#13121b",
+                        "primary-container": "#6c5ce7",
+                        "surface-container-lowest": "#0e0d16",
+                        "on-primary-fixed-variant": "#4029ba",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#4bddb7",
+                        "on-tertiary-fixed": "#002018",
+                        "surface-variant": "#35333e",
+                        "on-tertiary-fixed-variant": "#005140",
+                        "surface-container-low": "#1c1a24",
+                        "primary-fixed-dim": "#c6bfff",
+                        "tertiary-fixed": "#6dfad2",
+                        "inverse-on-surface": "#312f39",
+                        "surface-container-high": "#2a2933",
+                        "on-secondary-fixed": "#001f28",
+                        "on-error": "#690005",
+                        "surface-bright": "#3a3842",
+                        "on-tertiary": "#00382b",
+                        "on-secondary": "#003543",
+                        "surface": "#13121b",
+                        "on-surface-variant": "#c8c4d7",
+                        "secondary-fixed": "#b6ebff",
+                        "on-background": "#e5e0ee",
+                        "on-surface": "#e5e0ee",
+                        "tertiary": "#4bddb7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "base": "8px",
+                        "margin-mobile": "20px",
+                        "xs": "4px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["13px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-panel-active {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .neon-glow {
+            box-shadow: 0 0 64px 0 rgba(108, 92, 231, 0.4);
+        }
+        .primary-gradient {
+            background: linear-gradient(to right, #6c5ce7, #00d2ff);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Background Dashboard (Inactive) -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-white/10 opacity-30 pointer-events-none flex flex-col py-md bg-surface/40 backdrop-blur-md">
+<div class="px-md mb-lg">
+<h1 class="font-headline-md text-headline-md font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">DropLinker</h1>
+<p class="text-on-surface-variant font-label-sm uppercase tracking-widest text-[10px]">Precision Control</p>
+</div>
+<nav class="flex-1 space-y-xs px-sm">
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm text-primary font-bold border-r-2 border-primary">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md">Inventory</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm text-on-surface-variant">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-body-md">Orders</span>
+</div>
+</nav>
+</aside>
+<!-- Overlay / Wizard Container -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-md">
+<div class="relative w-full max-w-6xl max-h-[921px] glass-panel-active rounded-xl overflow-hidden flex flex-col neon-glow">
+<!-- Wizard Header (Fixed Top) -->
+<header class="h-16 px-lg flex items-center justify-between border-b border-white/10 glass-panel shrink-0">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">DropLinker Wizard</span>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-xs">
+<div class="flex items-center gap-xs text-on-surface-variant">
+<div class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[10px]">1</div>
+<span class="font-label-sm">Variants</span>
+</div>
+<div class="w-8 h-px bg-white/10"></div>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<div class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[10px]">2</div>
+<span class="font-label-sm">Pricing</span>
+</div>
+<div class="w-8 h-px bg-white/10"></div>
+<div class="flex items-center gap-xs text-white">
+<div class="w-6 h-6 rounded-full primary-gradient flex items-center justify-center text-[10px] font-bold">3</div>
+<span class="font-label-sm font-bold">Edit Content</span>
+</div>
+<div class="w-8 h-px bg-white/10"></div>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<div class="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center text-[10px]">4</div>
+<span class="font-label-sm">Store</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-white">help</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-white">close</span>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-lg flex gap-xl relative">
+<!-- Left Column (40%) -->
+<div class="w-2/5 flex flex-col gap-md">
+<div class="aspect-square rounded-xl overflow-hidden glass-panel group relative">
+<img alt="Wireless Earbuds" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A high-end, professional product shot of sleek matte black wireless earbuds with silver metallic accents, resting on a reflective dark glass surface. The lighting is dramatic and moody, with cool cyan and deep violet highlights illuminating the ergonomic curves of the earbuds. The overall aesthetic is futuristic and minimalist, fitting a premium tech hardware marketing campaign." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkNGPVSInMsWFzmGPomxJAEIRuPmy3xRzpwBcBbuS7J63FP81cDoBCypEKgQfNxSVXojalM8tvVX72yAFmE-rVqY__WAxv2Ix9NlTQWm9odlkAJ3NRXKC3X2EhCg8wN5aniSNxDefLcRbZVhJx9SXSFgnUX-9SEMHxDtxkyRmCz12dtUggu4j7hq0o8AByUsaBbJhtEggxg36dgH_nfbzkQn68GnJzvl_F3fG1HqVYeGjF-NZ3scSrd0qIBumUbAYRokNmR32TbXQ"/>
+<div class="absolute top-sm left-sm px-sm py-xs rounded bg-surface/80 backdrop-blur-md border border-white/10 flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-orange-500"></span>
+<span class="font-label-sm text-[10px] text-white">From AliExpress</span>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-sm">
+<div class="aspect-square rounded-lg border-2 border-primary overflow-hidden cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="Close up of a wireless earbud charging case with glowing LED indicators, set against a dark, tech-inspired background with soft purple ambient light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL8oYk7ZFejiyEkVGyx0vfP3rgyVC9VUCNG55Xo5dkSl2HdQP0SuTBkOFKYHMDLC58fbI8F77PNxItXgQ2VvHFfCvWe6RcjOUxDIXM6YNb54IB2XCgL18Y0ckwa-sS_mRlPMtEberM89QBRANrnpdRBX6yfDQPD2jSomFgZEAAQlJ1Gd5UqOmP78l03xHcg1UHulhxP1hg8lcgYeGHcPVQ2zhcrAlds4AHHol0eHO1BK1cmbix4CRnNEzQIwkFsK-C7nUu3Q4v_RU"/>
+</div>
+<div class="aspect-square rounded-lg glass-panel overflow-hidden cursor-pointer opacity-60 hover:opacity-100">
+<img class="w-full h-full object-cover" data-alt="Detailed macro shot of the earbud nozzle and driver mesh, highlighting high-quality manufacturing and precision engineering in a dark blue studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCl9qPJRgEEw9TSCWkmOTFsupuV6JpodfMbq3Pomw19kTnPeGwgVCrYG6T_ITlWxVX_Yzahf686AzP7H0ZriveZoIOiWb2LYEg5ec-r6bMvAyOYStO_EslYFFjKIqXc63bqSXUtCnIuA2179bjcNpdozvUMgSwIOyIHzaCXyG7xDbe9Eql1fLFybgjMBgUf0m9rbF6F-TjqqaMKhYb2X3a2fu6jQoVGmiaMiyBS048975Di4p1HASsCY3Ecsm5qm8JUOiW8KQuHqY"/>
+</div>
+<div class="aspect-square rounded-lg glass-panel overflow-hidden cursor-pointer opacity-60 hover:opacity-100">
+<img class="w-full h-full object-cover" data-alt="Modern wireless earbuds being held between fingers to show scale, featuring a futuristic carbon fiber texture under soft neon lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSYqhmtkzZekDd5SRNNZUAn5wnUvqzdrZM2JgiopuHb13nU024CJy6noIwLhWi5Pon_--g-GCIJUBw_96uI_O10x2pgSw0oKJPRnhx2JxkG_t8XWK4fG4wP5LlRsBO3mV33CHJe-vs-u3zB_HjZ3KV6bW1QKri8i-1EHa6FF9ZiKs4ApZLXhbyWfUth3fo8clIM1qVseSY7rvunC1MulYLUgFYfHPRS1OxrvoA5DNtLMCfCYg11nwPBN93i6igfvM2uZKatee68jY"/>
+</div>
+<div class="aspect-square rounded-lg glass-panel overflow-hidden cursor-pointer opacity-60 hover:opacity-100">
+<img class="w-full h-full object-cover" data-alt="The product packaging box for high-end earbuds, designed with minimalist typography and high-contrast black and white graphics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6iPmKHITt10Rk2JhkOZpK9qjKDtxh3yjr8UGcU3DNUfBL_82neQCGs3YY3WFuGIlcNDJsnrNhD-tGVgePHeH_f8pc7dp3WwhrQfcm9EAvC826qpx6at-bC48Q1O6OPEnr0BvzQYRBV5f_in7efLOentuJKueUTtDu5qKeqevpyYt0vgrjvu81erP264j1QvYhLhvdThZoJYDht30BNxdvtpQqvbobAbRj_4aY1Z_aE0vja0m1V_dfniIREGSHjPV-8jw57tVORTE"/>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-md flex flex-col gap-sm mt-auto">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-label-sm">Supplier Original Price</span>
+<span class="text-on-surface font-bold">SAR 45.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-label-sm">Global Rating</span>
+<div class="flex items-center gap-xs">
+<span class="text-secondary font-bold">4.5</span>
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (60%) -->
+<div class="w-3/5 flex flex-col gap-lg">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Edit Product Content</h2>
+<p class="text-on-surface-variant text-body-md mt-xs">Refine your product details for optimal conversion in your target market.</p>
+</div>
+<div class="flex flex-col gap-md">
+<!-- Product Titles -->
+<div class="space-y-sm">
+<label class="text-label-sm text-on-surface-variant block">Product Title (English)</label>
+<div class="flex gap-sm">
+<input class="flex-1 bg-[#050505] border-white/10 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-lg text-on-surface px-md py-sm" type="text" value="Wireless Bluetooth Earbuds Pro Max - Active Noise Cancelling"/>
+<button class="primary-gradient px-md rounded-lg flex items-center gap-xs hover:brightness-110 transition-all shrink-0">
+<span class="material-symbols-outlined text-[18px]">auto_fix</span>
+<span class="font-label-sm">AI Rewrite</span>
+</button>
+</div>
+</div>
+<div class="space-y-sm" dir="rtl">
+<label class="text-label-sm text-on-surface-variant block text-right">Product Title (Arabic)</label>
+<div class="flex gap-sm">
+<input class="flex-1 bg-[#050505] border-white/10 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-lg text-on-surface px-md py-sm text-right" type="text" value="سماعات بلوتوث لاسلكية برو ماكس"/>
+<button class="primary-gradient px-md rounded-lg flex items-center gap-xs hover:brightness-110 transition-all shrink-0">
+<span class="material-symbols-outlined text-[18px]">auto_fix</span>
+<span class="font-label-sm">AI Rewrite</span>
+</button>
+</div>
+</div>
+<!-- Descriptions -->
+<div class="space-y-sm">
+<label class="text-label-sm text-on-surface-variant block">Description (English)</label>
+<div class="rounded-lg glass-panel overflow-hidden">
+<div class="bg-white/5 p-xs border-b border-white/10 flex gap-sm">
+<span class="material-symbols-outlined text-sm cursor-pointer p-xs hover:bg-white/10 rounded">format_bold</span>
+<span class="material-symbols-outlined text-sm cursor-pointer p-xs hover:bg-white/10 rounded">format_italic</span>
+<span class="material-symbols-outlined text-sm cursor-pointer p-xs hover:bg-white/10 rounded">format_list_bulleted</span>
+</div>
+<textarea class="w-full h-32 bg-[#050505] border-none focus:ring-0 text-on-surface px-md py-sm text-body-md" placeholder="Enter product description...">Experience crystal clear sound with the new Pro Max earbuds. Featuring state-of-the-art noise cancellation and 24-hour battery life.</textarea>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="text-label-sm text-on-surface-variant block text-right">Description (Arabic)</label>
+<div class="rounded-lg glass-panel overflow-hidden" dir="rtl">
+<div class="bg-white/5 p-xs border-b border-white/10 flex gap-sm">
+<span class="material-symbols-outlined text-sm cursor-pointer p-xs hover:bg-white/10 rounded">format_bold</span>
+<span class="material-symbols-outlined text-sm cursor-pointer p-xs hover:bg-white/10 rounded">format_italic</span>
+<span class="material-symbols-outlined text-sm cursor-pointer p-xs hover:bg-white/10 rounded">format_list_bulleted</span>
+</div>
+<textarea class="w-full h-32 bg-[#050505] border-none focus:ring-0 text-on-surface px-md py-sm text-body-md" placeholder="أدخل وصف المنتج...">استمتع بصوت نقي جداً مع سماعات برو ماكس الجديدة. تتميز بأحدث تقنيات عزل الضوضاء وبطارية تدوم لمدة 24 ساعة.</textarea>
+</div>
+</div>
+<button class="w-full py-md rounded-lg border border-primary/40 text-primary font-bold hover:bg-primary/5 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>✨ AI Generate Full Description</span>
+</button>
+<!-- SEO Keywords -->
+<div class="space-y-sm">
+<label class="text-label-sm text-on-surface-variant block">SEO Keywords</label>
+<div class="flex flex-wrap gap-xs p-sm bg-[#050505] border border-white/10 rounded-lg">
+<span class="bg-surface-container-highest px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
+                                    bluetooth earbuds <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-surface-container-highest px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
+                                    wireless headphones <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-surface-container-highest px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
+                                    noise cancelling <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-sm py-xs px-xs flex-1 min-w-[80px]" placeholder="Add tag..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Profit Calculator -->
+<div class="absolute right-lg top-lg w-64 glass-panel rounded-xl p-md border-secondary/30 neon-glow flex flex-col gap-sm">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-secondary">calculate</span>
+<span class="font-label-sm uppercase tracking-wider text-secondary">Profit Calculator</span>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center text-xs text-on-surface-variant">
+<span>Supplier Cost</span>
+<span>SAR 45.00</span>
+</div>
+<div class="space-y-xs">
+<label class="text-[10px] text-on-surface-variant uppercase">Retail Price</label>
+<div class="relative">
+<span class="absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant font-label-sm">SAR</span>
+<input class="w-full bg-[#050505] border-white/20 rounded pl-12 py-xs font-bold text-on-surface" type="text" value="180.00"/>
+</div>
+</div>
+<div class="h-px bg-white/10 my-xs"></div>
+<div class="flex justify-between items-center text-[11px] text-on-surface-variant">
+<span>Platform (2%)</span>
+<span>SAR 3.60</span>
+</div>
+<div class="flex justify-between items-center text-[11px] text-on-surface-variant">
+<span>Shipping</span>
+<span>SAR 12.00</span>
+</div>
+<div class="h-px bg-white/10 my-xs"></div>
+<div class="flex justify-between items-center">
+<span class="font-label-sm">Total Profit</span>
+<span class="text-tertiary font-bold">SAR 119.40</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-sm">Margin</span>
+<span class="bg-tertiary/10 text-tertiary px-sm py-xs rounded-full text-[10px] font-bold border border-tertiary/20">66%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Actions (Sticky) -->
+<footer class="h-20 px-xl flex items-center justify-between border-t border-white/20 glass-panel shrink-0">
+<button class="px-xl py-sm rounded-lg border border-white/10 text-on-surface hover:brightness-110 transition-all flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span class="font-label-sm">Back</span>
+</button>
+<button class="primary-gradient px-xl py-sm rounded-lg text-white font-bold hover:brightness-110 transition-all flex items-center gap-xs shadow-[0_4px_16px_rgba(108,92,231,0.3)]">
+<span class="font-label-sm">Next: Choose Store</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</footer>
+</div>
+</div>
+</body></html>

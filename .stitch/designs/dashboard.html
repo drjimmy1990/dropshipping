@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DropLinker | Merchant Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#2a2933",
+                        "surface-variant": "#35333e",
+                        "surface-container-lowest": "#0e0d16",
+                        "surface-container": "#201e28",
+                        "on-secondary": "#003543",
+                        "on-surface-variant": "#c8c4d7",
+                        "surface-container-low": "#1c1a24",
+                        "on-error": "#690005",
+                        "on-tertiary-container": "#dffff1",
+                        "primary": "#c6bfff",
+                        "surface-dim": "#13121b",
+                        "primary-container": "#6c5ce7",
+                        "on-surface": "#e5e0ee",
+                        "tertiary-fixed-dim": "#4bddb7",
+                        "primary-fixed-dim": "#c6bfff",
+                        "on-primary-container": "#faf6ff",
+                        "on-primary": "#2900a0",
+                        "secondary-fixed-dim": "#47d6ff",
+                        "on-error-container": "#ffdad6",
+                        "inverse-surface": "#e5e0ee",
+                        "on-primary-fixed": "#160066",
+                        "on-tertiary-fixed-variant": "#005140",
+                        "on-secondary-fixed": "#001f28",
+                        "error-container": "#93000a",
+                        "outline": "#928ea0",
+                        "tertiary-container": "#008167",
+                        "on-primary-fixed-variant": "#4029ba",
+                        "secondary": "#a5e7ff",
+                        "inverse-on-surface": "#312f39",
+                        "background": "#13121b",
+                        "surface-tint": "#c6bfff",
+                        "tertiary-fixed": "#6dfad2",
+                        "on-tertiary-fixed": "#002018",
+                        "surface-bright": "#3a3842",
+                        "on-secondary-container": "#00566a",
+                        "tertiary": "#4bddb7",
+                        "secondary-fixed": "#b6ebff",
+                        "primary-fixed": "#e4dfff",
+                        "on-tertiary": "#00382b",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#35333e",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "outline-variant": "#474554",
+                        "secondary-container": "#00d2ff",
+                        "surface": "#13121b",
+                        "on-background": "#e5e0ee",
+                        "inverse-primary": "#5847d2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "margin-desktop": "48px",
+                        "sm": "12px",
+                        "xl": "64px",
+                        "lg": "40px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["13px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #13121b; color: #e5e0ee; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card-active {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .primary-gradient-btn {
+            background: linear-gradient(135deg, #6C5CE7 0%, #00D2FF 100%);
+            transition: all 0.3s ease;
+        }
+        .primary-gradient-btn:hover {
+            filter: brightness(1.1);
+        }
+        .secondary-gradient-border {
+            border: 1px solid transparent;
+            background-image: linear-gradient(#13121b, #13121b), linear-gradient(135deg, #6C5CE7 0%, #00D2FF 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- SIDEBAR NAVIGATION -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low/40 backdrop-blur-xl border-r border-white/10 flex flex-col py-md z-50">
+<div class="px-md mb-xl flex items-center justify-between">
+<span class="font-headline-lg text-headline-lg text-primary tracking-tight">DropLinker</span>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface transition-all">menu_open</button>
+</div>
+<nav class="flex-1 space-y-1 px-sm">
+<a class="flex items-center gap-base px-md py-sm bg-primary-container/20 text-primary font-bold border-r-2 border-primary transition-all duration-300" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span>Product Discovery</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>My Products</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span>Orders</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span>Wallet</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span>Integrations</span>
+</a>
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-sm space-y-1">
+<a class="flex items-center gap-base px-md py-sm text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-all duration-300" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<div class="pt-md border-t border-white/5 mx-md"></div>
+<div class="flex items-center gap-base px-md py-md mt-sm">
+<img alt="Merchant Profile Picture" class="w-10 h-10 rounded-full border border-primary/20 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDK2oIBCnL_M5ZJev6QP1aJkb-UeE5yBNpian_71TnA5aB0IYW7gZ81lZ2FApyernV2mPt1JzJz7OW15dmPc3wNvowxKJ2OTPxPUiLBv3p3TXaRxKh4ThtBTQODk2xqm6WtDgZ3Qw1ZRzEDvoLau-lNMLiRgGMpenV1yMYsyiIK5fL63fhb1ZsB46T2ZvMPcCRacbfYl2A_hL3sSJg4ELQjVb3Yjk91vcvZc-Ud0Yn1S8qEq04Ev-ywjvIATlTfGdLdUUzpAC1mHyA"/>
+<div class="overflow-hidden">
+<p class="font-bold text-on-surface truncate">Ahmed</p>
+<p class="text-xs text-on-surface-variant truncate">Elite Merchant</p>
+</div>
+<button class="ml-auto material-symbols-outlined text-on-surface-variant hover:text-error transition-colors">logout</button>
+</div>
+</div>
+</aside>
+<!-- MAIN CONTENT -->
+<main class="ml-64 min-h-screen">
+<!-- TOP NAV BAR -->
+<header class="w-full h-20 sticky top-0 bg-surface/30 backdrop-blur-md border-b border-white/10 flex justify-between items-center px-margin-desktop z-40">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">Welcome back, Ahmed</h1>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-base top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-[#050505] border-none rounded-lg py-2 pl-10 pr-base text-body-md focus:ring-1 focus:ring-secondary/50 transition-all" placeholder="Search orders, products..." type="text"/>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-xs font-bold text-primary hover:text-secondary transition-colors">
+<span>AR</span>
+<span class="text-white/20">|</span>
+<span>EN</span>
+</button>
+<button class="relative material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">
+                        notifications
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border border-surface"></span>
+</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">chat_bubble</button>
+<button class="primary-gradient-btn px-md py-2 rounded-lg text-white font-bold flex items-center gap-xs">
+<span class="material-symbols-outlined">add</span>
+                        Add Product
+                    </button>
+</div>
+</div>
+</header>
+<!-- DASHBOARD CANVAS -->
+<div class="p-margin-desktop space-y-gutter">
+<!-- STATS ROW -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Wallet Balance -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-16 h-16 bg-primary-container/10 rounded-full blur-2xl group-hover:bg-primary-container/20 transition-all"></div>
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-sm">WALLET BALANCE</span>
+<span class="material-symbols-outlined text-primary-container">account_balance_wallet</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">SAR 12,450.00</h2>
+</div>
+<div class="flex items-center justify-between mt-xs">
+<span class="text-[#00B894] flex items-center gap-xs text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+</span>
+<button class="text-xs font-bold text-secondary hover:underline">Top Up</button>
+</div>
+</div>
+<!-- Orders Today -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-sm">ORDERS TODAY</span>
+<span class="material-symbols-outlined text-secondary">shopping_cart</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">24</h2>
+<div class="flex gap-sm mt-xs">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">NEW</span>
+<span class="text-xs font-bold text-[#FFD93D]">8</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">PROC</span>
+<span class="text-xs font-bold text-secondary">12</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">SHIP</span>
+<span class="text-xs font-bold text-[#00B894]">4</span>
+</div>
+</div>
+</div>
+<!-- Active Products -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-sm">ACTIVE PRODUCTS</span>
+<span class="material-symbols-outlined text-tertiary">inventory_2</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">156</h2>
+<div class="bg-error/10 border border-error/20 px-sm py-1 rounded flex items-center gap-xs mt-xs">
+<span class="material-symbols-outlined text-error text-sm">warning</span>
+<span class="text-xs text-error font-bold">12 out of stock</span>
+</div>
+</div>
+<!-- Revenue Month -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-sm">REVENUE THIS MONTH</span>
+<span class="material-symbols-outlined text-[#00B894]">payments</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">SAR 48,200</h2>
+<div class="mt-xs">
+<span class="bg-[#00B894]/10 text-[#00B894] px-2 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-xs">
+<span class="material-symbols-outlined text-xs">arrow_upward</span>
+                            18%
+                        </span>
+</div>
+</div>
+</div>
+<!-- MIDDLE ROW -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Revenue Chart (2/3) -->
+<div class="lg:col-span-2 glass-card rounded-xl p-md">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface">Revenue Growth</h3>
+<div class="flex gap-sm">
+<button class="bg-white/5 text-on-surface-variant px-sm py-1 rounded-lg text-xs hover:bg-white/10 transition-all">Last 7 Days</button>
+<button class="bg-primary-container/20 text-primary border border-primary/30 px-sm py-1 rounded-lg text-xs">Last 30 Days</button>
+</div>
+</div>
+<div class="h-64 w-full relative flex items-end gap-base">
+<!-- Simulated Chart Visual -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/10 to-transparent opacity-50"></div>
+<div class="flex-1 h-1/2 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[60%]"></div>
+<div class="flex-1 h-2/3 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[70%]"></div>
+<div class="flex-1 h-1/3 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[40%]"></div>
+<div class="flex-1 h-1/2 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[60%]"></div>
+<div class="flex-1 h-3/4 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[80%]"></div>
+<div class="flex-1 h-2/3 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[75%]"></div>
+<div class="flex-1 h-5/6 bg-primary/30 rounded-t-sm relative group cursor-pointer transition-all hover:h-[90%] border-t-2 border-primary"></div>
+<div class="flex-1 h-3/4 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[80%]"></div>
+<div class="flex-1 h-2/3 bg-primary/20 rounded-t-sm relative group cursor-pointer transition-all hover:h-[70%]"></div>
+</div>
+<div class="flex justify-between mt-md text-xs text-on-surface-variant">
+<span>01 May</span>
+<span>08 May</span>
+<span>15 May</span>
+<span>22 May</span>
+<span>30 May</span>
+</div>
+</div>
+<!-- Recent Orders (1/3) -->
+<div class="glass-card rounded-xl overflow-hidden flex flex-col">
+<div class="p-md border-b border-white/5 flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Orders</h3>
+<a class="text-primary text-xs font-bold hover:underline" href="#">View All</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase bg-white/5">
+<tr>
+<th class="px-md py-3">ID</th>
+<th class="px-md py-3">Amount</th>
+<th class="px-md py-3">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-all group">
+<td class="px-md py-4">
+<p class="text-on-surface font-bold text-sm">#DL-9082</p>
+<p class="text-[10px] text-on-surface-variant">Khalid M.</p>
+</td>
+<td class="px-md py-4 text-sm font-bold">SAR 240.00</td>
+<td class="px-md py-4">
+<span class="bg-[#00B894]/10 text-[#00B894] px-2 py-0.5 rounded-full text-[10px] font-bold">Shipped</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-all group">
+<td class="px-md py-4">
+<p class="text-on-surface font-bold text-sm">#DL-9081</p>
+<p class="text-[10px] text-on-surface-variant">Sara A.</p>
+</td>
+<td class="px-md py-4 text-sm font-bold">SAR 1,120.00</td>
+<td class="px-md py-4">
+<span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-[10px] font-bold">Processing</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-all group">
+<td class="px-md py-4">
+<p class="text-on-surface font-bold text-sm">#DL-9080</p>
+<p class="text-[10px] text-on-surface-variant">John Doe</p>
+</td>
+<td class="px-md py-4 text-sm font-bold">SAR 45.00</td>
+<td class="px-md py-4">
+<span class="bg-[#FFD93D]/10 text-[#FFD93D] px-2 py-0.5 rounded-full text-[10px] font-bold">New</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-all group">
+<td class="px-md py-4">
+<p class="text-on-surface font-bold text-sm">#DL-9079</p>
+<p class="text-[10px] text-on-surface-variant">Omar L.</p>
+</td>
+<td class="px-md py-4 text-sm font-bold">SAR 330.00</td>
+<td class="px-md py-4">
+<span class="bg-error/10 text-error px-2 py-0.5 rounded-full text-[10px] font-bold">Failed</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-all group">
+<td class="px-md py-4">
+<p class="text-on-surface font-bold text-sm">#DL-9078</p>
+<p class="text-[10px] text-on-surface-variant">Ali V.</p>
+</td>
+<td class="px-md py-4 text-sm font-bold">SAR 98.00</td>
+<td class="px-md py-4">
+<span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-[10px] font-bold">Processing</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- BOTTOM ROW -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter pb-xl">
+<!-- Quick Actions -->
+<div class="glass-card rounded-xl p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-md">Quick Actions</h3>
+<div class="grid grid-cols-2 gap-md">
+<button class="secondary-gradient-border p-md rounded-xl flex flex-col items-center gap-sm group transition-all">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">cloud_download</span>
+<span class="font-bold text-sm">Import Products</span>
+</button>
+<button class="secondary-gradient-border p-md rounded-xl flex flex-col items-center gap-sm group transition-all">
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">sync</span>
+<span class="font-bold text-sm">Sync Stock</span>
+</button>
+<button class="secondary-gradient-border p-md rounded-xl flex flex-col items-center gap-sm group transition-all">
+<span class="material-symbols-outlined text-tertiary group-hover:scale-110 transition-transform">visibility</span>
+<span class="font-bold text-sm">View Orders</span>
+</button>
+<button class="secondary-gradient-border p-md rounded-xl flex flex-col items-center gap-sm group transition-all">
+<span class="material-symbols-outlined text-[#FFD93D] group-hover:scale-110 transition-transform">account_balance_wallet</span>
+<span class="font-bold text-sm">Top Up Wallet</span>
+</button>
+</div>
+</div>
+<!-- Alerts / Notifications -->
+<div class="glass-card rounded-xl p-md">
+<div class="flex items-center justify-between mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Alerts</h3>
+<span class="bg-error/20 text-error text-[10px] px-2 py-0.5 rounded font-bold">4 Action Required</span>
+</div>
+<div class="space-y-sm">
+<div class="flex gap-md items-start p-sm rounded-lg hover:bg-white/5 transition-colors border-l-2 border-error">
+<span class="material-symbols-outlined text-error mt-0.5">report</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Low Wallet Balance</p>
+<p class="text-xs text-on-surface-variant">Your balance is below SAR 500. Automatic syncing might fail.</p>
+<p class="text-[10px] text-white/20 mt-1">2 mins ago</p>
+</div>
+</div>
+<div class="flex gap-md items-start p-sm rounded-lg hover:bg-white/5 transition-colors border-l-2 border-[#FFD93D]">
+<span class="material-symbols-outlined text-[#FFD93D] mt-0.5">error</span>
+<div>
+<p class="text-sm font-bold text-on-surface">3 Failed Orders</p>
+<p class="text-xs text-on-surface-variant">Orders #DL-9079, #DL-9065, #DL-9064 failed due to address issues.</p>
+<p class="text-[10px] text-white/20 mt-1">1 hour ago</p>
+</div>
+</div>
+<div class="flex gap-md items-start p-sm rounded-lg hover:bg-white/5 transition-colors border-l-2 border-secondary">
+<span class="material-symbols-outlined text-secondary mt-0.5">info</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Stock Update Available</p>
+<p class="text-xs text-on-surface-variant">15 products from Supplier 'GadgetHub' have new stock levels.</p>
+<p class="text-[10px] text-white/20 mt-1">3 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FLOATING ACTION BUTTON (DASHBOARD ONLY) -->
+<button class="fixed bottom-lg right-lg primary-gradient-btn w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl shadow-primary-container/40 z-50 transition-transform active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</button>
+</body></html>

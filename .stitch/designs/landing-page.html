@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DropLinker - Automate Your Dropshipping Business</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary": "#a5e7ff",
+                      "on-primary": "#2900a0",
+                      "error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#004e60",
+                      "surface-bright": "#3a3842",
+                      "surface-container-highest": "#35333e",
+                      "background": "#13121b",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-high": "#2a2933",
+                      "on-surface-variant": "#c8c4d7",
+                      "inverse-on-surface": "#312f39",
+                      "surface": "#13121b",
+                      "tertiary-fixed-dim": "#4bddb7",
+                      "primary-fixed-dim": "#c6bfff",
+                      "surface-container-lowest": "#0e0d16",
+                      "on-background": "#e5e0ee",
+                      "on-primary-fixed": "#160066",
+                      "on-surface": "#e5e0ee",
+                      "outline-variant": "#474554",
+                      "on-secondary": "#003543",
+                      "on-tertiary-fixed-variant": "#005140",
+                      "surface-dim": "#13121b",
+                      "tertiary-fixed": "#6dfad2",
+                      "on-secondary-fixed": "#001f28",
+                      "secondary-container": "#00d2ff",
+                      "primary": "#c6bfff",
+                      "on-primary-fixed-variant": "#4029ba",
+                      "inverse-surface": "#e5e0ee",
+                      "tertiary": "#4bddb7",
+                      "primary-fixed": "#e4dfff",
+                      "surface-variant": "#35333e",
+                      "on-tertiary-container": "#dffff1",
+                      "surface-container": "#201e28",
+                      "on-error": "#690005",
+                      "surface-tint": "#c6bfff",
+                      "inverse-primary": "#5847d2",
+                      "tertiary-container": "#008167",
+                      "error": "#ffb4ab",
+                      "secondary-fixed-dim": "#47d6ff",
+                      "on-primary-container": "#faf6ff",
+                      "outline": "#928ea0",
+                      "on-tertiary": "#00382b",
+                      "secondary-fixed": "#b6ebff",
+                      "on-tertiary-fixed": "#002018",
+                      "primary-container": "#6c5ce7",
+                      "on-secondary-container": "#00566a",
+                      "surface-container-low": "#1c1a24"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "20px",
+                      "margin-desktop": "48px",
+                      "lg": "40px",
+                      "md": "24px",
+                      "sm": "12px",
+                      "base": "8px",
+                      "xs": "4px",
+                      "xl": "64px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "label-sm": ["13px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0F0E17;
+            font-family: 'Inter', sans-serif;
+            color: #e5e0ee;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card-active {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #6C5CE7 0%, #00D2FF 100%);
+        }
+        .primary-gradient-text {
+            background: linear-gradient(135deg, #6C5CE7 0%, #00D2FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .primary-outline {
+            border: 1px solid transparent;
+            background-image: linear-gradient(#0F0E17, #0F0E17), linear-gradient(135deg, #6C5CE7 0%, #00D2FF 100%);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="sticky top-0 w-full z-50 bg-surface-container-low/40 backdrop-blur-md border-b border-white/10 shadow-xl shadow-primary/10">
+<div class="flex justify-between items-center px-6 md:px-margin-desktop py-4 max-w-7xl mx-auto">
+<div class="text-headline-md font-headline-md font-bold tracking-tight text-on-surface">DropLinker</div>
+<div class="hidden md:flex gap-md">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-300 font-body-md text-body-md hover:bg-white/5 rounded-lg px-3 py-1" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-300 font-body-md text-body-md hover:bg-white/5 rounded-lg px-3 py-1" href="#">Solutions</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-300 font-body-md text-body-md hover:bg-white/5 rounded-lg px-3 py-1" href="#">How It Works</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors duration-300 font-body-md text-body-md hover:bg-white/5 rounded-lg px-3 py-1" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-sm">
+<button class="hidden sm:block text-on-surface-variant hover:text-on-surface font-body-md text-body-md px-4 py-2 transition-all">Login</button>
+<button class="primary-gradient text-white font-body-md text-body-md px-6 py-2 rounded-lg hover:brightness-110 active:scale-95 transition-all">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative pt-xl pb-24 px-6 md:px-margin-desktop max-w-7xl mx-auto overflow-hidden">
+<div class="grid lg:grid-cols-2 gap-xl items-center">
+<div>
+<span class="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm mb-md border border-primary/20 uppercase tracking-widest">v2.0 Command Center</span>
+<h1 class="font-display-lg text-display-lg mb-md leading-tight">
+                    Automate Your <br/>
+<span class="primary-gradient-text">Dropshipping</span> Business
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl max-w-lg">
+                    Connect your Salla or Zid store, import trending products from AliExpress and CJDropshipping, and auto-fulfill orders — all hands-free.
+                </p>
+<div class="flex flex-wrap gap-md">
+<button class="primary-gradient text-white font-body-md text-body-md px-8 py-4 rounded-lg shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all">Start Free Trial</button>
+<button class="primary-outline text-white font-body-md text-body-md px-8 py-4 rounded-lg hover:bg-white/5 active:scale-95 transition-all flex items-center gap-xs">
+<span class="material-symbols-outlined text-body-md" data-icon="play_circle">play_circle</span> Watch Demo
+                    </button>
+</div>
+</div>
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary to-secondary opacity-30 blur-2xl group-hover:opacity-50 transition-opacity"></div>
+<div class="relative glass-card rounded-xl p-xs overflow-hidden">
+<img alt="DropLinker Dashboard" class="rounded-lg w-full h-auto" data-alt="A futuristic SaaS dashboard mockup displayed on a sleek digital interface. The screen shows vibrant data visualization charts in neon purple and cyan, product inventory cards with high-quality imagery, and an automation progress bar. The background is a deep black space with soft atmospheric glow, emphasizing high-precision dropshipping management." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWnREFX1Hho3wYTcDOKylMPbfVN5xSN_bpyIDXrOk1qlmQnMV1pk_CtTUdDvBMhtFI6CEcI2kH-spoOc-xdEpIDgZGxEa-PqTREGCh5DSYM_HXpBlWX4nj-HI-E4xKoizHRBoS_gXOBi7WIYUv6P4rCJ0tuPJkItgb9xJUbu5w8Vdxbj-5hblwQnkm2clFA7bcaJbvPZhnuVc8l1T2MdttCefbpq9ku8msN997YhpugBWtwO971AM8vzjb0p7h9_XmIvrZF-sQivw"/>
+</div>
+<!-- Floating Elements -->
+<div class="absolute -top-6 -right-6 glass-card p-4 rounded-xl hidden md:flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm">Order #8842</div>
+<div class="text-xs text-on-surface-variant">Auto-Fulfilled</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Trusted By -->
+<section class="py-xl border-y border-white/5 bg-surface-container-lowest/50">
+<div class="px-6 md:px-margin-desktop max-w-7xl mx-auto">
+<p class="text-center font-label-sm text-label-sm text-on-surface-variant mb-xl uppercase tracking-[0.2em]">Powering Merchants Across Ecosystems</p>
+<div class="flex flex-wrap justify-center items-center gap-xl md:gap-32 grayscale opacity-50 hover:grayscale-0 transition-all">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-4xl" data-icon="shopping_basket">shopping_basket</span>
+<span class="font-headline-md text-headline-md tracking-tighter">Salla</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-4xl" data-icon="storefront">storefront</span>
+<span class="font-headline-md text-headline-md tracking-tighter">Zid</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-4xl" data-icon="inventory_2">inventory_2</span>
+<span class="font-headline-md text-headline-md tracking-tighter">AliExpress</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-4xl" data-icon="rocket">rocket</span>
+<span class="font-headline-md text-headline-md tracking-tighter">CJDS</span>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works -->
+<section class="py-xl px-6 md:px-margin-desktop max-w-7xl mx-auto">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg mb-sm">Effortless 3-Step Setup</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Go from zero to automated in under 5 minutes.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-gutter">
+<div class="glass-card p-lg rounded-xl flex flex-col items-center text-center group hover:glass-card-active transition-all">
+<div class="w-16 h-16 rounded-xl primary-gradient flex items-center justify-center mb-md shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="link">link</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-sm">Connect Your Store</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Native integration with Salla and Zid using secure OAuth protocols.</p>
+</div>
+<div class="glass-card p-lg rounded-xl flex flex-col items-center text-center group hover:glass-card-active transition-all">
+<div class="w-16 h-16 rounded-xl primary-gradient flex items-center justify-center mb-md shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="search">search</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-sm">Import Products</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Browse millions of trending items and import with a single click.</p>
+</div>
+<div class="glass-card p-lg rounded-xl flex flex-col items-center text-center group hover:glass-card-active transition-all">
+<div class="w-16 h-16 rounded-xl primary-gradient flex items-center justify-center mb-md shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="rocket_launch">rocket_launch</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-sm">Auto-Fulfill Orders</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Orders sync automatically to suppliers. No manual entry needed.</p>
+</div>
+</div>
+</section>
+<!-- Features Grid -->
+<section class="py-xl px-6 md:px-margin-desktop max-w-7xl mx-auto bg-surface-container-low/20 rounded-[40px]">
+<div class="flex flex-col md:flex-row justify-between items-end mb-xl gap-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg mb-sm">Master Your Logistics</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Tools designed for scale, precision, and speed.</p>
+</div>
+<button class="primary-outline text-white px-6 py-2 rounded-lg font-label-sm text-label-sm">View All Features</button>
+</div>
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="glass-card p-md rounded-xl hover:translate-y-[-4px] transition-transform duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-3xl" data-icon="explore">explore</span>
+<h4 class="font-headline-md text-headline-md mb-sm">Product Discovery</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">AI-powered suggestions based on regional sales trends and market demand.</p>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-md rounded-xl hover:translate-y-[-4px] transition-transform duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-3xl" data-icon="touch_app">touch_app</span>
+<h4 class="font-headline-md text-headline-md mb-sm">One-Click Import</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Sync titles, descriptions, and high-res images directly to your shop backend.</p>
+</div>
+<!-- Card 3 -->
+<div class="glass-card p-md rounded-xl hover:translate-y-[-4px] transition-transform duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-3xl" data-icon="auto_mode">auto_mode</span>
+<h4 class="font-headline-md text-headline-md mb-sm">Auto-Fulfillment</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Orders are instantly pushed to AliExpress or CJ upon customer payment.</p>
+</div>
+<!-- Card 4 -->
+<div class="glass-card p-md rounded-xl hover:translate-y-[-4px] transition-transform duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-3xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+<h4 class="font-headline-md text-headline-md mb-sm">Smart Wallet</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Centralized funding for all supplier payments with detailed ledger history.</p>
+</div>
+<!-- Card 5 -->
+<div class="glass-card p-md rounded-xl hover:translate-y-[-4px] transition-transform duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-3xl" data-icon="location_on">location_on</span>
+<h4 class="font-headline-md text-headline-md mb-sm">Real-Time Tracking</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Automated tracking number updates for both you and your customers.</p>
+</div>
+<!-- Card 6 -->
+<div class="glass-card p-md rounded-xl hover:translate-y-[-4px] transition-transform duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-3xl" data-icon="hub">hub</span>
+<h4 class="font-headline-md text-headline-md mb-sm">Multi-Store Support</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage multiple Salla and Zid stores from a single unified workspace.</p>
+</div>
+</div>
+</section>
+<!-- Pricing Section -->
+<section class="py-xl px-6 md:px-margin-desktop max-w-7xl mx-auto">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg mb-sm">Transparent Pricing</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Scales with your business, no hidden fees.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-gutter items-stretch">
+<!-- Starter -->
+<div class="glass-card p-lg rounded-xl flex flex-col">
+<div class="font-headline-md text-headline-md mb-xs">Starter</div>
+<div class="text-4xl font-bold mb-md">$29<span class="text-body-md font-normal text-on-surface-variant">/mo</span></div>
+<ul class="space-y-sm mb-xl flex-grow">
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> 1 Store Connection</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> 500 Products</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> Standard Support</li>
+</ul>
+<button class="primary-outline w-full py-3 rounded-lg font-label-sm text-label-sm hover:bg-white/5 transition-all">Get Started</button>
+</div>
+<!-- Growth -->
+<div class="glass-card-active p-lg rounded-xl flex flex-col relative ring-2 ring-primary/50 shadow-2xl shadow-primary/20">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 primary-gradient text-white px-4 py-1 rounded-full text-label-sm font-label-sm uppercase">Most Popular</div>
+<div class="font-headline-md text-headline-md mb-xs">Growth</div>
+<div class="text-4xl font-bold mb-md">$79<span class="text-body-md font-normal text-on-surface-variant">/mo</span></div>
+<ul class="space-y-sm mb-xl flex-grow">
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span> 3 Store Connections</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span> Unlimited Products</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span> Priority Auto-Fulfill</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span> Advanced Analytics</li>
+</ul>
+<button class="primary-gradient w-full py-3 rounded-lg font-label-sm text-label-sm text-white shadow-lg shadow-primary/25 hover:brightness-110 transition-all">Try Growth Free</button>
+</div>
+<!-- Pro -->
+<div class="glass-card p-lg rounded-xl flex flex-col">
+<div class="font-headline-md text-headline-md mb-xs">Pro</div>
+<div class="text-4xl font-bold mb-md">$199<span class="text-body-md font-normal text-on-surface-variant">/mo</span></div>
+<ul class="space-y-sm mb-xl flex-grow">
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> Unlimited Stores</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> 24/7 VIP Support</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> White-label Reports</li>
+<li class="flex items-center gap-xs font-body-md text-body-md"><span class="material-symbols-outlined text-tertiary" data-icon="check">check</span> Early Beta Access</li>
+</ul>
+<button class="primary-outline w-full py-3 rounded-lg font-label-sm text-label-sm hover:bg-white/5 transition-all">Contact Sales</button>
+</div>
+</div>
+</section>
+<!-- CTA Banner -->
+<section class="py-xl px-6 md:px-margin-desktop">
+<div class="max-w-7xl mx-auto primary-gradient rounded-[32px] p-xl text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+<div class="relative z-10">
+<h2 class="font-display-lg text-display-lg text-white mb-md">Ready to automate?</h2>
+<p class="font-body-lg text-body-lg text-white/90 mb-xl max-w-2xl mx-auto">Join 5,000+ Saudi merchants who have reclaimed their time with DropLinker automation.</p>
+<button class="bg-white text-primary-container px-12 py-4 rounded-lg font-headline-md text-headline-md shadow-2xl hover:scale-105 transition-transform">Get Started Now</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant/30 mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center px-6 md:px-margin-desktop py-12 max-w-7xl mx-auto gap-gutter">
+<div class="flex flex-col gap-sm max-w-sm">
+<div class="text-headline-md font-headline-md font-bold text-on-surface">DropLinker</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Precision automation for the modern Saudi merchant. Streamlining e-commerce from sourcing to fulfillment.</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant/60">© 2024 DropLinker. All rights reserved.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-xl">
+<div class="flex flex-col gap-xs">
+<span class="text-on-surface font-bold mb-xs">Product</span>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Pricing</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">API Documentation</a>
+</div>
+<div class="flex flex-col gap-xs">
+<span class="text-on-surface font-bold mb-xs">Company</span>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Help Center</a>
+</div>
+<div class="flex flex-col gap-xs">
+<span class="text-on-surface font-bold mb-xs">Social</span>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Twitter</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">LinkedIn</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors duration-200 text-body-md font-body-md" href="#">Instagram</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

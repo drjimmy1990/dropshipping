@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DropLinker - Merchant Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "secondary": "#a5e7ff",
+                "primary-fixed": "#e4dfff",
+                "on-primary-fixed-variant": "#4029ba",
+                "secondary-fixed": "#b6ebff",
+                "inverse-surface": "#e5e0ee",
+                "on-secondary-container": "#00566a",
+                "surface": "#13121b",
+                "on-primary-container": "#faf6ff",
+                "surface-container-low": "#1c1a24",
+                "on-tertiary-container": "#dffff1",
+                "secondary-container": "#00d2ff",
+                "background": "#13121b",
+                "error-container": "#93000a",
+                "surface-container-high": "#2a2933",
+                "tertiary-container": "#008167",
+                "on-secondary-fixed-variant": "#004e60",
+                "inverse-on-surface": "#312f39",
+                "on-surface": "#e5e0ee",
+                "on-primary-fixed": "#160066",
+                "on-tertiary-fixed-variant": "#005140",
+                "on-secondary": "#003543",
+                "primary-fixed-dim": "#c6bfff",
+                "inverse-primary": "#5847d2",
+                "surface-variant": "#35333e",
+                "on-surface-variant": "#c8c4d7",
+                "outline-variant": "#474554",
+                "tertiary-fixed-dim": "#4bddb7",
+                "on-background": "#e5e0ee",
+                "surface-bright": "#3a3842",
+                "secondary-fixed-dim": "#47d6ff",
+                "on-primary": "#2900a0",
+                "tertiary": "#4bddb7",
+                "on-error-container": "#ffdad6",
+                "surface-tint": "#c6bfff",
+                "error": "#ffb4ab",
+                "outline": "#928ea0",
+                "surface-container-highest": "#35333e",
+                "on-tertiary": "#00382b",
+                "on-tertiary-fixed": "#002018",
+                "on-error": "#690005",
+                "surface-container-lowest": "#0e0d16",
+                "primary-container": "#6c5ce7",
+                "tertiary-fixed": "#6dfad2",
+                "surface-dim": "#13121b",
+                "on-secondary-fixed": "#001f28",
+                "primary": "#c6bfff",
+                "surface-container": "#201e28"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "margin-desktop": "48px",
+                "gutter": "24px",
+                "xl": "64px",
+                "base": "8px",
+                "margin-mobile": "20px",
+                "xs": "4px",
+                "md": "24px",
+                "sm": "12px",
+                "lg": "40px"
+            },
+            "fontFamily": {
+                "label-sm": ["Inter"],
+                "headline-md": ["Inter"],
+                "headline-lg-mobile": ["Inter"],
+                "display-lg": ["Inter"],
+                "headline-lg": ["Inter"],
+                "body-md": ["Inter"],
+                "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                "label-sm": ["13px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: #0F0E17; color: #e5e0ee; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card-hover:hover {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #6C5CE7, #00D2FF);
+        }
+        .secondary-outline {
+            border: 1px solid transparent;
+            background: linear-gradient(#0F0E17, #0F0E17) padding-box,
+                        linear-gradient(135deg, #6C5CE7, #00D2FF) border-box;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00D2FF !important;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- Persistent SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-white/10 bg-white/5 backdrop-blur-lg flex flex-col p-md gap-sm shadow-xl z-50">
+<div class="mb-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">DropLinker</h1>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Merchant Portal</p>
+</div>
+<nav class="flex-grow flex flex-col gap-xs">
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-sm">Product Discovery</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-sm">My Products</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-sm">Orders</span>
+</a>
+<!-- Active State Wallet -->
+<a class="flex items-center gap-sm p-sm bg-primary-container text-on-primary-container rounded-lg font-bold transition-all duration-200 active:scale-95 shadow-[0_0_20px_rgba(108,92,231,0.3)]" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm">Wallet</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="font-label-sm">Integrations</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm">Settings</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-sm pt-md border-t border-white/10">
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-white/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-sm">Support</span>
+</a>
+<div class="flex items-center gap-sm p-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-white/20 flex items-center justify-center overflow-hidden">
+<img alt="Merchant Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaT5AUI5YC7iwEnkH6-SdwTyLopun-6FnTFjD7EClEupKigXWSo9WhXSX5WXQJgnuYmbHDBH05UAgXVxKaK3edbuaM65wtazklG2REDxwSKjLP3zVc3cjLivFj8UCwEnBbhcqFUMvT8ifGEVmli4iTONMe6iy__LSg_AAlrkp1fgPSfRNwRIukYnDxTOcBZOJ6QwyAN4WSxa37EnjJHnlpz-AL9oLJnzWFPOkDUzEvRE-jXvfM8BLePa1VSyKctCP7cHQrNMMAgOM"/>
+</div>
+<div class="flex flex-col">
+<span class="text-on-surface font-bold text-label-sm">A. Mansour</span>
+<span class="text-on-surface-variant text-[10px] uppercase tracking-widest">Premium Merchant</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 p-lg min-h-screen">
+<header class="mb-lg flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Merchant Wallet</h2>
+<p class="text-on-surface-variant">Manage your funds, track payouts, and automate logistics costs.</p>
+</div>
+<div class="flex gap-sm">
+<div class="flex items-center gap-xs px-sm py-xs bg-surface-container-high rounded-full border border-white/10">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-label-sm text-on-surface-variant">Systems Operational</span>
+</div>
+</div>
+</header>
+<!-- TOP SECTION: Balance & CTAs -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md mb-lg">
+<section class="lg:col-span-2 glass-card rounded-xl p-lg relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+<div class="absolute top-0 right-0 p-lg opacity-10">
+<span class="material-symbols-outlined text-[120px]">account_balance_wallet</span>
+</div>
+<div>
+<h3 class="text-on-surface-variant font-label-sm uppercase tracking-wider mb-xs">Available Balance</h3>
+<div class="flex items-baseline gap-sm">
+<span class="font-display-lg text-display-lg text-on-surface">SAR 12,450.00</span>
+<span class="text-tertiary flex items-center font-bold">
+<span class="material-symbols-outlined">trending_up</span> 12%
+                        </span>
+</div>
+<p class="text-on-surface-variant mt-xs flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+                        Reserved: <span class="text-on-surface font-semibold">SAR 1,200.00</span> (held for pending orders)
+                    </p>
+</div>
+<div class="flex gap-md mt-lg">
+<button class="primary-gradient px-lg py-sm rounded-lg font-bold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center gap-sm">
+<span class="material-symbols-outlined">add_circle</span>
+                        Top Up
+                    </button>
+<button class="secondary-outline px-lg py-sm rounded-lg font-bold text-on-surface hover:bg-white/5 active:scale-95 transition-all flex items-center gap-sm">
+<span class="material-symbols-outlined">settings_suggest</span>
+                        Auto Top-Up Settings
+                    </button>
+</div>
+</section>
+<!-- Auto Top-Up Quick Config -->
+<section class="glass-card rounded-xl p-lg flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-headline-md">Auto Top-Up</h3>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="space-y-sm">
+<div class="flex flex-col gap-xs">
+<label class="text-label-sm text-on-surface-variant">Threshold Amount</label>
+<div class="relative">
+<span class="absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">SAR</span>
+<input class="w-full bg-[#050505] border border-white/10 rounded-lg py-sm pl-12 pr-sm text-on-surface font-bold" type="number" value="500"/>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="text-label-sm text-on-surface-variant">Refill Amount</label>
+<div class="relative">
+<span class="absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">SAR</span>
+<input class="w-full bg-[#050505] border border-white/10 rounded-lg py-sm pl-12 pr-sm text-on-surface font-bold" type="number" value="2000"/>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-md border-t border-white/10 flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">credit_card</span>
+<div class="flex flex-col">
+<span class="text-xs text-on-surface-variant uppercase">Payment Method</span>
+<span class="text-sm font-bold">Moyasar •••4521</span>
+</div>
+</div>
+</section>
+</div>
+<!-- TOP-UP METHODS ROW -->
+<h4 class="text-on-surface font-headline-md mb-md">Deposit Methods</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">
+<!-- Moyasar -->
+<div class="glass-card glass-card-hover rounded-xl p-md flex flex-col gap-md transition-all">
+<div class="flex justify-between items-start">
+<div class="p-xs bg-white/5 rounded-lg border border-white/10 h-10 w-24 flex items-center justify-center">
+<span class="text-on-surface font-bold">Moyasar</span>
+</div>
+<span class="text-xs px-xs py-[2px] bg-tertiary/10 text-tertiary border border-tertiary/20 rounded">INSTANT</span>
+</div>
+<p class="text-on-surface-variant text-sm">Local Saudi payment processing. Supporting Mada, Visa, and Mastercard.</p>
+<div class="flex gap-xs mt-auto">
+<div class="w-8 h-5 bg-white/10 rounded border border-white/10 flex items-center justify-center text-[8px] font-bold">MADA</div>
+<div class="w-8 h-5 bg-white/10 rounded border border-white/10 flex items-center justify-center text-[8px] font-bold">VISA</div>
+<div class="w-8 h-5 bg-white/10 rounded border border-white/10 flex items-center justify-center text-[8px] font-bold">MC</div>
+</div>
+<button class="w-full py-sm bg-surface-container-high hover:bg-surface-container-highest border border-white/10 rounded-lg font-bold text-sm transition-colors">
+                    Pay with Card (Saudi)
+                </button>
+</div>
+<!-- Stripe -->
+<div class="glass-card glass-card-hover rounded-xl p-md flex flex-col gap-md transition-all">
+<div class="flex justify-between items-start">
+<div class="p-xs bg-white/5 rounded-lg border border-white/10 h-10 w-24 flex items-center justify-center">
+<span class="text-[#635BFF] font-black italic">Stripe</span>
+</div>
+<span class="text-xs px-xs py-[2px] bg-tertiary/10 text-tertiary border border-tertiary/20 rounded">INSTANT</span>
+</div>
+<p class="text-on-surface-variant text-sm">International credit card processing. Seamless global settlements.</p>
+<div class="flex gap-xs mt-auto">
+<div class="w-8 h-5 bg-white/10 rounded border border-white/10 flex items-center justify-center text-[8px] font-bold">VISA</div>
+<div class="w-8 h-5 bg-white/10 rounded border border-white/10 flex items-center justify-center text-[8px] font-bold">MC</div>
+<div class="w-8 h-5 bg-white/10 rounded border border-white/10 flex items-center justify-center text-[8px] font-bold">AMEX</div>
+</div>
+<button class="w-full py-sm bg-surface-container-high hover:bg-surface-container-highest border border-white/10 rounded-lg font-bold text-sm transition-colors">
+                    Pay with Card (International)
+                </button>
+</div>
+<!-- Bank Transfer -->
+<div class="glass-card glass-card-hover rounded-xl p-md flex flex-col gap-md transition-all">
+<div class="flex justify-between items-start">
+<div class="p-xs bg-white/5 rounded-lg border border-white/10 h-10 w-24 flex items-center justify-center">
+<span class="text-on-surface-variant font-bold">BANK</span>
+</div>
+<span class="text-xs px-xs py-[2px] bg-secondary/10 text-secondary border border-secondary/20 rounded">MANUAL</span>
+</div>
+<p class="text-on-surface-variant text-sm">Traditional wire transfer. Manual approval required within 24 hours.</p>
+<div class="mt-auto">
+<p class="text-[10px] text-error-container/80 italic mb-xs">* Processing fees apply for local transfers.</p>
+</div>
+<button class="w-full py-sm bg-surface-container-high hover:bg-surface-container-highest border border-white/10 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+                    Upload Receipt
+                </button>
+</div>
+</div>
+<!-- MIDDLE SECTION: Chart -->
+<section class="glass-card rounded-xl p-lg mb-lg">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-headline-md text-headline-md">Balance Over Time <span class="text-on-surface-variant text-sm font-normal ml-sm">(Last 30 Days)</span></h3>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<span class="text-label-sm text-on-surface-variant">Balance</span>
+</div>
+</div>
+</div>
+<div class="h-48 w-full relative">
+<!-- SVG Area Chart Mockup -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 200">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4bddb7" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#4bddb7" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0 150 Q 50 140, 100 160 T 200 140 T 300 120 T 400 130 T 500 80 T 600 90 T 700 40 T 800 60 T 900 50 T 1000 20 V 200 H 0 Z" fill="url(#chartGradient)"></path>
+<path d="M0 150 Q 50 140, 100 160 T 200 140 T 300 120 T 400 130 T 500 80 T 600 90 T 700 40 T 800 60 T 900 50 T 1000 20" fill="none" stroke="#4bddb7" stroke-width="3"></path>
+<!-- Points -->
+<circle cx="500" cy="80" fill="#4bddb7" r="4"></circle>
+<circle cx="700" cy="40" fill="#4bddb7" r="4"></circle>
+<circle cx="1000" cy="20" fill="#4bddb7" r="4"></circle>
+</svg>
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-5">
+<div class="border-t border-white w-full"></div>
+<div class="border-t border-white w-full"></div>
+<div class="border-t border-white w-full"></div>
+<div class="border-t border-white w-full"></div>
+</div>
+</div>
+<div class="flex justify-between mt-sm text-label-sm text-on-surface-variant opacity-50 px-md">
+<span>Apr 15</span>
+<span>Apr 22</span>
+<span>Apr 29</span>
+<span>May 06</span>
+<span>May 14</span>
+</div>
+</section>
+<!-- TRANSACTION HISTORY -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-lg border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-md">
+<h3 class="font-headline-md text-headline-md">Transaction History</h3>
+<div class="flex gap-sm w-full md:w-auto">
+<select class="bg-surface-container-high border border-white/10 rounded-lg px-md py-sm text-label-sm focus:ring-0">
+<option>All Transactions</option>
+<option>Deposits</option>
+<option>Deductions</option>
+<option>Refunds</option>
+<option>Commissions</option>
+</select>
+<div class="flex items-center gap-xs bg-surface-container-high border border-white/10 rounded-lg px-md py-sm text-label-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>May 01 - May 14</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-white/5">
+<tr>
+<th class="px-lg py-md text-on-surface-variant font-label-sm uppercase tracking-wider">Date</th>
+<th class="px-lg py-md text-on-surface-variant font-label-sm uppercase tracking-wider">Type</th>
+<th class="px-lg py-md text-on-surface-variant font-label-sm uppercase tracking-wider">Description</th>
+<th class="px-lg py-md text-on-surface-variant font-label-sm uppercase tracking-wider text-right">Amount</th>
+<th class="px-lg py-md text-on-surface-variant font-label-sm uppercase tracking-wider text-right">Balance After</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<!-- Row 1 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm">May 14</td>
+<td class="px-lg py-md">
+<span class="bg-tertiary/10 text-tertiary px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deposit</span>
+</td>
+<td class="px-lg py-md text-on-surface">Moyasar top-up</td>
+<td class="px-lg py-md text-tertiary font-bold text-right">+SAR 5,000.00</td>
+<td class="px-lg py-md font-semibold text-right">SAR 12,450.00</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 14</td>
+<td class="px-lg py-md">
+<span class="bg-error/10 text-error px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deduction</span>
+</td>
+<td class="px-lg py-md text-on-surface">Order #DL-1847 fulfillment</td>
+<td class="px-lg py-md text-error font-bold text-right">-SAR 92.50</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 7,450.00</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 14</td>
+<td class="px-lg py-md">
+<span class="bg-orange-500/10 text-orange-400 px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Commission</span>
+</td>
+<td class="px-lg py-md text-on-surface">Order #DL-1847 (2%)</td>
+<td class="px-lg py-md text-orange-400 font-bold text-right">-SAR 3.60</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 7,357.50</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 13</td>
+<td class="px-lg py-md">
+<span class="bg-error/10 text-error px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deduction</span>
+</td>
+<td class="px-lg py-md text-on-surface">Order #DL-1846 fulfillment</td>
+<td class="px-lg py-md text-error font-bold text-right">-SAR 35.00</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 7,322.50</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 13</td>
+<td class="px-lg py-md">
+<span class="bg-secondary/10 text-secondary px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Refund</span>
+</td>
+<td class="px-lg py-md text-on-surface">Order #DL-1820 cancelled</td>
+<td class="px-lg py-md text-secondary font-bold text-right">+SAR 145.00</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 7,357.50</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 12</td>
+<td class="px-lg py-md">
+<span class="bg-tertiary/10 text-tertiary px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deposit</span>
+</td>
+<td class="px-lg py-md text-on-surface">Stripe International top-up</td>
+<td class="px-lg py-md text-tertiary font-bold text-right">+SAR 2,500.00</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 7,212.50</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 12</td>
+<td class="px-lg py-md">
+<span class="bg-error/10 text-error px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deduction</span>
+</td>
+<td class="px-lg py-md text-on-surface">Order #DL-1845 fulfillment</td>
+<td class="px-lg py-md text-error font-bold text-right">-SAR 112.40</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 4,712.50</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 11</td>
+<td class="px-lg py-md">
+<span class="bg-error/10 text-error px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deduction</span>
+</td>
+<td class="px-lg py-md text-on-surface">Logistics Bulk Surcharge</td>
+<td class="px-lg py-md text-error font-bold text-right">-SAR 400.00</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 4,824.90</td>
+</tr>
+<!-- Row 9 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 10</td>
+<td class="px-lg py-md">
+<span class="bg-secondary/10 text-secondary px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Refund</span>
+</td>
+<td class="px-lg py-md text-on-surface">Return #RT-402 processing</td>
+<td class="px-lg py-md text-secondary font-bold text-right">+SAR 210.00</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 5,224.90</td>
+</tr>
+<!-- Row 10 -->
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-lg py-md font-label-sm text-on-surface-variant">May 10</td>
+<td class="px-lg py-md">
+<span class="bg-tertiary/10 text-tertiary px-sm py-1 rounded-full text-xs font-bold uppercase tracking-tighter">Deposit</span>
+</td>
+<td class="px-lg py-md text-on-surface">Bank Transfer #TX9921</td>
+<td class="px-lg py-md text-tertiary font-bold text-right">+SAR 10,000.00</td>
+<td class="px-lg py-md font-semibold text-right text-on-surface-variant">SAR 5,014.90</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-md flex justify-between items-center bg-white/5">
+<span class="text-label-sm text-on-surface-variant">Showing 10 of 124 transactions</span>
+<div class="flex gap-xs">
+<button class="w-8 h-8 rounded border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded bg-primary-container text-white flex items-center justify-center font-bold text-xs">1</button>
+<button class="w-8 h-8 rounded border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors text-xs">2</button>
+<button class="w-8 h-8 rounded border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors text-xs">3</button>
+<button class="w-8 h-8 rounded border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</body></html>
