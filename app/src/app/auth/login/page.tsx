@@ -1,11 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { Card, Button, Icon, ThemeToggle } from "@/components/shared";
+import { signIn, signUp } from "@/app/auth/actions";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  async function handleSubmit(formData: FormData) {
+    setError(null);
+    startTransition(async () => {
+      const result = isLogin
+        ? await signIn(formData)
+        : await signUp(formData);
+
+      if (result?.error) {
+        setError(result.error);
+      }
+      // On success, the server action redirects automatically
+    });
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -50,7 +67,7 @@ export default function LoginPage() {
           {/* Toggle */}
           <div className="flex bg-surface-sunken rounded-lg p-1 mb-8">
             <button
-              onClick={() => setIsLogin(true)}
+              onClick={() => { setIsLogin(true); setError(null); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 isLogin
                   ? "bg-accent text-accent-on"
@@ -60,7 +77,7 @@ export default function LoginPage() {
               Sign In
             </button>
             <button
-              onClick={() => setIsLogin(false)}
+              onClick={() => { setIsLogin(false); setError(null); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 !isLogin
                   ? "bg-accent text-accent-on"
@@ -80,14 +97,24 @@ export default function LoginPage() {
               : "Start automating in minutes."}
           </p>
 
-          <form className="space-y-4">
+          {/* Error message */}
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm flex items-center gap-2">
+              <Icon name="error" className="text-base shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <form action={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-text mb-1.5">
                   Store Name
                 </label>
                 <input
+                  name="businessName"
                   type="text"
+                  required
                   placeholder="My Salla Store"
                   className="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-text placeholder:text-text-muted text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
                 />
@@ -98,7 +125,9 @@ export default function LoginPage() {
                 Email
               </label>
               <input
+                name="email"
                 type="email"
+                required
                 placeholder="you@example.com"
                 className="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-text placeholder:text-text-muted text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
               />
@@ -108,7 +137,10 @@ export default function LoginPage() {
                 Password
               </label>
               <input
+                name="password"
                 type="password"
+                required
+                minLength={6}
                 placeholder="••••••••"
                 className="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-text placeholder:text-text-muted text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
               />
@@ -120,12 +152,19 @@ export default function LoginPage() {
                 </a>
               </div>
             )}
-            <Button type="submit" className="w-full" size="lg">
-              {isLogin ? "Sign In" : "Create Account"}
+            <Button type="submit" className="w-full" size="lg" disabled={isPending}>
+              {isPending ? (
+                <span className="flex items-center gap-2">
+                  <Icon name="progress_activity" className="text-base animate-spin" />
+                  {isLogin ? "Signing in…" : "Creating account…"}
+                </span>
+              ) : (
+                isLogin ? "Sign In" : "Create Account"
+              )}
             </Button>
           </form>
 
-          {/* OAuth */}
+          {/* OAuth placeholder */}
           <div className="mt-6">
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
@@ -136,11 +175,11 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="secondary" className="w-full">
+              <Button variant="secondary" className="w-full" disabled>
                 <Icon name="storefront" className="text-base" />
                 Salla
               </Button>
-              <Button variant="secondary" className="w-full">
+              <Button variant="secondary" className="w-full" disabled>
                 <Icon name="store" className="text-base" />
                 Zid
               </Button>

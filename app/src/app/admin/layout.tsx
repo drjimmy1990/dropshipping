@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon, ThemeToggle } from "@/components/shared";
+import { createClient } from "@/lib/supabase/client";
 
 const ADMIN_NAV = [
   { href: "/admin", icon: "dashboard", label: "Overview" },
@@ -20,7 +21,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -106,6 +114,13 @@ export default function AdminLayout({
           </span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-error hover:bg-surface-sunken transition-colors"
+            >
+              <Icon name="logout" className="text-base" />
+              Sign Out
+            </button>
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-accent-on text-xs font-bold">
               SA
             </div>
