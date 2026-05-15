@@ -2,37 +2,30 @@
 
 This guide covers deploying the DropLinker Next.js application to your VPS, ensuring it runs on a custom port (e.g., `4000` instead of the default `3000`) and is served securely via Nginx and PM2.
 
-## 1. Prepare and Push Your Code
+## 1. Get the Code on the VPS
 
-Ensure all your latest changes are committed and pushed to your remote repository.
-
-```bash
-git add .
-git commit -m "feat: complete AliExpress OAuth and admin UI"
-git push origin main
-```
-
-## 2. Pull the Code on the VPS
-
-SSH into your VPS and navigate to the directory where your application will live.
+SSH into your VPS, navigate to the `wwwroot` directory, and clone the repository. If you've already cloned it, you can just pull the latest changes.
 
 ```bash
-# SSH into your VPS
-ssh user@your-vps-ip
+# Navigate to the wwwroot directory
+cd /www/wwwroot
 
-# Navigate to your web directory (example path)
-cd /var/www/droplinker
+# Clone the repository (if you haven't already)
+git clone https://github.com/drjimmy1990/dropshipping.git
 
-# Pull the latest changes
+# Enter the project directory
+cd dropshipping
+
+# Pull the latest changes (if you already cloned it previously)
 git pull origin main
 ```
 
-## 3. Configure Environment Variables
+## 2. Configure Environment Variables
 
-Ensure your `.env.local` or `.env.production` file on the VPS is fully configured with your Supabase keys and AliExpress credentials. **Do not commit `.env.local` to GitHub.**
+Ensure your `.env.local` file is fully configured inside the `app` directory. **Do not commit `.env.local` to GitHub.**
 
 ```bash
-nano app/.env.local
+nano /www/wwwroot/dropshipping/app/.env.local
 ```
 
 Ensure it contains:
@@ -45,17 +38,17 @@ ALIEXPRESS_APP_KEY="534306"
 ALIEXPRESS_APP_SECRET="2Nm8YDXEYUsDfwtICrZUlHISeWPTAADN"
 ```
 
-## 4. Install Dependencies and Build
+## 3. Install Dependencies and Build
 
-Navigate into the Next.js `app` folder (where your `package.json` is located), install the dependencies, and generate the production build.
+Navigate into the Next.js `app` folder, install the dependencies, and generate the production build.
 
 ```bash
-cd app
+cd /www/wwwroot/dropshipping/app
 npm install
 npm run build
 ```
 
-## 5. Run the App on a Custom Port using PM2
+## 4. Run the App on a Custom Port using PM2
 
 To keep the app running in the background and specify a custom port (e.g., `4000`), use PM2.
 
@@ -74,7 +67,7 @@ pm2 startup
 > [!TIP]
 > You can check the logs of your running application at any time using `pm2 logs droplinker`.
 
-## 6. Configure Nginx Reverse Proxy
+## 5. Configure Nginx Reverse Proxy
 
 You need to configure Nginx to proxy traffic from `https://droplinker.asra3.com` to your local app running on port `4000`.
 
@@ -112,7 +105,7 @@ If you are using **aaPanel**, you can easily do this via the aaPanel UI:
 3. Go to **Reverse Proxy**.
 4. Add a new Reverse Proxy pointing to `http://localhost:4000`.
 
-## 7. Reload Nginx
+## 6. Reload Nginx
 
 Test the Nginx configuration to make sure there are no syntax errors, then reload the service.
 
@@ -121,7 +114,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-## 8. Final Verification
+## 7. Final Verification
 
 1. Go to `https://droplinker.asra3.com/admin/settings` in your browser.
 2. Click the **Connect** button under the AliExpress section.
