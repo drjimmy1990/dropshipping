@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { Card, Button, Badge, Icon } from "@/components/shared";
 import { useProductSearch } from "@/hooks/use-product-search";
 import type { NormalizedProduct, NormalizedProductDetail } from "@/lib/aliexpress/types";
@@ -527,9 +528,31 @@ function ProductDetailModal({
 
                 {/* Import Button */}
                 {importSuccess ? (
-                  <div className="bg-success/10 text-success rounded-lg p-3 text-center text-sm font-medium">
-                    <Icon name="check_circle" className="mr-1" />
-                    Product imported successfully!
+                  <div className="bg-success/10 border border-success/20 rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Icon name="check_circle" className="text-success text-xl" />
+                      <span className="text-sm font-semibold text-success">Product Imported Successfully!</span>
+                    </div>
+                    <p className="text-xs text-text-secondary mb-3">
+                      The product has been saved to your catalog and pushed to your Salla store.
+                    </p>
+                    <div className="flex gap-2 justify-center">
+                      <Link href="/dashboard/products">
+                        <Button size="sm" className="gap-1">
+                          <Icon name="inventory_2" className="text-sm" />
+                          Manage Products
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={onClose}
+                        className="gap-1"
+                      >
+                        <Icon name="search" className="text-sm" />
+                        Keep Browsing
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <Button
@@ -542,7 +565,17 @@ function ProductDetailModal({
                     }
                     disabled={importing || !product.stock}
                   >
-                    {importing ? "Importing..." : "Import to My Products"}
+                    {importing ? (
+                      <>
+                        <span className="inline-block animate-spin mr-2">⏳</span>
+                        Importing & Pushing to Store...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="cloud_upload" className="text-sm mr-1" />
+                        Import & Push to Salla
+                      </>
+                    )}
                   </Button>
                 )}
                 {importError && (

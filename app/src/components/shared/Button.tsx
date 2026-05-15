@@ -9,6 +9,7 @@ interface ButtonProps {
   readonly type?: "button" | "submit";
   readonly disabled?: boolean;
   readonly loading?: boolean;
+  readonly title?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -20,6 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   type = "button",
   disabled = false,
   loading = false,
+  title,
 }) => {
   const sizes: Record<string, string> = {
     sm: "px-4 py-2 text-sm",
@@ -43,6 +45,7 @@ export const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
+      title={title}
       className={`
         ${variants[variant]}
         ${sizes[size]}

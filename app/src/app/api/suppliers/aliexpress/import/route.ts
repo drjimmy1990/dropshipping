@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getProductDetail } from "@/lib/aliexpress/client";
+import { pushProductToSalla, SallaApiError } from "@/lib/salla/client";
+import type { Product } from "@/lib/supabase/types";
 
 /**
  * POST /api/suppliers/aliexpress/import
  *
- * Imports a product from AliExpress into the merchant's DropLinker catalog.
- * Uses platform-level AliExpress credentials (not per-merchant).
+ * Imports a product from AliExpress into the merchant's DropLinker catalog
+ * and optionally pushes it to their connected Salla store.
  *
  * 1. Fetches full product detail from AliExpress
  * 2. Calculates retail price based on margin settings
  * 3. Inserts into the `products` table in Supabase
+ * 4. (Optional) Pushes to Salla store and saves store_product_id
  *
  * Request body:
  *  - productId: AliExpress product ID
  *  - retailPrice: (optional) merchant's retail price in SAR
  *  - marginType: "percentage" | "fixed" (default: percentage)
  *  - marginValue: margin amount (default: 30)
+ *  - pushToStore: boolean (default: true) — auto-push to Salla
  */
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +40,7 @@ export async function POST(request: NextRequest) {
       retailPrice,
       marginType = "percentage",
       marginValue = 30,
+      pushToStore = true,
     } = body;
 
     if (!productId) {
@@ -81,8 +86,9 @@ export async function POST(request: NextRequest) {
     // 5. Get merchant's connected Salla store
     const { data: store } = await adminClient
       .from("stores")
-      .select("id")
+      .select("id, access_token, refresh_token")
       .eq("merchant_id", user.id)
+      .eq("platform", "salla")
       .eq("is_active", true)
       .maybeSingle();
 
@@ -118,7 +124,7 @@ export async function POST(request: NextRequest) {
     const { data: insertedProduct, error: insertError } = await adminClient
       .from("products")
       .insert(productData)
-      .select("id")
+      .select("*")
       .single();
 
     if (insertError) {
@@ -133,6 +139,63 @@ export async function POST(request: NextRequest) {
       `[Import] ✅ Product imported: ${product.title} (ID: ${insertedProduct.id})`
     );
 
+    // 7. Push to Salla (if enabled and store is connected)
+    let pushedToStore = false;
+    let storeProductId: string | null = null;
+    let sallaUrl: string | undefined;
+    let pushError: string | null = null;
+
+    if (pushToStore && store?.access_token && store?.refresh_token) {
+      try {
+        const result = await pushProductToSalla(
+          {
+            accessToken: store.access_token,
+            refreshToken: store.refresh_token,
+            storeId: store.id,
+            onTokenRefresh: async (storeId, newAccess, newRefresh) => {
+              await adminClient
+                .from("stores")
+                .update({
+                  access_token: newAccess,
+                  refresh_token: newRefresh,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", storeId);
+            },
+          },
+          insertedProduct as Product
+        );
+
+        storeProductId = String(result.sallaProductId);
+        sallaUrl = result.sallaUrl;
+        pushedToStore = true;
+
+        // Save the Salla product ID
+        await adminClient
+          .from("products")
+          .update({
+            store_product_id: storeProductId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", insertedProduct.id);
+
+        console.log(
+          `[Import] ✅ Pushed to Salla: ${product.title} → Salla ID: ${storeProductId}`
+        );
+      } catch (err) {
+        pushError =
+          err instanceof SallaApiError
+            ? err.sallaMessage || "Salla API error"
+            : err instanceof Error
+              ? err.message
+              : "Failed to push to store";
+
+        console.error(`[Import] ⚠️ Salla push failed (product saved locally):`, pushError);
+      }
+    } else if (pushToStore && !store) {
+      pushError = "No active Salla store connected";
+    }
+
     return NextResponse.json({
       success: true,
       product: {
@@ -140,7 +203,11 @@ export async function POST(request: NextRequest) {
         title: product.title,
         supplierCost,
         retailPrice: finalRetailPrice,
+        storeProductId,
+        sallaUrl,
       },
+      pushedToStore,
+      pushError,
     });
   } catch (error) {
     console.error("[Import] Unexpected error:", error);
