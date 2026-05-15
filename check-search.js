@@ -31,14 +31,14 @@ async function run() {
   if (!token) return;
 
   // 2. Search AliExpress
-  const method = "aliexpress.ds.text.search";
+  const method = "aliexpress.ds.recommend.feed.get";
   const params = {
-    keyWord: "SA_Clothing&Shoes",
-    local: "en_US",
-    countryCode: "SA",
-    currency: "SAR",
-    pageIndex: "1",
-    pageSize: "20"
+    feed_name: "DS_NewArrivals",
+    target_currency: "SAR",
+    target_language: "EN",
+    country_code: "SA",
+    page_no: "1",
+    page_size: "5"
   };
 
   const systemParams = {

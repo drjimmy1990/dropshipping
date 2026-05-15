@@ -230,8 +230,8 @@ async function searchByKeyword(
     }
 
     if (!rawProducts || rawProducts.length === 0) {
-      console.log("[AliExpress] text.search returned 0 products, falling back to feed search...");
-      return searchByFeed({ ...params, keyword: params.keyword }, accessToken);
+      console.log("[AliExpress] text.search returned 0 products, falling back to feed browse...");
+      return searchByFeed({ ...params, keyword: undefined }, accessToken);
     }
 
     // Map text.search fields to traffic_product_dto fields so normalizeSearchProduct works
@@ -263,7 +263,7 @@ async function searchByKeyword(
   } catch (error) {
     // Fallback: if text.search is not available, try feed with keyword as feed_name
     console.warn("[AliExpress] text.search failed, falling back to feed:", error);
-    return searchByFeed({ ...params, keyword: params.keyword }, accessToken);
+    return searchByFeed({ ...params, keyword: undefined }, accessToken);
   }
 }
 
@@ -276,8 +276,8 @@ async function searchByFeed(
   accessToken?: string
 ): Promise<{ products: NormalizedProduct[]; totalPages: number; totalCount: number; page: number }> {
   const apiParams: Record<string, string> = {
-    // feed_name is REQUIRED — always provide a value
-    feed_name: params.keyword || "DS center",
+    // feed_name is REQUIRED — use a known valid feed, NOT the search keyword
+    feed_name: params.feedName || "DS_NewArrivals",
     target_currency: params.currency || "SAR",
     target_language: params.language || "EN",
     page_no: String(params.page || 1),
@@ -286,25 +286,30 @@ async function searchByFeed(
 
   if (params.category_id) apiParams.category_id = params.category_id;
   if (params.sort) apiParams.sort = params.sort;
-  if (params.shipTo) apiParams.ship_to_country = params.shipTo;
+  if (params.shipTo) apiParams.country = params.shipTo;
   if (params.minPrice) apiParams.min_sale_price = String(params.minPrice);
   if (params.maxPrice) apiParams.max_sale_price = String(params.maxPrice);
 
-  const response = await apiRequest<{ resp_result: AliExpressSearchResponse }>(
+  const response = await apiRequest<any>(
     "aliexpress.ds.recommend.feed.get",
     apiParams,
     accessToken
   );
 
-  const result = response.resp_result || response;
-  const rawProducts = result?.products?.traffic_product_dto || [];
-  const products: NormalizedProduct[] = rawProducts.map(normalizeSearchProduct);
+  // The feed API returns: { result: { products: [...], total_record_count, ... }, rsp_code, code }
+  // After apiRequest unwraps the outer key, we get the object with .result inside
+  const feedResult = response?.result || response?.resp_result || response;
+  const rawProducts: any[] = feedResult?.products || feedResult?.products?.traffic_product_dto || [];
+  const products: NormalizedProduct[] = rawProducts.map(normalizeFeedProduct);
+
+  const totalCount = feedResult?.total_record_count || products.length;
+  const pageSize = params.pageSize || 20;
 
   return {
     products,
-    totalPages: result?.total_page_no || 1,
-    totalCount: result?.total_record_count || products.length,
-    page: result?.current_page_no || 1,
+    totalPages: Math.ceil(totalCount / pageSize),
+    totalCount,
+    page: params.page || 1,
   };
 }
 
@@ -403,6 +408,43 @@ function normalizeSearchProduct(raw: AliExpressSearchProduct): NormalizedProduct
     orders: raw.lastest_volume || raw.orders_count || 0,
     shipping: raw.ship_to_days ? `${raw.ship_to_days} days` : "Varies",
     category: raw.first_level_category_name || "",
+    url: raw.product_detail_url || `https://www.aliexpress.com/item/${raw.product_id}.html`,
+    supplier: "aliexpress",
+  };
+}
+
+/**
+ * Normalize a product from aliexpress.ds.recommend.feed.get
+ * Feed products have a slightly different structure:
+ *   - product_small_image_urls is a direct string[] (not { string: [...] })
+ *   - lastest_volume is used for order count
+ */
+function normalizeFeedProduct(raw: any): NormalizedProduct {
+  const price = parseFloat(raw.target_sale_price || raw.sale_price || "0");
+  const originalPrice = parseFloat(raw.target_original_price || raw.original_price || "0");
+  const discountStr = raw.discount ? String(raw.discount).replace("%", "") : "0";
+  const discount = parseInt(discountStr) || (originalPrice > 0 ? Math.round((1 - price / originalPrice) * 100) : 0);
+  const ratingStr = (raw.evaluate_rate || "0").replace("%", "");
+  const rating = parseFloat(ratingStr) / 20; // Convert percentage to 5-star scale
+
+  // Feed API returns product_small_image_urls as a direct array
+  const images: string[] = Array.isArray(raw.product_small_image_urls)
+    ? raw.product_small_image_urls
+    : raw.product_small_image_urls?.string || [raw.product_main_image_url].filter(Boolean);
+
+  return {
+    id: raw.product_id,
+    title: raw.product_title || "Untitled Product",
+    image: raw.product_main_image_url || "",
+    images,
+    price,
+    originalPrice,
+    currency: raw.target_sale_price_currency || raw.sale_price_currency || "SAR",
+    discount,
+    rating: Math.min(rating, 5),
+    orders: raw.lastest_volume || 0,
+    shipping: "Varies",
+    category: raw.first_level_category_name || raw.second_level_category_name || "",
     url: raw.product_detail_url || `https://www.aliexpress.com/item/${raw.product_id}.html`,
     supplier: "aliexpress",
   };

@@ -174,6 +174,7 @@ export interface AliExpressConfig {
 
 export interface ProductSearchParams {
   keyword?: string;
+  feedName?: string;
   category_id?: string;
   page?: number;
   pageSize?: number;
