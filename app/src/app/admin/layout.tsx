@@ -11,6 +11,7 @@ const ADMIN_NAV = [
   { href: "/admin/merchants", icon: "storefront", label: "Merchants" },
   { href: "/admin/orders", icon: "receipt_long", label: "Orders" },
   { href: "/admin/revenue", icon: "payments", label: "Revenue" },
+  { href: "/admin/feeds", icon: "rss_feed", label: "Feeds" },
   { href: "/admin/transfers", icon: "account_balance", label: "Transfers" },
   { href: "/admin/settings", icon: "settings", label: "Settings" },
 ];
