@@ -33,7 +33,7 @@ async function run() {
   // 2. Search AliExpress
   const method = "aliexpress.ds.text.search";
   const params = {
-    keyWord: "iphone",
+    keyWord: "SA_Clothing&Shoes",
     local: "en_US",
     countryCode: "SA",
     currency: "SAR",

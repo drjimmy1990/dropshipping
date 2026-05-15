@@ -213,21 +213,52 @@ async function searchByKeyword(
   if (params.category_id) apiParams.categoryId = params.category_id;
 
   try {
-    const response = await apiRequest<{ resp_result: AliExpressSearchResponse }>(
+    const response = await apiRequest<{ data?: any; resp_result?: any }>(
       "aliexpress.ds.text.search",
       apiParams,
       accessToken
     );
 
     const result = response.resp_result || response;
-    const rawProducts = result?.products?.traffic_product_dto || [];
-    const products: NormalizedProduct[] = rawProducts.map(normalizeSearchProduct);
+    
+    // Handle text.search specific response structure
+    let rawProducts = [];
+    if (result?.data && result.data.products) {
+      rawProducts = result.data.products;
+    } else if (result?.products?.traffic_product_dto) {
+      rawProducts = result.products.traffic_product_dto;
+    }
+
+    if (!rawProducts || rawProducts.length === 0) {
+      console.log("[AliExpress] text.search returned 0 products, falling back to feed search...");
+      return searchByFeed({ ...params, keyword: params.keyword }, accessToken);
+    }
+
+    // Map text.search fields to traffic_product_dto fields so normalizeSearchProduct works
+    const normalizedRawProducts = rawProducts.map((p: any) => ({
+      product_id: p.itemId || p.product_id,
+      product_title: p.title || p.product_title,
+      product_main_image_url: p.itemMainPic || p.product_main_image_url,
+      target_sale_price: p.targetSalePrice || p.target_sale_price,
+      sale_price: p.salePrice || p.sale_price,
+      target_original_price: p.targetOriginalPrice || p.target_original_price,
+      original_price: p.originalPrice || p.original_price,
+      target_sale_price_currency: p.targetSalePriceCurrency || p.target_sale_price_currency,
+      sale_price_currency: p.salePriceCurrency || p.sale_price_currency,
+      evaluate_rate: p.evaluateRate || p.evaluate_rate,
+      lastest_volume: p.orders || p.lastest_volume,
+      product_detail_url: p.itemUrl || p.product_detail_url,
+      first_level_category_name: p.categoryId ? String(p.categoryId) : p.first_level_category_name,
+      ...p
+    }));
+
+    const products: NormalizedProduct[] = normalizedRawProducts.map(normalizeSearchProduct);
 
     return {
       products,
-      totalPages: result?.total_page_no || 1,
-      totalCount: result?.total_record_count || products.length,
-      page: result?.current_page_no || 1,
+      totalPages: result?.data?.totalCount ? Math.ceil(result.data.totalCount / (params.pageSize || 20)) : 1,
+      totalCount: result?.data?.totalCount || products.length,
+      page: result?.data?.pageIndex || 1,
     };
   } catch (error) {
     // Fallback: if text.search is not available, try feed with keyword as feed_name
