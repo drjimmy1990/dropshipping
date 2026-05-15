@@ -325,6 +325,7 @@ function ProductDetailModal({
   importing,
   importError,
   importSuccess,
+  importedProductId,
 }: {
   product: NormalizedProductDetail | null;
   loading: boolean;
@@ -334,6 +335,7 @@ function ProductDetailModal({
   importing: boolean;
   importError: string | null;
   importSuccess: boolean;
+  importedProductId: string | null;
 }) {
   const [retailPrice, setRetailPrice] = useState("");
   const [selectedImage, setSelectedImage] = useState(0);
@@ -531,18 +533,20 @@ function ProductDetailModal({
                   <div className="bg-success/10 border border-success/20 rounded-lg p-4 text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <Icon name="check_circle" className="text-success text-xl" />
-                      <span className="text-sm font-semibold text-success">Product Imported Successfully!</span>
+                      <span className="text-sm font-semibold text-success">Saved to Your Catalog!</span>
                     </div>
                     <p className="text-xs text-text-secondary mb-3">
-                      The product has been saved to your catalog and pushed to your Salla store.
+                      The product has been saved as a draft. Edit the title, description, images and price before publishing to your Salla store.
                     </p>
                     <div className="flex gap-2 justify-center">
-                      <Link href="/dashboard/products">
-                        <Button size="sm" className="gap-1">
-                          <Icon name="inventory_2" className="text-sm" />
-                          Manage Products
-                        </Button>
-                      </Link>
+                      {importedProductId && (
+                        <Link href={`/dashboard/products/${importedProductId}`}>
+                          <Button size="sm" className="gap-1">
+                            <Icon name="edit" className="text-sm" />
+                            Edit & Customize
+                          </Button>
+                        </Link>
+                      )}
                       <Button
                         variant="secondary"
                         size="sm"
@@ -568,12 +572,12 @@ function ProductDetailModal({
                     {importing ? (
                       <>
                         <span className="inline-block animate-spin mr-2">⏳</span>
-                        Importing & Pushing to Store...
+                        Saving to Catalog...
                       </>
                     ) : (
                       <>
-                        <Icon name="cloud_upload" className="text-sm mr-1" />
-                        Import & Push to Salla
+                        <Icon name="download" className="text-sm mr-1" />
+                        Import to Catalog
                       </>
                     )}
                   </Button>
@@ -781,9 +785,14 @@ export default function ProductDiscoveryPage() {
     [fetchProductDetail, clearImportState]
   );
 
+  const [importedProductId, setImportedProductId] = useState<string | null>(null);
+
   const handleImport = useCallback(
     async (productId: number, retailPrice?: number) => {
-      await importProduct({ productId, retailPrice });
+      const result = await importProduct({ productId, retailPrice });
+      if (result?.success && result.product?.id) {
+        setImportedProductId(result.product.id);
+      }
     },
     [importProduct]
   );
@@ -878,6 +887,7 @@ export default function ProductDiscoveryPage() {
         importing={importState.loading}
         importError={importState.error}
         importSuccess={importState.success}
+        importedProductId={importedProductId}
       />
     </>
   );

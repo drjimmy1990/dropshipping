@@ -179,8 +179,8 @@ export default function MyProductsPage() {
       const data = await response.json();
       if (response.ok && data.success) {
         setToast({
-          type: "success",
-          message: `Synced ${data.synced} products (${data.created} new, ${data.updated} updated)`,
+          type: data.errors > 0 ? "error" : "success",
+          message: `Synced ${data.synced} products (${data.created} new, ${data.updated} updated${data.errors ? `, ${data.errors} errors` : ""})`,
         });
         refetch();
       } else {

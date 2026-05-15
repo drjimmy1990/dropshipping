@@ -20,7 +20,7 @@ import type { Product } from "@/lib/supabase/types";
  *  - retailPrice: (optional) merchant's retail price in SAR
  *  - marginType: "percentage" | "fixed" (default: percentage)
  *  - marginValue: margin amount (default: 30)
- *  - pushToStore: boolean (default: true) — auto-push to Salla
+ *  - pushToStore: boolean (default: false) — save locally first, push later
  */
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       retailPrice,
       marginType = "percentage",
       marginValue = 30,
-      pushToStore = true,
+      pushToStore = false,
     } = body;
 
     if (!productId) {

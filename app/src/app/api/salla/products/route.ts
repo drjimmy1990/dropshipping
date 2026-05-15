@@ -132,60 +132,88 @@ export async function POST(request: NextRequest) {
     let page = 1;
     let created = 0;
     let updated = 0;
+    let errors = 0;
     let hasMore = true;
 
     while (hasMore) {
       const result = await getSallaProducts(tokens, page);
 
       for (const sallaProduct of result.products) {
-        // Check if product already exists in our DB
-        const { data: existing } = await adminClient
-          .from("products")
-          .select("id")
-          .eq("store_product_id", String(sallaProduct.id))
-          .eq("merchant_id", user.id)
-          .maybeSingle();
+        try {
+          // Safe number parsing
+          const priceAmount = typeof sallaProduct.price === 'object' 
+            ? sallaProduct.price.amount 
+            : parseFloat(String(sallaProduct.price)) || 0;
+          const costPrice = parseFloat(String(sallaProduct.cost_price)) || 0;
+          const stockQty = parseInt(String(sallaProduct.quantity)) || 0;
+          const imageUrls = Array.isArray(sallaProduct.images) 
+            ? sallaProduct.images.map((img) => typeof img === 'string' ? img : img.url)
+            : sallaProduct.main_image ? [sallaProduct.main_image] : [];
 
-        if (existing) {
-          // Update existing product (sync latest data from Salla)
-          await adminClient
+          // Check if product already exists in our DB
+          const { data: existing } = await adminClient
             .from("products")
-            .update({
+            .select("id")
+            .eq("store_product_id", String(sallaProduct.id))
+            .eq("merchant_id", user.id)
+            .maybeSingle();
+
+          if (existing) {
+            // Update existing product (sync latest data from Salla)
+            const { error: updateErr } = await adminClient
+              .from("products")
+              .update({
+                title_en: sallaProduct.name,
+                retail_price: priceAmount,
+                description_en: sallaProduct.description || null,
+                is_active: sallaProduct.status === "sale",
+                in_stock: sallaProduct.status !== "out",
+                images: imageUrls,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existing.id);
+
+            if (updateErr) {
+              console.error(`[Salla Sync] ⚠️ Update failed for "${sallaProduct.name}":`, updateErr.message);
+              errors++;
+            } else {
+              updated++;
+            }
+          } else {
+            // Insert as "direct" product (merchant's own Salla product)
+            const categoryId = sallaProduct.categories?.[0]?.id || null;
+
+            const { error: insertErr } = await adminClient.from("products").insert({
+              merchant_id: user.id,
+              store_id: store.id,
+              supplier: "direct",
+              supplier_product_id: String(sallaProduct.id),
               title_en: sallaProduct.name,
-              retail_price: sallaProduct.price.amount,
               description_en: sallaProduct.description || null,
+              supplier_cost: costPrice,
+              supplier_currency: (typeof sallaProduct.price === 'object' ? sallaProduct.price.currency : 'SAR') || "SAR",
+              retail_price: priceAmount,
+              margin_type: "fixed",
+              margin_value: priceAmount - costPrice,
+              stock_quantity: stockQty,
               is_active: sallaProduct.status === "sale",
               in_stock: sallaProduct.status !== "out",
-              images: sallaProduct.images.map((img) => img.url),
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existing.id);
-          updated++;
-        } else {
-          // Insert as "direct" product (merchant's own Salla product)
-          const categoryId = sallaProduct.categories?.[0]?.id || null;
+              images: imageUrls,
+              store_product_id: String(sallaProduct.id),
+              salla_category_id: categoryId,
+              category: sallaProduct.categories?.[0]?.name || null,
+            });
 
-          await adminClient.from("products").insert({
-            merchant_id: user.id,
-            store_id: store.id,
-            supplier: "direct",
-            supplier_product_id: String(sallaProduct.id),
-            title_en: sallaProduct.name,
-            description_en: sallaProduct.description || null,
-            supplier_cost: parseFloat(sallaProduct.cost_price) || 0,
-            supplier_currency: sallaProduct.price.currency || "SAR",
-            retail_price: sallaProduct.price.amount,
-            margin_type: "fixed",
-            margin_value: sallaProduct.price.amount - (parseFloat(sallaProduct.cost_price) || 0),
-            stock_quantity: parseInt(sallaProduct.quantity) || 0,
-            is_active: sallaProduct.status === "sale",
-            in_stock: sallaProduct.status !== "out",
-            images: sallaProduct.images.map((img) => img.url),
-            store_product_id: String(sallaProduct.id),
-            salla_category_id: categoryId,
-            category: sallaProduct.categories?.[0]?.name || null,
-          });
-          created++;
+            if (insertErr) {
+              console.error(`[Salla Sync] ❌ Insert failed for "${sallaProduct.name}":`, insertErr.message);
+              errors++;
+            } else {
+              created++;
+            }
+          }
+        } catch (productErr) {
+          console.error(`[Salla Sync] ❌ Error processing "${sallaProduct.name}":`, productErr);
+          errors++;
         }
       }
 
@@ -207,6 +235,7 @@ export async function POST(request: NextRequest) {
       synced: created + updated,
       created,
       updated,
+      errors,
     });
   } catch (error) {
     console.error("[Salla Sync] Error:", error);
