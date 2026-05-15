@@ -458,7 +458,11 @@ export async function getFreightOptions(
     return [];
   }
 
-  const options = result?.delivery_options?.delivery_option_d_t_o || [];
+  // delivery_options can be a direct array OR wrapped in { delivery_option_d_t_o: [...] }
+  const rawOptions = result?.delivery_options;
+  const options = Array.isArray(rawOptions)
+    ? rawOptions
+    : rawOptions?.delivery_option_d_t_o || [];
   console.log(`[AliExpress] Freight options found: ${options.length}`);
 
   return options.map((opt: any) => {
