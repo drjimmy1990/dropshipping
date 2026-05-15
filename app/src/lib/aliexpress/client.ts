@@ -199,18 +199,18 @@ async function searchByKeyword(
   accessToken?: string
 ): Promise<{ products: NormalizedProduct[]; totalPages: number; totalCount: number; page: number }> {
   const apiParams: Record<string, string> = {
-    keyword: params.keyword!,
-    target_currency: params.currency || "SAR",
-    target_language: params.language || "EN",
-    page_no: String(params.page || 1),
-    page_size: String(params.pageSize || 20),
-    ship_to_country: params.shipTo || "SA",
+    keyWord: params.keyword!,
+    currency: params.currency || "SAR",
+    local: params.language === "AR" ? "ar_AE" : "en_US",
+    pageIndex: String(params.page || 1),
+    pageSize: String(params.pageSize || 20),
+    countryCode: params.shipTo || "SA",
   };
 
   if (params.sort) apiParams.sort = params.sort;
-  if (params.minPrice) apiParams.min_price = String(params.minPrice);
+  if (params.minPrice) apiParams.min_price = String(params.minPrice); // Assuming these remain snake_case if documented
   if (params.maxPrice) apiParams.max_price = String(params.maxPrice);
-  if (params.category_id) apiParams.category_id = params.category_id;
+  if (params.category_id) apiParams.categoryId = params.category_id;
 
   try {
     const response = await apiRequest<{ resp_result: AliExpressSearchResponse }>(
