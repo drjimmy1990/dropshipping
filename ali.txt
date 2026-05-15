@@ -1,0 +1,2026 @@
+
+GET/POST:aliexpress.ds.image.searchV2
+
+Description：The API for querying member benefit detail.
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+◉param0
+
+Object
+
+No
+
+param0
+
+search_type
+
+String
+
+No
+
+image search type(same/similar)
+
+image_base64
+
+String
+
+No
+
+image encoded using base64
+
+currency
+
+String
+
+No
+
+currency
+
+lang
+
+String
+
+No
+
+language
+
+sort_type
+
+String
+
+No
+
+sort type(price/orders/best)
+
+sort_order
+
+String
+
+No
+
+sort order(asc/desc)
+
+ship_to
+
+String
+
+No
+
+ship to country
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+Result
+
+ret
+
+Boolean
+
+Ret
+
+code
+
+String
+
+Code
+
+◎data
+
+List[Object]
+
+Data
+
+first_level_category_id
+
+String
+
+First level category id
+
+product_id
+
+String
+
+product_id
+
+target_sale_price_currency
+
+String
+
+Sale price target currency
+
+discount
+
+String
+
+Discount rate
+
+second_level_category_id
+
+String
+
+Second level category id
+
+latest_volume
+
+String
+
+Recent sale volume
+
+product_title
+
+String
+
+Product title
+
+product_detail_url
+
+String
+
+Product detail page url
+
+first_level_category_title
+
+String
+
+First level category name
+
+target_sale_price
+
+String
+
+Sale price amount using target currency
+
+product_main_image_url
+
+String
+
+Product main image URL
+
+target_original_price_currency
+
+String
+
+Original price target currency
+
+evaluate_rate
+
+String
+
+Evaluate rate
+
+target_original_price
+
+String
+
+Target original price
+
+shop_id
+
+Number
+
+ShopID
+
+second_level_category_title
+
+String
+
+Second level category name
+
+similarity_score
+
+String
+
+Similarity  score
+
+ship_from
+
+String
+
+Ship country code
+
+messages
+
+String
+
+Message
+
+empty
+
+Boolean
+
+Empty
+
+Response
+Successful response
+{
+  "aliexpress_ds_image_searchV2_response": {
+    "result": {
+      "ret": true,
+      "next_start_row_key": "522ee3d0-7a55-424d-a3ab-a347039921fe",
+      "data": {
+        "products": [
+          {
+            "volume": "700+",
+            "category": {
+              "first_level": {
+                "name": "Home & Garden",
+                "id": "15"
+              },
+              "second_level": {
+                "name": "Pet Products",
+                "id": "100006664"
+              }
+            },
+            "product_detail_url": "https://www.aliexpress.com/item/1005007857219128.html?skuId=12000042560576073&pdp_ext_f=%7B%22sku_id%22%3A%2212000042560576073%22%7D",
+            "price": {
+              "sale": {
+                "value": "99",
+                "currency": "USD"
+              },
+              "original": {
+                "value": "795",
+                "currency": "USD"
+              }
+            },
+            "discount": "87",
+            "image_url": "https://ae-pic-a1.aliexpress-media.com/kf/Sd012ee6a192442ccb2d324a6de1cc9d5p/Scratcher-Sisal-Hemp-Board-Wall-Pad-Furniture-Protective-Scratching-Post-For-Cat-Paw-Training.jpg_350x350xz.jpg",
+            "evaluate_rate": "4.9",
+            "title": "Scratcher Sisal Hemp Board Wall Pad Furniture Protective Scratching Post For Cat Paw Training",
+            "shop_id": 1103576287,
+            "product_id": "1005007857219128",
+            "similarity_score": "0.967"
+          },
+          {
+            "volume": "6",
+            "category": {
+              "first_level": {
+                "name": "Home & Garden",
+                "id": "15"
+              },
+              "second_level": {
+                "name": "Pet Products",
+                "id": "100006664"
+              }
+            },
+            "product_detail_url": "https://www.aliexpress.com/item/1005007889439386.html?skuId=12000042734519538&pdp_ext_f=%7B%22sku_id%22%3A%2212000042734519538%22%7D",
+            "price": {
+              "sale": {
+                "value": "111",
+                "currency": "USD"
+              },
+              "original": {
+                "value": "1148",
+                "currency": "USD"
+              }
+            },
+            "discount": "90",
+            "image_url": "https://ae-pic-a1.aliexpress-media.com/kf/Sd012ee6a192442ccb2d324a6de1cc9d5p/Scratcher-Sisal-Hemp-Board-Wall-Pad-Furniture-Protective-Scratching-Post-For-Cat-Paw-Training.jpg_350x350xz.jpg",
+            "evaluate_rate": "",
+            "title": "Scratcher Sisal Hemp Board Wall Pad Furniture Protective Scratching Post For Cat Paw Training",
+            "shop_id": 1103847117,
+            "product_id": "1005007889439386",
+            "similarity_score": "0.967"
+          },
+          {
+            "volume": "1500+",
+            "category": {
+              "first_level": {
+                "name": "Home & Garden",
+                "id": "15"
+              },
+              "second_level": {
+                "name": "Pet Products",
+                "id": "100006664"
+              }
+            },
+            "product_detail_url": "https://www.aliexpress.com/item/1005007386625802.html?skuId=12000040667060586&pdp_ext_f=%7B%22sku_id%22%3A%2212000040667060586%22%7D",
+            "price": {
+              "sale": {
+                "value": "148",
+                "currency": "USD"
+              },
+              "original": {
+                "value": "1303",
+                "currency": "USD"
+              }
+            },
+            "discount": "88",
+            "image_url": "https://ae-pic-a1.aliexpress-media.com/kf/S6ebadd4fa7464ffb86fbc13742ed053ez/Natural-Sisal-Cat-Scratcher-Mat-Cat-Scratch-Mats-Horizontal-Cat-Floor-Scratching-Pad-Rug-Protect-Couch.jpg_350x350xz.jpg",
+            "evaluate_rate": "4.4",
+            "title": "Natural Sisal Cat Scratcher Mat Cat Scratch Mats Horizontal Cat Floor Scratching Pad Rug Protect Couch and Carpets",
+            "shop_id": 1102524801,
+            "product_id": "1005007386625802",
+            "similarity_score": "0.967"
+          }
+        ]
+      },
+      "total_count": 89,
+      "pagination": {
+        "has_next": true,
+        "page_no": 1,
+        "page_count": 9,
+        "page_size": 10
+      },
+      "empty": false
+    },
+    "request_id": "2102e72c17333673131128897"
+  }
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.image.searchV2");
+request.addApiParameter("param0", "{\"sort_type\":\"price\",\"image_base64\":\"imageBase64\",\"currency\":\"USD\",\"lang\":\"en\",\"sort_order\":\"asc\",\"ship_to\":\"US\"}");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$request = new IopRequest('aliexpress.ds.image.searchV2');
+$request->addApiParam('param0','{\"sort_type\":\"price\",\"image_base64\":\"imageBase64\",\"currency\":\"USD\",\"lang\":\"en\",\"sort_order\":\"asc\",\"ship_to\":\"US\"}');
+var_dump($c->execute($request, $accessToken));
+
+
+
+aliexpress.ds.text.search
+API
+GET/POST:aliexpress.ds.text.search
+
+Description：Search products by keyword.
+
+
+
+Request Parameter
+Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+keyWord
+
+String
+
+Yes
+
+Search keywords you need
+
+local
+
+String
+
+Yes
+
+Local (en_US/zh_CN...)
+
+countryCode
+
+String
+
+Yes
+
+Ship to country
+
+categoryId
+
+Number
+
+No
+
+CategoryId
+
+sortBy
+
+String
+
+No
+
+SortBy(min_price/orders/comments,desc/asc)
+
+pageSize
+
+Number
+
+No
+
+Pagesize
+
+pageIndex
+
+Number
+
+No
+
+Page index
+
+currency
+
+String
+
+Yes
+
+Currency(USD / BRL...)
+
+◉searchExtend
+
+List[Object]
+
+No
+
+searchExtend
+
+searchKey
+
+String
+
+No
+
+SearchKey
+
+searchValue
+
+String
+
+No
+
+SearchValue
+
+max
+
+String
+
+No
+
+Max
+
+min
+
+String
+
+No
+
+Min
+
+selectionName
+
+String
+
+No
+
+Text search within specific selection
+
+Response Struct
+
+
+Name
+
+Type
+
+Description
+
+code
+
+String
+
+Code
+
+msg
+
+String
+
+Message
+
+◉data
+
+Object
+
+data
+
+totalCount
+
+Number
+
+Result total count
+
+pageIndex
+
+Number
+
+Result page index
+
+pageSize
+
+Number
+
+Result page size
+
+◎products
+
+List[Object]
+
+products
+
+salePriceFormat
+
+String
+
+Formatted sale price
+
+itemUrl
+
+String
+
+Product detail page URL
+
+orders
+
+String
+
+Recent order amount
+
+score
+
+String
+
+Average customer evaluation score(5 point scale)
+
+title
+
+String
+
+Product title
+
+itemMainPic
+
+String
+
+Product main picture
+
+cateId
+
+String
+
+Category ID
+
+originalPriceFormat
+
+String
+
+Formatted original price
+
+originMinPrice
+
+String
+
+Origin min price
+
+itemId
+
+String
+
+ItemID/Product_ID
+
+originalPrice
+
+String
+
+Original price
+
+originalPriceCurrency
+
+String
+
+Original price currency
+
+salePrice
+
+String
+
+Sale price
+
+salePriceCurrency
+
+String
+
+Sale price currency
+
+targetOriginalPrice
+
+String
+
+Original price using target disignated currency
+
+targetOriginalPriceCurrency
+
+String
+
+Target disignated currency
+
+targetSalePrice
+
+String
+
+Sale price using target disignated currency
+
+discount
+
+String
+
+Discount rate
+
+productVideoUrl
+
+String
+
+Product video URL
+
+evaluateRate
+
+String
+
+Average customer evaluation score(100 point scale)
+
+Response
+Successful response
+{
+  "aliexpress_ds_text_search":{
+  "msg": "message",
+  "code": "0",
+  "data": {
+    "pageIndex": "pageIndex",
+    "pageSize": "pageSize",
+    "totalCount": "totalCount",
+    "products": [
+      {
+        "productVideoUrl": "productVideoUrl",
+        "originalPrice": "12.73",
+        "originalPriceCurrency": "USD",
+        "salePrice": "6.62",
+        "discount": "48%",
+        "itemMainPic": "itemMainPic",
+        "title": "title",
+        "originalPriceFormat": "originalPriceFormat",
+        "score": "score",
+        "itemId": "itemId",
+        "targetSalePrice": "6.62",
+        "cateId": "cateId",
+        "targetOriginalPriceCurrency": "USD",
+        "originMinPrice": "originMinPrice",
+        "evaluateRate": "97.8%",
+        "salePriceFormat": "salePriceFormat",
+        "orders": "orders",
+        "targetOriginalPrice": "12.73",
+        "itemUrl": "itemUrl",
+        "salePriceCurrency": "USD"
+      }
+    ]
+  },
+  "request_id": "0ba2887315178178017221014"
+}
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.text.search");
+request.addApiParameter("keyWord", "\u88D9\u5B50");
+request.addApiParameter("local", "zh_CN");
+request.addApiParameter("countryCode", "US");
+request.addApiParameter("categoryId", "349");
+request.addApiParameter("sortBy", "min_price,asc");
+request.addApiParameter("pageSize", "20");
+request.addApiParameter("pageIndex", "1");
+request.addApiParameter("currency", "USD");
+request.addApiParameter("searchExtend", "[{\"min\":\"min\",\"max\":\"max\",\"searchKey\":\"searchKey\",\"searchValue\":\"searchValue\"}]");
+request.addApiParameter("selectionName", "selection name");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$request = new IopRequest('aliexpress.ds.text.search');
+$request->addApiParam('keyWord','\u88D9\u5B50');
+$request->addApiParam('local','zh_CN');
+$request->addApiParam('countryCode','US');
+$request->addApiParam('categoryId','349');
+$request->addApiParam('sortBy','min_price,asc');
+$request->addApiParam('pageSize','20');
+$request->addApiParam('pageIndex','1');
+$request->addApiParam('currency','USD');
+$request->addApiParam('searchExtend','[{\"min\":\"min\",\"max\":\"max\",\"searchKey\":\"searchKey\",\"searchValue\":\"searchValue\"}]');
+$request->addApiParam('selectionName','selection name');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+Q:User Case Example
+A: You can bring these two selection name in text search to search within your specific selected product collection.
+
+
+
+As shown above, you can for example search "eye lashes" within your target selection "Evernet_B_NG_Selection".
+
+
+
+What's more, you can use searchExtend param to add more search filter to better satisfying your particular search need. For example, you can bring searchExtend like follow, which means you want to search product whose seller is online within latest 48 hour.
+
+[
+  {
+    "min": "",
+    "max": "",
+    "searchKey": "seller_online",
+    "class": "com.aidc.supersupplier.model.SearchExtend",
+    "searchValue": "48"
+  }
+]
+following is the search extend key we now support:
+
+Name
+
+SearchKey
+
+SearchValue
+
+free shiping
+
+free_ship_to
+
+country code
+
+choice product
+
+item_tag
+
+choice
+
+seller type
+
+seller_level
+
+GOLD
+
+SILVER
+
+ship from
+
+ship_from
+
+country code
+
+seller online within the latest 72 hour
+
+seller_online
+
+48
+
+72
+
+product hot area
+
+hot_area
+
+BR
+
+US
+
+UK/GB
+
+FR
+
+AU
+
+ChangeLog
+
+
+
+
+
+aliexpress.ds.feedname.get
+API
+GET/POST:aliexpress.ds.feedname.get
+
+Description：Fetch feedname for DS business. Feedname refers to a list of itemId.
+
+Please ensure that the feedname you entered is correct. You can obtain the feedname by using the aliexpress.ds.recommend.feed.get API.
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+app_signature
+
+String
+
+No
+
+API signature
+
+Response Struct
+
+
+Name
+
+Type
+
+Description
+
+◉resp_result
+
+Object
+
+Respond results
+
+resp_code
+
+Number
+
+Status code of Response results
+
+resp_msg
+
+String
+
+Status description of response result
+
+◎result
+
+List[Object]
+
+Details of response results
+
+current_record_count
+
+Number
+
+Current record count of return
+
+○promos
+
+List[Object]
+
+Returned list of featured promotion
+
+promo_desc
+
+String
+
+Product number of featured promotion
+
+promo_name
+
+String
+
+The description of featured promotion
+
+product_num
+
+Number
+
+The name of featured promotion
+
+Response
+Successful response
+{
+    "aliexpress_ds_feedname_get_response": {
+      "resp_result": {
+        "result": {
+          "current_record_count": 176,
+          "promos": {
+            "promo": [
+              {
+                "promo_name": "AEB_ ComputerAccessories_EG",
+                "promo_desc": "AEB_ ComputerAccessories_EG",
+                "product_num": 35018
+              },
+              {
+                "promo_name": "toys_ZA topsellers_ 20240423",
+                "promo_desc": "toys_ZA topsellers_ 20240423",
+                "product_num": 50955
+              }
+            ]
+          }
+        },
+        "resp_code": 200,
+        "resp_msg": "Call succeeds"
+      },
+      "request_id": "2141154c17397829835025878"
+    }
+  }
+
+
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+IopClient client = new IopClient(url, appkey, appSecret);
+IopRequest request = new IopRequest();
+request.setApiName("aliexpress.ds.feedname.get");
+request.addApiParameter("app_signature", "your_feedname");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.feedname.get');
+$request->addApiParam('app_signature','your_feedname');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common Issues 
+Q:The feedname searched does not meet my requirements. What should I do?
+A:You can contact the business team to customize the feedname product collection that meets your needs.
+
+Q:Unable to find results using categoryid
+A:What we get in aliexpress.ds.product.get is the subcategory id. Through this interface, we can only find the subcategory name corresponding to the subcategory.
+
+Q:Why can't I get any results using the feedname given to me by the business team?
+A:The feedname takes longer to take effect. You can check again later to see if the feedname is effective.
+
+ChangeLog
+
+
+
+aliexpress.ds.feed.itemids.get
+API
+GET/POST:aliexpress.ds.feed.itemids.get
+
+Description：fetch item id list by feedname.
+
+Request Parameter
+
+Name
+
+Type
+
+Required or not
+
+Description
+
+page_size
+
+Number
+
+No
+
+Number of each page(customized page_size should be in range between 0 and 200, or default page size 200 would overrides)
+
+feed_name
+
+String
+
+Yes
+
+Query api ‘aliexpress.ds.feedname.get’
+
+search_id
+
+String
+
+No
+
+Page turning parameters, passed when page turning is required.(Use the search_id returned last time and add it to the incoming parameters)
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+Result object
+
+products
+
+Number[]
+
+Item id list
+
+search_id
+
+String
+
+Search id, put it in the next request. Only valid in 1 minutes
+
+total
+
+Number
+
+Total item id left 
+
+rsp_msg
+
+String
+
+Result msg
+
+rsp_code
+
+Number
+
+Result code
+
+ret
+
+Boolean
+
+True is success, false for fail
+
+Response
+Successful response
+{
+  "aliexpress_ds_feed_itemids_get_response": {
+    "result": {
+      "total": 4549,
+      "products": {
+        "number": [
+          1005007821712176,
+          1005007610894533
+        ]
+      },
+      "search_id": "eJw1j8FOxCAQhp8GLntZoJT2wKG6NjExamI8E0KHXZSWCjRxfXqnbkzITGbmn29+TLSlGrflkrJmTHYt70TTyb5pqCkuRwPfq6lhBs2U6JXqmWwFU9RDdRfjA8Sp6FBhNmGiPuXZVu23GD9KWujXBvmqXVp8OBNxuoRKxMA44fc3JVb/WuxlyHb5JHIs4QdwxI9Hwlt8fxjcX3OaUw0olmO9rruGcDU83GH9/obhKTkbMb9GW/cLLysiK0yP6K+g9DA8nw4OO+eEQDmG6YZgEgMtgE4ns5swO17j1zOUggd/AYU1Yk0="
+    },
+    "ret": true,
+    "rsp_msg": "",
+    "request_id": "21413a6d17397790949651163"
+  }
+}
+Faild response
+{
+  "aliexpress_ds_feed_itemids_get_response": {
+    "result": {
+      "total": 0,
+      "products": {},
+      "search_id": "eJw1j9FuwzAIRb/GeU6cNFUf/DBt6m+gyMErnWOnQLZ1X1/SqRIPcDn3IiBPohA3lsohEYtSKcgSueZMcwPWZcDfFZQWDN1xaMfBd2N/OvkmocYLJMI8SyDFBcyRKi+ThrTlfJVamtuGfA+xlkSfrv+4kLr+rfPOv/+TNr1Y0xh5Kl/ucBb6Q1v5tnV+tHrGmH/lulQlgw9nva874/xRf+h7EswYFefW+6EzsRG0szPsibCzwf5gFDH3A0sPV6U="
+    },
+    "ret": true,
+    "rsp_msg": "",
+    "request_id": "21413a6d17406421028141001"
+  }
+}
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.feed.itemids.get");
+request.addApiParameter("page_size", "200");
+request.addApiParameter("category_id", "21");
+request.addApiParameter("feed_name", "DS bestseller");
+request.addApiParameter("search_id", "abc123");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.feed.itemids.get');
+$request->addApiParam('page_size','200');
+$request->addApiParam('category_id','21');
+$request->addApiParam('feed_name','DS bestseller');
+$request->addApiParam('search_id','abc123');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common Issues
+How should I turn the page?
+When you call the API for the first time, "search_id" will be returned to you. You only need to re-pass in the "search_id" you get the next time you call the API.
+
+
+
+How do I filter my items？
+1. Ask our business team to help you select a basic pool of items.
+
+2. Sync the whole item pool to your DB.
+
+3. Get item detail for each product, in the product detail there is field to show the category detailed info.
+
+4. Re-group the data in your DB by category info.
+
+
+
+ChangeLog
+aliexpress.ds.product.get
+API
+GET/POST:aliexpress.ds.product.get
+
+
+
+Description：This API is used to retrieve product details, such as SKU information, product descriptions, pricing, and inventory stock levels.
+
+The price calculation logic depends on the user’s account data. Authentication via a valid access token is mandatory to ensure price consistency.
+
+
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+ship_to_country
+
+String
+
+Yes
+
+Country
+
+
+
+
+
+
+
+ 
+
+product_id
+
+Number
+
+Yes
+
+Item ID
+
+
+
+
+
+
+
+
+
+target_currency
+
+String
+
+No
+
+Target currency
+
+remove_personal_benefit
+
+Boolean
+
+No
+
+If true, you will not get any crowd-type promotion
+
+target_language
+
+String
+
+No
+
+hi_IN(India)
+
+de_DE(Germany)
+
+en_US(UnitedStates)
+
+zh_CN(China)
+
+es_MX(Mexico)
+
+ru_RU(Russia)
+
+pt_PT(Portugal)
+
+pt_BR(Brazil)
+
+ko_KR(South Korea)
+
+id_ID(Indonesia)
+
+en_GB(United Kingdom)
+
+it_IT(Italy)
+
+fr_FR(France)
+
+es_ES(Spain)
+
+iw_IL(Israel)
+
+ar_SA(Saudi Arabia)
+
+ar_EG(Egypt)
+
+vi_VN(Vietnam)
+
+th_TH(Thailand)
+
+uk_UA(Ukraine)
+
+ja_JP(Japan)
+
+pl_PL(Poland)
+
+he_IL(Israel)
+
+nl_NL(Netherlands)
+
+tr_TR(Turkey)
+
+
+
+
+Response Struct
+
+
+
+
+
+Name
+
+Type
+
+Description
+
+rsp_msg
+
+String
+
+Result message
+
+rsp_code
+
+Number
+
+Result code
+
+◉result
+
+Object
+
+Product search results
+
+◎ae_item_properties
+
+List[Object]
+
+Attribute information
+
+attr_name_id
+
+Number
+
+Attribute ID
+
+attr_value_id
+
+Number
+
+Attribute ID
+
+attr_value_unit
+
+String
+
+Attribute unit
+
+attr_name
+
+String
+
+Attribute name
+
+attr_value_start
+
+String
+
+Interval attribute start value
+
+attr_value_end
+
+String
+
+The end value of the interval attribute
+
+attr_value
+
+String
+
+Attribute value
+
+◎ae_item_sku_info_dtos
+
+List[Object]
+
+SKU information
+
+sku_available_stock
+
+Number
+
+SKU inventory
+
+sku_bulk_order
+
+Number
+
+Minimum number of batches
+
+sku_price
+
+String
+
+Origin SKU price. Value range: 0.01-100000; Unit: USD. Such as: 200.07, which means: 200 US dollars 7 points. Need to be in the correct price range.
+
+offer_sale_price
+
+String
+
+SKU discount price
+
+id
+
+String
+
+SKU attribute unique key(Duplicate with "sku_attr")[Will be offline on (28/02/25)]
+
+ ○ae_sku_property_dtos
+
+List[Object]
+
+SKU attribute object
+
+sku_property_value
+
+String
+
+Attribute value
+
+property_value_id
+
+Number
+
+Custom id
+
+sku_property_name
+
+String
+
+The system will first display the "property_value_definition_name". If this field is empty, the "sku_property_value" will be shown instead
+
+sku_property_id
+
+Number
+
+Attribute ID
+
+property_value_definition_name
+
+String
+
+Custom name
+
+sku_image
+
+String
+
+SKU pictures
+
+ barcode
+
+String
+
+Commodity barcode
+
+ currency_code
+
+String
+
+The currency unit of the product. U.S. Dollar: USD, Ruble: RUB
+
+ sku_code
+
+String
+
+Ready to offline
+
+ sku_id
+
+String
+
+SKU id (Can be used in aliexpress.ds.freight.query API.)
+
+ sku_attr
+
+String
+
+SKU attribute unique key in new field name.(Can be used in aliexpress.ds.freight.query API.)
+
+ ean_code
+
+String
+
+EAN Code(European Article Number)
+
+ price_include_tax
+
+Boolean
+
+If the price includes tax
+
+◎wholesale_price_tiers
+
+List[Object]
+
+Display when the item has wholesale price
+
+min_quantity
+
+String
+
+Threshold quantity for wholesale
+
+discount
+
+String
+
+Discount rate
+
+wholesale_price
+
+String
+
+Whole price
+
+tax_currency_code
+
+String
+
+Currency code of tax
+
+ buy_amount_limit_set_by_promotion
+
+String
+
+Promotion buy limit
+
+estimated_import_charges
+
+String
+
+Products from the People's Republic of China (which include products from Hong Kong) entering the U.S. for consumption will be subject to all applicable import charges (duties, taxes, fees, exactions, etc.) according to the currently effective regulatory requirements in the U.S. To ensure compliance with such requriements, these applicable import charges may be remitted to U.S. regulatory authorities on your behalf.
+
+ limit_strategy
+
+String
+
+The limit strategy after you reach the promotion limit
+
+◎ae_multimedia_info_dto
+
+List[Object]
+
+Multimedia information
+
+○ae_video_dtos
+
+List[Object]
+
+Video information
+
+poster_url
+
+String
+
+The URL of the video cover image
+
+media_status
+
+String
+
+Video status
+
+ali_member_id
+
+Number
+
+Seller's master account ID
+
+media_type
+
+String
+
+Type of video
+
+media_id
+
+Number
+
+Video ID
+
+ media_url
+
+String
+
+Media URL
+
+image_urls
+
+String
+
+List of main images of the product
+
+◎package_info_dto
+
+List[Object]
+
+Package information
+
+base_unit
+
+Number
+
+Number of basic products for custom weighing
+
+package_height
+
+Number
+
+Product height
+
+gross_weight
+
+String
+
+The gross weight of the product
+
+package_length
+
+Number
+
+The length of the product
+
+package_width
+
+Number
+
+Product width
+
+product_unit
+
+Number
+
+Unit of commodity
+
+package_type
+
+Boolean
+
+Type of packaging(Set by the seller, this is the package type.)
+
+◎ae_store_info
+
+List[Object]
+
+Store Information
+
+item_as_described_rating
+
+String
+
+Product Description, 1-5 stars
+
+communication_rating
+
+String
+
+Seller Service, 1-5 stars
+
+shipping_speed_rating
+
+String
+
+Logistics, 1-5 stars
+
+store_name
+
+String
+
+Shop name
+
+store_id
+
+Number
+
+Store ID
+
+store_country_code
+
+String
+
+Store country code, can be used as 'ship from' country of the sku
+
+◎product_id_converter_result
+
+List[Object]
+
+product id converter result
+
+ main_product_id
+
+Number
+
+Main productId
+
+sub_product_id
+
+Object
+
+Sub productId
+
+has_whole_sale
+
+Boolean
+
+Has wholesale price
+
+ ◎logistics_info_dto
+
+List[Object]
+
+Logistics information
+
+ship_to_country
+
+String
+
+Country
+
+delivery_time
+
+Number
+
+Goods lead time
+
+ ◎ae_item_base_info_dto
+
+List[Object]
+
+Basic commodity information
+
+product_status_type
+
+String
+
+Product status
+
+mobile_detail
+
+String
+
+Mobile detailed description(Product details)
+
+avg_evaluation_rating
+
+String
+
+Average rating stars, 1-5 stars
+
+evaluation_count
+
+String
+
+Evaluation number(Customer Reviews )
+
+detail
+
+String
+
+Commodity detailed description(Product details)
+
+currency_code
+
+String
+
+The currency unit of the commodity. U.S. Dollar: USD, Ruble: RUB
+
+category_id
+
+Number
+
+ID of the category of the product
+
+sales_count
+
+String
+
+Sales volume of product("1000+"/ "13")
+
+category_sequence
+
+String
+
+Category sequence
+
+product_id
+
+Number
+
+Item ID
+
+subject
+
+String
+
+The title of the product
+
+
+Response in JSON
+
+
+{
+  "result": {
+    "ae_item_sku_info_dtos": [
+      {
+        "sku_attr": "73:175#Black Green;71:193#Polarized",
+        "offer_sale_price": "3.94",
+        "sku_id": "12000027158136202",
+        "wholesale_price_tiers": [
+          {
+            "min_quantity": "1",
+            "wholesale_price": "\"5.78\"",
+            "discount": "0.52"
+          }
+        ],
+        "ean_code": "eanCode",
+        "limit_strategy": "create_order_fail",
+        "price_include_tax": "true",
+        "currency_code": "USD",
+        "sku_price": "3.94",
+        "buy_amount_limit_set_by_promotion": "3",
+        "sku_available_stock": "57",
+        "id": "73:175#Black Green;71:193#Polarized",
+        "sku_bulk_order": "10",
+        "barcode": "320325455",
+        "sku_code": "S96470",
+        "ae_sku_property_dtos": [
+          {
+            "sku_property_value": "green",
+            "sku_image": "https://ae04.alicdn.com/kf/Hba46f8222fdf4440a271134f8ce2ca2aB.jpg",
+            "sku_property_name": "Lenses Color",
+            "property_value_definition_name": "Black Green",
+            "property_value_id": "175",
+            "sku_property_id": "73"
+          }
+        ]
+      }
+    ],
+    "ae_multimedia_info_dto": {
+      "ae_video_dtos": [
+        {
+          "media_status": "approved",
+          "media_type": "MAIN_IMAGE_VIDEO",
+          "poster_url": "https://img.alicdn.com/imgextra/i4/6000000004252/O1CN01R1TCD21hHSjEOLpKT_!!6000000004252-0-tbvideo.jpg",
+          "ali_member_id": "227887939",
+          "media_id": "296195919792",
+          "media_url": "media url"
+        }
+      ],
+      "image_urls": "https://ae04.alicdn.com/kf/H551494696f2342edbeee5d2f288f4d1cv.jpg;https://ae04.alicdn.com/kf/H847c9c1b04614adfa20f042cc4490df6S.jpg;https://ae04.alicdn.com/kf/H1936d341e4bf4773ace153b527070a07C.jpg;https://ae04.alicdn.com/kf/Hf0cc14d4cc5741dc91b6dcf90bf5553cu.jpg;https://ae04.alicdn.com/kf/H80cb5bc712984795a850e9fc3a156d9fV.jpg;https://ae04.alicdn.com/kf/H71d81f9898af4d72b3bd18f7fffeb557j.jpg"
+    },
+    "package_info_dto": {
+      "package_width": "8",
+      "package_height": "6",
+      "package_length": "18",
+      "gross_weight": "0.050",
+      "package_type": "false",
+      "product_unit": "100000015",
+      "base_unit": "2"
+    },
+    "product_id_converter_result": {
+      "main_product_id": "32982857990",
+      "sub_product_id": {
+        "US": 2251832796543238
+      }
+    },
+    "logistics_info_dto": {
+      "delivery_time": "5",
+      "ship_to_country": "CA"
+    },
+    "ae_item_base_info_dto": {
+      "gmt_create": "0",
+      "mobile_detail": "\u003cdiv\u003eThis is a product\u003c/div\u003e",
+      "category_sequence": "(Beta Release) Only open to whitelist appkey",
+      "subject": "FUQIAN 2022 Fashion Square Polarized Sunglasses Men Vintage Plastic Male Sun Glasses Women Stylish Black Sport Shades UV400",
+      "evaluation_count": "1004",
+      "ws_display": "expire_offline",
+      "sales_count": "1000+",
+      "product_status_type": "onSelling",
+      "avg_evaluation_rating": "4.8",
+      "gmt_modified": "0",
+      "currency_code": "CNY",
+      "owner_member_seq_long": "227887939",
+      "category_id": "33902",
+      "product_id": "4000903675543",
+      "detail": "\u003cdiv\u003eThis is a product\u003c/div\u003e",
+      "ws_offline_date": "0"
+    },
+    "has_whole_sale": "true",
+    "ae_item_properties": [
+      {
+        "attr_name_id": "2",
+        "attr_value_id": "110567917",
+        "attr_value_unit": "piece",
+        "attr_name": "Brand Name",
+        "attr_value_start": "1",
+        "attr_value_end": "10",
+        "attr_value": "FUQIAN"
+      }
+    ],
+    "ae_store_info": {
+      "store_id": "4874072",
+      "shipping_speed_rating": "4.7",
+      "communication_rating": "4.7",
+      "store_name": "FUQIAN Eyewear Store",
+      "store_country_code": "CN",
+      "item_as_described_rating": "4.7"
+    }
+  },
+  "code": "0",
+  "rsp_code": "200",
+  "rsp_msg": "Call succeeds",
+  "request_id": "0ba2887315178178017221014"
+}
+
+
+
+ERROR CODE
+Error_code
+
+Error Message
+
+explanation
+
+602
+
+Item is not allowed to this country
+
+Not available for sale for legal reasons;(Not available for sale. Use aliexpress.ds.image.searchV2 or aliexpress.ds.text.search to find similar products.)
+
+605
+
+ITEM_ID_NOT_FOUND
+
+Product does not exist (Maybe the merchant has removed the product from the shelves)
+
+404
+
+System Error
+
+System error. Please connect tech support.
+
+
+Common Issues
+
+
+Q: Api access frequency exceeds the limit. this ban will last 1 seconds ?
+A: The overall API QPS for this connection is 500. The overall current limiting error rate is 1-2%. It is recommended to sleep for 1-2 seconds and request again.
+
+Q: Which one should I use, "main_product_id" or "sub_product_id"?
+A: According to privacy data compliance requirements, if your target is the US market, you need to use "sub_product_id".
+
+Q: Why the "sku_attr" I got is empty ?
+A: When there is only one sku under the product, this parameter may be empty.（For this case, please pass "" when placing an order）
+
+Q: The obtained sku price is inconsistent with the web price?
+A: First, please confirm that the account you logged in to the web is consistent with the token account. If the price is still different, please check whether there is a page discount (according to AE's policy, page discounts cannot take effect in the API).
+
+Q: When a product has a tiered price, which one should I refer to?
+Please refer to the return parameters below.
+
+{
+  "wholesale_price_tiers": [
+    {
+      "min_quantity": "1",
+      "wholesale_price": "\"5.78\"",
+      "discount": "0.52"
+    }
+  ]
+}
+
+
+Demo code
+
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+
+IopClient client = new IopClient(url, appkey, appSecret);
+IopRequest request = new IopRequest();
+request.setApiName("aliexpress.ds.product.get");
+request.addApiParameter("ship_to_country", "US");
+request.addApiParameter("product_id", "1005003784285827");
+request.addApiParameter("target_currency", "USD");
+request.addApiParameter("target_language", "en");
+request.addApiParameter("remove_personal_benefit", "false");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.product.get');
+$request->addApiParam('ship_to_country','US');
+$request->addApiParam('product_id','1005003784285827');
+$request->addApiParam('target_currency','USD');
+$request->addApiParam('target_language','en');
+$request->addApiParam('remove_personal_benefit','false');
+var_dump($c->execute($request, $accessToken))
+
+ChangeLog
+
+
+
+
+
+
+

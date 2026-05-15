@@ -117,65 +117,48 @@ These are the feeds your account has access to via `aliexpress.ds.feedname.get`.
 
 ## 🎛️ Text Search Filters (`aliexpress.ds.text.search`)
 
-### ✅ Working Filters (Tested Live)
+### ✅ Working Filters (Per Official Docs)
 
 | Parameter | Type | Required | Example | Status |
 |-----------|------|----------|---------|--------|
 | `keyWord` | String | **YES** | `"phone case"` | ✅ Returns products |
 | `local` | String | **YES** | `"en_US"` | ✅ Language/locale |
 | `countryCode` | String | **YES** | `"SA"` | ✅ Target country |
-| `currency` | String | No | `"SAR"` | ✅ Target currency |
-| `pageIndex` | String | No | `"1"` | ✅ Page number |
-| `pageSize` | String | No | `"20"` | ✅ Items per page (max 50) |
-| `sort` | String | No | `"SALE_PRICE_ASC"` | ✅ See sort options below |
-| `minPrice` | String | No | `"10"` | ✅ Min price filter (in target currency) |
-| `maxPrice` | String | No | `"50"` | ✅ Max price filter |
-| `shipToCountry` | String | No | `"SA"` | ✅ Ship destination |
+| `currency` | String | **YES** | `"SAR"` | ✅ Target currency |
+| `pageIndex` | Number | No | `1` | ✅ Page number |
+| `pageSize` | Number | No | `20` | ✅ Items per page (max 50) |
+| `sortBy` | String | No | `"min_price,asc"` | ✅ See sort options below |
+| `categoryId` | Number | No | `349` | Category filter |
+| `searchExtend` | JSON | No | See below | ✅ Price filter + advanced filters |
+| `selectionName` | String | No | `"selection name"` | Search within specific selection |
 
-### Sort Options
+### Sort Options (`sortBy` — format: `"field,direction"`)
 
-| Value | Meaning | Tested |
-|-------|---------|--------|
-| `SALE_PRICE_ASC` | Cheapest first | ✅ Works |
-| `SALE_PRICE_DESC` | Most expensive first | ✅ Works |
-| `LAST_VOLUME_DESC` | Most ordered first | ✅ Works |
+| Value | Meaning |
+|-------|---------|
+| `min_price,asc` | Cheapest first |
+| `min_price,desc` | Most expensive first |
+| `orders,asc` | Fewest orders first |
+| `orders,desc` | Most ordered first |
+| `comments,asc` | Fewest reviews first |
+| `comments,desc` | Most reviews first |
 
-### ❌ Invalid / Unsupported Filters
+### searchExtend (Price Filtering + Advanced Filters)
 
-| Parameter | Error | Notes |
-|-----------|-------|-------|
-| `searchExtend` | `"The specified parameter "null#searchExtend" is not valid"` | Not supported in DS API |
-| `selectionName` | Returns 0 products | Needs exact match to a valid selection |
-| `categoryId` | Returns 0 for most IDs | AliExpress category IDs are complex hierarchies |
+Price filtering uses `searchExtend` JSON array:
+```json
+[{"min": "10", "max": "50", "searchKey": "price", "searchValue": ""}]
+```
 
----
-
-## 🏭 Ship-From / Warehouse Filtering
-
-### How It Works
-
-AliExpress doesn't have a direct `ship_from` filter in text.search. However, you have two strategies:
-
-### Strategy 1: Use Warehouse-Specific Feeds
-The best way to find locally-warehoused products (fast shipping):
-
-| Feed | Location | Shipping Time |
-|------|----------|---------------|
-| `US 3PL-Warehouse 20240202` | US warehouse | 3-7 days to US |
-| `US CN-Warehouse 20240202` | China warehouse for US | 7-15 days |
-
-> For Saudi Arabia, there's no SA-warehouse feed yet, but products from the `SA_Clothing&Shoes` feed typically have better SA shipping options.
-
-### Strategy 2: Check Shipping at Product Level
-After finding a product, call `aliexpress.logistics.buyer.freight.calculate` to get:
-- Available shipping methods
-- Estimated delivery days
-- Shipping cost
-
-This lets you filter/sort products by actual shipping time to Saudi Arabia.
-
-### Strategy 3: Use `shipToCountry` Parameter
-Pass `shipToCountry: "SA"` in text.search — while it doesn't filter by warehouse, it ensures pricing and availability are accurate for Saudi Arabia.
+Additional searchExtend keys:
+| Name | searchKey | searchValue |
+|------|-----------|-------------|
+| Free shipping | `free_ship_to` | country code |
+| Choice product | `item_tag` | `choice` |
+| Seller type | `seller_level` | `GOLD` / `SILVER` |
+| Ship from | `ship_from` | country code |
+| Seller online | `seller_online` | `48` / `72` |
+| Hot area | `hot_area` | `BR` / `US` / `UK` / `FR` / `AU` |
 
 ---
 
@@ -189,10 +172,23 @@ Pass `shipToCountry: "SA"` in text.search — while it doesn't filter by warehou
 | `country` | String | No | `"SA"` |
 | `page_no` | String | No | `"1"` |
 | `page_size` | String | No | `"20"` |
-| `sort` | String | No | `"SALE_PRICE_ASC"` |
+| `sort` | String | No | `"priceAsc"` |
 | `min_sale_price` | String | No | `"5"` |
 | `max_sale_price` | String | No | `"100"` |
 | `category_id` | String | No | Category filter |
+
+### Feed Sort Options
+
+| Value | Meaning |
+|-------|---------|
+| `priceAsc` | Cheapest first |
+| `priceDesc` | Most expensive first |
+| `volumeAsc` | Fewest sales first |
+| `volumeDesc` | Most sales first |
+| `discountAsc` | Lowest discount first |
+| `discountDesc` | Highest discount first |
+| `DSRratingAsc` | Lowest rated first |
+| `DSRratingDesc` | Highest rated first |
 
 ---
 

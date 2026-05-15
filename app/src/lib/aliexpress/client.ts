@@ -194,6 +194,11 @@ export async function searchProducts(
 
 /**
  * Keyword-based search using aliexpress.ds.text.search
+ *
+ * Per official docs:
+ * - Sort param is `sortBy` with values like "min_price,asc" / "orders,desc" / "comments,desc"
+ * - Price filtering uses `searchExtend` JSON array with min/max
+ * - `selectionName` can be used to search within a specific feed/selection
  */
 async function searchByKeyword(
   params: ProductSearchParams,
@@ -208,9 +213,27 @@ async function searchByKeyword(
     countryCode: params.shipTo || "SA",
   };
 
-  if (params.sort) apiParams.sort = params.sort;
-  if (params.minPrice) apiParams.minPrice = String(params.minPrice);
-  if (params.maxPrice) apiParams.maxPrice = String(params.maxPrice);
+  // Map internal sort values to text.search `sortBy` format: "field,direction"
+  if (params.sort) {
+    const textSortMap: Record<string, string> = {
+      SALE_PRICE_ASC: "min_price,asc",
+      SALE_PRICE_DESC: "min_price,desc",
+      LAST_VOLUME_DESC: "orders,desc",
+    };
+    apiParams.sortBy = textSortMap[params.sort] || params.sort;
+  }
+
+  // Price filtering uses searchExtend JSON array per official API docs
+  if (params.minPrice || params.maxPrice) {
+    const searchExtend = [{
+      searchKey: "price",
+      searchValue: "",
+      min: params.minPrice ? String(params.minPrice) : "",
+      max: params.maxPrice ? String(params.maxPrice) : "",
+    }];
+    apiParams.searchExtend = JSON.stringify(searchExtend);
+  }
+
   if (params.category_id) apiParams.categoryId = params.category_id;
 
   try {
