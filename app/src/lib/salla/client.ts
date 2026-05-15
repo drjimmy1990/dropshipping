@@ -217,8 +217,8 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
     sku: product.supplier_product_id || undefined,
     images: images.length > 0 ? images : undefined,
     options: options.length > 0 ? options : undefined,
-    metadata_title: product.title_en || undefined,
-    metadata_description: product.description_en?.slice(0, 160) || undefined,
+    metadata_title: (product.title_en || "").slice(0, 70) || undefined,
+    metadata_description: (product.description_en || "").slice(0, 160) || undefined,
   };
 }
 
