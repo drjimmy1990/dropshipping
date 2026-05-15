@@ -1,15 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/suppliers/aliexpress/feeds
  *
  * Returns the list of enabled AliExpress feeds for product discovery.
- * Feeds are curated by the admin and stored in platform_config.
+ * Reads from platform_config table (key: "feed_config").
+ * Falls back to default feeds if no config is saved.
  * 
  * No auth required — feeds are public catalog configuration.
  */
 
-// Default curated feeds — these are the top feeds verified against the live API
+// Default curated feeds — fallback when no admin config exists
 const DEFAULT_FEEDS = [
   { id: "all", name: "all", displayName: "🔥 All", displayNameAr: "الكل", category: "all", productCount: 0, sortOrder: 0 },
   { id: "DS_NewArrivals", name: "DS_NewArrivals", displayName: "🆕 New Arrivals", displayNameAr: "وصل حديثاً", category: "trending", productCount: 14010, sortOrder: 1 },
@@ -27,12 +29,84 @@ const DEFAULT_FEEDS = [
 
 export async function GET() {
   try {
-    // TODO: When platform_feeds table exists, fetch from Supabase instead
-    // For now, return the hardcoded curated list
-    // No auth required — feeds are public catalog configuration
+    // Try to load admin-configured feeds from platform_config
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("platform_config")
+      .select("value")
+      .eq("key", "feed_config")
+      .single();
+
+    if (data?.value) {
+      try {
+        const savedFeeds = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+        if (Array.isArray(savedFeeds) && savedFeeds.length > 0) {
+          // Always prepend the "All" tab
+          const allTab = { id: "all", name: "all", displayName: "🔥 All", displayNameAr: "الكل", category: "all", productCount: 0, sortOrder: 0 };
+          return NextResponse.json({ feeds: [allTab, ...savedFeeds] });
+        }
+      } catch {
+        // Invalid JSON — fall through to defaults
+      }
+    }
+
     return NextResponse.json({ feeds: DEFAULT_FEEDS });
   } catch (error) {
     console.error("[Feeds] Error:", error);
     return NextResponse.json({ feeds: DEFAULT_FEEDS });
+  }
+}
+
+/**
+ * PUT /api/suppliers/aliexpress/feeds
+ * 
+ * Admin saves the feed configuration to platform_config table.
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check admin role
+    const adminClient = createAdminClient();
+    const { data: merchant } = await adminClient
+      .from("merchants")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (merchant?.role !== "admin") {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { feeds } = body;
+
+    if (!Array.isArray(feeds)) {
+      return NextResponse.json({ error: "Invalid feeds data" }, { status: 400 });
+    }
+
+    // Upsert into platform_config
+    const { error } = await adminClient
+      .from("platform_config")
+      .upsert(
+        { key: "feed_config", value: JSON.stringify(feeds) },
+        { onConflict: "key" }
+      );
+
+    if (error) {
+      console.error("[Feeds Save] DB Error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, savedCount: feeds.length });
+  } catch (error) {
+    console.error("[Feeds Save] Error:", error);
+    const message = error instanceof Error ? error.message : "Save failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

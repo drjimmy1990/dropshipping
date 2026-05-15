@@ -38,18 +38,32 @@ function SearchFilters({
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  const handleSearch = useCallback(() => {
-    onSearch({
+  const fireSearch = useCallback((overrides: Record<string, any> = {}) => {
+    const params = {
       keyword: keyword || undefined,
       sort: sort || undefined,
       shipTo,
       minPrice: minPrice ? parseFloat(minPrice) : undefined,
       maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
-    });
+      ...overrides,
+    };
+    onSearch(params);
   }, [keyword, sort, shipTo, minPrice, maxPrice, onSearch]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
+    if (e.key === "Enter") fireSearch();
+  };
+
+  // Sort change → immediately search
+  const handleSortChange = (newSort: string) => {
+    setSort(newSort);
+    fireSearch({ sort: newSort || undefined });
+  };
+
+  // Ship-to change → immediately search
+  const handleShipToChange = (newShipTo: string) => {
+    setShipTo(newShipTo);
+    fireSearch({ shipTo: newShipTo });
   };
 
   return (
@@ -64,14 +78,14 @@ function SearchFilters({
           onKeyDown={handleKeyDown}
           className="bg-transparent text-text text-sm outline-none w-full placeholder:text-text-muted"
         />
-        <Button size="sm" onClick={handleSearch} disabled={loading}>
+        <Button size="sm" onClick={() => fireSearch()} disabled={loading}>
           {loading ? "Searching..." : "Search"}
         </Button>
       </div>
       <div className="flex flex-wrap gap-2 mb-3">
         <select
           value={sort}
-          onChange={(e) => setSort(e.target.value)}
+          onChange={(e) => handleSortChange(e.target.value)}
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none"
         >
           <option value="">Sort: Relevance</option>
@@ -81,7 +95,7 @@ function SearchFilters({
         </select>
         <select
           value={shipTo}
-          onChange={(e) => setShipTo(e.target.value)}
+          onChange={(e) => handleShipToChange(e.target.value)}
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none"
         >
           <option value="SA">Ship To: Saudi Arabia</option>

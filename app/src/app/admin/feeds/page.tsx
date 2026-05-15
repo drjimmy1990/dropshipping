@@ -162,11 +162,11 @@ export default function AdminFeedsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    // TODO: Save to platform_feeds table via Supabase
-    // For now, persist via the feeds API
     try {
+      // Build the list of enabled feeds to save
       const enabledFeeds = feeds
         .filter((f) => f.isEnabled)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((f) => ({
           id: f.id,
           name: f.name,
@@ -177,19 +177,32 @@ export default function AdminFeedsPage() {
           sortOrder: f.sortOrder,
         }));
 
-      // Save to localStorage as interim persistence
-      localStorage.setItem("admin_feeds_config", JSON.stringify(feeds));
-      
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      // Save to DB via API
+      const response = await fetch("/api/suppliers/aliexpress/feeds", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feeds: enabledFeeds }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        setSyncResult(`Error saving: ${data.error}`);
+      } else {
+        // Also save full config to localStorage as backup
+        localStorage.setItem("admin_feeds_config", JSON.stringify(feeds));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
     } catch (err) {
       console.error("Save failed:", err);
+      setSyncResult(`Error: ${err instanceof Error ? err.message : "Save failed"}`);
     } finally {
       setSaving(false);
     }
   };
 
-  // Load saved config from localStorage on mount
+  // Load saved config on mount — try localStorage first (has full config with disabled feeds)
   useEffect(() => {
     try {
       const savedConfig = localStorage.getItem("admin_feeds_config");
