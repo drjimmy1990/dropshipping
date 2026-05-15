@@ -120,6 +120,7 @@ async function apiRequest<T>(
 
   if (accessToken) {
     systemParams.session = accessToken;
+    systemParams.access_token = accessToken;
   }
 
   // Generate signature (exclude "sign" itself)
@@ -330,13 +331,13 @@ export async function getProductDetail(
     ship_to_country: shipTo,
   };
 
-  const response = await apiRequest<AliExpressProductDetailResponse>(
+  const response = await apiRequest<any>(
     "aliexpress.ds.product.get",
     apiParams,
     accessToken
   );
 
-  const product = response.result;
+  const product = response.result || response;
   if (!product) {
     throw new Error(`Product ${productId} not found`);
   }
@@ -451,64 +452,75 @@ function normalizeFeedProduct(raw: any): NormalizedProduct {
 }
 
 function normalizeProductDetail(
-  raw: AliExpressProductDetail,
+  raw: any,
   shippingOptions: NormalizedShippingOption[]
 ): NormalizedProductDetail {
+  // The API returns nested DTOs — extract each section
+  const baseInfo = raw.ae_item_base_info_dto || {};
+  const mediaInfo = raw.ae_multimedia_info_dto || {};
+  const skuInfos: any[] = raw.ae_item_sku_info_dtos || [];
+  const itemProperties: any[] = raw.ae_item_properties || [];
+  const storeInfo = raw.ae_store_info || {};
+
   // Parse images from semicolon-separated string
-  const imageList = raw.image_u_r_ls
-    ? raw.image_u_r_ls.split(";").filter(Boolean)
-    : [];
+  const imageStr = mediaInfo.image_urls || baseInfo.image_u_r_ls || "";
+  const imageList = imageStr.split(";").filter(Boolean);
 
-  // Parse variants from sku_info_list
-  const variants: NormalizedVariant[] = (raw.sku_info_list?.sku_info || []).map(
-    (sku: AliExpressSkuInfo) => ({
-      skuId: sku.sku_id || sku.id,
-      price: parseFloat(sku.offer_sale_price || sku.sku_price || "0"),
-      stock: sku.sku_stock !== false,
-      stockQuantity: sku.sku_available_stock,
-      properties: (sku.sku_property_list?.sku_property || []).map((prop: AliExpressSkuProperty) => ({
-        name: prop.sku_property_name,
-        value: prop.property_value_definition_name || prop.sku_property_value,
-        image: prop.sku_image,
-      })),
-    })
-  );
-
-  // Parse properties
-  const properties = (raw.product_props?.product_property || []).map((p: { attr_name: string; attr_value: string }) => ({
-    name: p.attr_name,
-    value: p.attr_value,
+  // Parse variants from ae_item_sku_info_dtos
+  const variants: NormalizedVariant[] = skuInfos.map((sku: any) => ({
+    skuId: String(sku.sku_id || sku.id),
+    price: parseFloat(sku.offer_sale_price || sku.sku_price || "0"),
+    stock: sku.sku_available_stock > 0,
+    stockQuantity: sku.sku_available_stock,
+    properties: (sku.ae_sku_property_dtos || []).map((prop: any) => ({
+      name: prop.sku_property_name,
+      value: prop.property_value_definition_name || prop.sku_property_value,
+      image: prop.sku_image,
+    })),
   }));
 
-  // Calculate price range
-  const prices = variants.map((v) => v.price).filter((p) => p > 0);
-  const minPrice = prices.length > 0 ? Math.min(...prices) : parseFloat(raw.min_price || "0");
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : parseFloat(raw.max_price || "0");
+  // Parse properties from ae_item_properties
+  const properties = itemProperties.map((p: any) => ({
+    name: p.attr_name || p.attr_name_id || "",
+    value: p.attr_value || p.attr_value_id || "",
+  }));
 
-  const ratingStr = (raw.avg_evaluation_rating || "0").replace("%", "");
+  // Calculate price range from variants
+  const prices = variants.map((v) => v.price).filter((p) => p > 0);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+
+  // Rating and orders from base info
+  const ratingStr = (baseInfo.avg_evaluation_rating || "0").replace("%", "");
   const rating = parseFloat(ratingStr);
+  const orders = parseInt(baseInfo.sales_count || "0") || 0;
+
+  // Product ID from base info or converter
+  const productId = baseInfo.product_id
+    || raw.product_id_converter_result?.main_product_id
+    || 0;
 
   return {
-    id: raw.product_id,
-    title: raw.subject || "Untitled Product",
-    description: "", // Description requires separate API call in some cases
+    id: productId,
+    title: baseInfo.subject || "Untitled Product",
+    description: baseInfo.detail || "",
     image: imageList[0] || "",
     images: imageList,
     price: minPrice,
     originalPrice: maxPrice > minPrice ? maxPrice : minPrice,
-    currency: raw.currency_code || "SAR",
+    currency: baseInfo.currency_code || "SAR",
     discount: 0,
-    rating: rating > 5 ? rating / 20 : rating, // Normalize to 5-star
-    orders: raw.order_count || 0,
+    rating: rating > 5 ? rating / 20 : rating,
+    orders,
     shipping: shippingOptions.length > 0
       ? `From ${shippingOptions[0].currency} ${shippingOptions[0].price}`
       : "Calculate at checkout",
-    category: String(raw.category_id || ""),
-    url: `https://www.aliexpress.com/item/${raw.product_id}.html`,
+    category: String(baseInfo.category_id || ""),
+    url: `https://www.aliexpress.com/item/${productId}.html`,
     supplier: "aliexpress",
     variants,
     properties,
     shippingOptions,
-    stock: raw.product_status_type === "onSelling",
+    stock: baseInfo.product_status_type === "onSelling",
   };
 }

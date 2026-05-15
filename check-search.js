@@ -31,14 +31,12 @@ async function run() {
   if (!token) return;
 
   // 2. Search AliExpress
-  const method = "aliexpress.ds.recommend.feed.get";
+  const method = "aliexpress.ds.product.get";
   const params = {
-    feed_name: "DS_NewArrivals",
+    product_id: "1005011868343510",
     target_currency: "SAR",
     target_language: "EN",
-    country_code: "SA",
-    page_no: "1",
-    page_size: "5"
+    ship_to_country: "SA"
   };
 
   const systemParams = {
@@ -49,6 +47,7 @@ async function run() {
     v: "2.0",
     format: "json",
     session: token,
+    access_token: token,
     ...params,
   };
 
