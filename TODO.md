@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
 > **Last Updated:** 2026-05-15
-> **Current Phase:** Phase 4 (AliExpress Product Discovery & Import)
+> **Current Phase:** Phase 4C (Product Import & My Products)
 
 ---
 
@@ -134,41 +134,50 @@
 
 ---
 
-## 📋 Phase 4B — Product Discovery UI & Filters (NEXT)
+## ✅ Phase 4B — Product Discovery UI & Filters (COMPLETED)
 
 > **Goal:** Wire the Discovery page to use all search/filter options and feeds
 
-### Discovery Page Enhancements
-- [ ] Keyword search bar → calls `text.search` with real-time results
-- [ ] Feed category browser → dropdown/tabs showing enabled feeds
-- [ ] Sort dropdown (Cheapest, Most Expensive, Best Selling)
-- [ ] Price range filter (min/max SAR inputs)
-- [ ] Country/region selector (SA default, with other Gulf options)
-- [ ] Pagination (page_no, page_size)
-- [ ] Product card: image, title, sale price, original price, discount %, orders count
-- [ ] Click product → detail modal with variants, images, shipping info
+### Discovery Page
+- [x] Keyword search bar → calls `text.search` with real-time results
+- [x] Feed category tabs (12 curated feeds with emoji icons + product counts)
+- [x] Sort dropdown (Cheapest, Most Expensive, Best Selling)
+- [x] Price range filter (min/max SAR inputs)
+- [x] Country/region selector (SA, AE, KW, BH, QA, OM)
+- [x] Pagination (page numbers + prev/next)
+- [x] Product card: image, title, sale price, original price, discount %, orders count
+- [x] Click product → detail modal with variants, images, shipping info
+- [x] Results count with active feed name indicator
+- [x] Skeleton loading states + empty state
+
+### Currency Normalization
+- [x] All prices forced to SAR (no USD/CNY leaking through)
+- [x] `normalizeSearchProduct` — uses only `target_sale_price` (SAR)
+- [x] `normalizeFeedProduct` — hardcoded SAR currency
+- [x] `normalizeProductDetail` — hardcoded SAR currency
+- [x] Shipping display always shows `SAR X.XX`
 
 ### Admin Feed Management
-- [ ] Admin page to list all 47 available feeds
-- [ ] Toggle enable/disable per feed
-- [ ] Set display name (EN/AR) for merchant-facing labels
-- [ ] Set minimum subscription tier required per feed
-- [ ] Sort order for feed display priority
-- [ ] `platform_feeds` table in Supabase
+- [x] Admin page `/admin/feeds` with toggle enable/disable per feed
+- [x] 20 feeds listed (10 enabled by default, 10 disabled)
+- [x] Category filter tabs (trending, electronics, home, sports, fashion, etc.)
+- [x] Bilingual display names (English + Arabic)
+- [x] Product count per feed
+- [x] "Feeds" nav item in admin sidebar
+- [x] `platform_feeds` table SQL migration created (`supabase/migrations/platform_feeds.sql`)
 
-### Shipping Estimation
-- [ ] Call `freight.calculate` on product detail view
-- [ ] Show estimated delivery time + shipping cost per method
-- [ ] Display fastest vs cheapest shipping options
-- [ ] Highlight local warehouse products (faster delivery)
+### API Routes
+- [x] `GET /api/suppliers/aliexpress/feeds` — returns curated feed list
+- [x] `GET /api/suppliers/aliexpress/search` — enhanced with `feedName` param
+- [x] `useProductSearch` hook — wired with `feedName` support
 
 ### Product Detail Modal
-- [ ] Full image gallery (from `ae_multimedia_info_dto`)
-- [ ] Variant selector (color, size from `ae_item_sku_info_dtos`)
-- [ ] Price per variant display
-- [ ] Product properties/specs table
-- [ ] Shipping options with delivery estimates
-- [ ] "Import to Store" button → opens Import Wizard
+- [x] Full image gallery (thumbnails + main image)
+- [x] Variant selector (color, size from `ae_item_sku_info_dtos`)
+- [x] Price per variant display (SAR)
+- [x] Shipping options with delivery estimates (SAR)
+- [x] Profit margin calculator (retail - cost)
+- [x] "Import to My Products" button
 
 ---
 

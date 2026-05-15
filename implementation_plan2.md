@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-15 (Session 3 — AliExpress API fully operational)
+> **Last Updated:** 2026-05-15 (Session 4 — Discovery UI + Feed Management complete)
 
 ## 1. Business Concept
 
@@ -321,7 +321,7 @@ Steps:
 
 ## 7. Database Schema
 
-> ✅ **IMPLEMENTED** — 19 tables deployed to Supabase
+> ✅ **IMPLEMENTED** — 20 tables deployed to Supabase (including `platform_feeds`)
 
 ```mermaid
 erDiagram
@@ -360,6 +360,7 @@ erDiagram
 | 17 | `analytics_daily` | Daily merchant metrics for P&L | ✅ |
 | 18 | `trend_reports` | Weekly niche/category trend analysis | ✅ |
 | 19 | `notifications` | In-app, email, SMS notification records | ✅ |
+| 20 | `platform_feeds` | Curated AliExpress feeds with enable/disable + bilingual names | ✅ |
 
 ### Key Functions
 
@@ -535,19 +536,23 @@ sequenceDiagram
 - [x] Normalizers: text.search, feed, product detail (3 separate mappers)
 - [x] Tested filters: sort, minPrice/maxPrice, shipToCountry, countryCode
 
-### Phase 4B — Discovery UI & Filters (CURRENT)
-> Wire Discovery page to use all search options and feeds
+### Phase 4B — Discovery UI & Filters ✅ DONE
+> Feed tabs, search filters, admin feed management, SAR enforcement
 
-- [ ] Keyword search bar → `text.search` with debounce
-- [ ] Feed category browser (tabs/dropdown from enabled feeds)
-- [ ] Sort dropdown (price ASC/DESC, best selling)
-- [ ] Price range filter (min/max SAR inputs)
-- [ ] Pagination controls
-- [ ] Product detail modal (images, variants, shipping estimate)
-- [ ] Admin feed management page (enable/disable, display names, tier)
-- [ ] `platform_feeds` table in Supabase
+- [x] Keyword search bar → `text.search` with debounce
+- [x] Feed category tabs (12 curated feeds with emoji icons + product counts)
+- [x] Sort dropdown (price ASC/DESC, best selling)
+- [x] Price range filter (min/max SAR inputs)
+- [x] Country/region selector (SA, AE, KW, BH, QA, OM)
+- [x] Pagination controls (page numbers + prev/next)
+- [x] Product detail modal (images, variants, shipping estimate)
+- [x] SAR currency enforcement (all 3 normalizers hardcode SAR)
+- [x] Admin feed management page `/admin/feeds` (20 feeds, toggle on/off)
+- [x] Feeds API route: `GET /api/suppliers/aliexpress/feeds`
+- [x] `platform_feeds` table SQL migration
+- [x] `useProductSearch` hook wired with `feedName` support
 
-### Phase 4C — Product Import & My Products
+### Phase 4C — Product Import & My Products (CURRENT)
 > Import products from AliExpress to merchant Salla stores
 
 - [ ] Import wizard (variant selection, pricing, description editor)

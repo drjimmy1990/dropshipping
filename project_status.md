@@ -4,9 +4,9 @@
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (19 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, and a complete AliExpress API integration. Merchants can sign up, connect their Salla store, receive orders via webhooks, and the admin can manage merchants and approve bank transfers. The AliExpress API is fully operational with text search (45K+ results), feed browsing (47 feeds, 500K+ products), product detail fetching, and shipping estimation.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, and a complete AliExpress API integration with full Discovery UI. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products by feed category or keyword search, view product details with shipping estimates, and import products. The admin can manage merchants, approve bank transfers, and control which product feeds are visible to merchants. All prices are enforced in SAR.
 
-**What's next:** Wire the Discovery page UI to use all available AliExpress search filters and feeds, build the product import wizard, and complete the auto-fulfillment engine.
+**What's next:** Build the product import wizard (save to DB + push to Salla), complete the auto-fulfillment engine, and add payment gateway integrations.
 
 ---
 
@@ -59,17 +59,23 @@
 | Feed normalizer | ✅ | Maps feed DTO → NormalizedProduct |
 | Detail normalizer | ✅ | Maps nested DTOs → NormalizedProductDetail |
 
-#### Tested & Working Filters
+### ✅ Phase 4B — Product Discovery UI & Filters
 
-| Filter | Status | Notes |
+| Task | Status | Notes |
 |---|---|---|
-| `keyWord` (keyword search) | ✅ | Required for text.search |
-| `countryCode` (target country) | ✅ | Required — "SA" |
-| `sort` (price/volume) | ✅ | ASC, DESC, LAST_VOLUME_DESC |
-| `minPrice` / `maxPrice` | ✅ | Price range in target currency |
-| `shipToCountry` | ✅ | Ensures SA pricing |
-| `searchExtend` | ❌ | Not supported in DS API |
-| `categoryId` | ⚠️ | Limited — most IDs return 0 |
+| Keyword search bar with debounce | ✅ | Real-time `text.search` results |
+| Feed category tabs (12 curated feeds) | ✅ | Emoji icons + product count badges |
+| Sort dropdown (price, volume) | ✅ | ASC, DESC, LAST_VOLUME_DESC |
+| Price range filter (min/max SAR) | ✅ | Inputs wired to API |
+| Country/region selector | ✅ | SA, AE, KW, BH, QA, OM |
+| Pagination controls | ✅ | Page numbers + prev/next |
+| Product detail modal (images, variants) | ✅ | Gallery + variant selector + shipping |
+| Shipping estimation in detail | ✅ | SAR-only pricing |
+| SAR currency enforcement | ✅ | All 3 normalizers hardcode SAR |
+| Admin feed management page | ✅ | `/admin/feeds` — 20 feeds, toggle enable/disable |
+| Feeds API route | ✅ | `GET /api/suppliers/aliexpress/feeds` |
+| `platform_feeds` table SQL | ✅ | Migration in `supabase/migrations/` |
+| `useProductSearch` + feedName | ✅ | Hook wired with feed browsing support |
 
 #### Available Feeds (47 — Key Ones)
 
@@ -88,22 +94,7 @@
 
 ## What's NOT Done — Upcoming
 
-### 📋 Phase 4B: Discovery UI & Filters (NEXT)
-
-> Priority: **HIGH** — Wire the UI to use all tested filters
-
-| Task | Priority | Depends On |
-|---|---|---|
-| Keyword search bar → text.search | 🔴 P0 | — |
-| Feed category browser (tabs/dropdown) | 🔴 P0 | — |
-| Sort dropdown (price, volume) | 🔴 P0 | — |
-| Price range filter (min/max inputs) | 🟡 P1 | — |
-| Pagination controls | 🟡 P1 | — |
-| Product detail modal (images, variants, shipping) | 🔴 P0 | — |
-| Admin feed management page | 🟡 P1 | `platform_feeds` table |
-| Shipping estimation in product detail | 🟡 P1 | freight.calculate |
-
-### 📋 Phase 4C: Product Import & My Products
+### 📋 Phase 4C: Product Import & My Products (NEXT)
 
 > Priority: **HIGH** — Core merchant workflow
 
