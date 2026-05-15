@@ -244,7 +244,7 @@ async function searchByKeyword(
       sale_price: p.salePrice || p.sale_price,
       target_original_price: p.targetOriginalPrice || p.target_original_price,
       original_price: p.originalPrice || p.original_price,
-      target_sale_price_currency: p.targetSalePriceCurrency || p.target_sale_price_currency,
+      target_sale_price_currency: p.targetSalePriceCurrency || p.targetOriginalPriceCurrency || p.target_sale_price_currency || "SAR",
       sale_price_currency: p.salePriceCurrency || p.sale_price_currency,
       evaluate_rate: p.evaluateRate || p.evaluate_rate,
       lastest_volume: p.orders || p.lastest_volume,

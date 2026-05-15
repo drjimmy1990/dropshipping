@@ -31,13 +31,8 @@ async function run() {
   if (!token) return;
 
   // 2. Search AliExpress
-  const method = "aliexpress.ds.product.get";
-  const params = {
-    product_id: "1005011868343510",
-    target_currency: "SAR",
-    target_language: "EN",
-    ship_to_country: "SA"
-  };
+  const method = "aliexpress.ds.feedname.get";
+  const params = {};
 
   const systemParams = {
     app_key: APP_KEY,
