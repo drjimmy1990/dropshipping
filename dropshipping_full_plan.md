@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
 > **Date:** 2026-05-15  
-> **Status:** Phase 4A Complete — Discovery UI next
+> **Status:** Phase 4C Partial — Salla Push-to-Store ✅, AI Content 📋
 
 ---
 
@@ -21,6 +21,11 @@
 | Sort filter (price, volume) | ✅ Tested |
 | Price range filter (min/max) | ✅ Tested |
 | Country filter (SA, US, etc.) | ✅ Tested |
+| **Salla API client** (OAuth2 auto-refresh) | ✅ Working |
+| **Product import + auto-push to Salla** | ✅ Working |
+| **Product CRUD** (PATCH/DELETE) | ✅ Working |
+| **My Products page** (inline edit, sync badges) | ✅ Working |
+| **Push-to-Salla** (manual + auto on import) | ✅ Working |
 
 ---
 

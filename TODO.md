@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
 > **Last Updated:** 2026-05-15
-> **Current Phase:** Phase 4C (Product Import & My Products)
+> **Current Phase:** Phase 4C (Product Import & My Products — Salla Push-to-Store ✅, AI Content 📋)
 
 ---
 
@@ -217,29 +217,45 @@
 
 ---
 
-## 📋 Phase 4C — Product Import & My Products
+## ✅/📋 Phase 4C — Product Import & My Products
 
-> **Goal:** Import products to merchant stores
+> **Goal:** Import products to merchant stores — Salla pipeline complete, AI content next
 
-### Import Flow
-- [ ] Import wizard: select variants → set retail price → generate description
-- [ ] Profit margin calculator (retail - cost - commission = profit)
-- [ ] Save product to `products` table in Supabase
-- [ ] Push product to connected Salla store via API (`POST /products`)
-- [ ] Save `store_product_id` after Salla confirms
+### Salla Push-to-Store Pipeline ✅
+- [x] Salla API client (`lib/salla/client.ts`) with OAuth2 auto-refresh
+- [x] Schema mapper: DropLinker product → Salla `POST /products` payload
+- [x] Product CRUD API: `PATCH /api/products/:id` (inline editing)
+- [x] Product CRUD API: `DELETE /api/products/:id` (with Salla cleanup)
+- [x] Push-to-Salla endpoint: `POST /api/products/:id/push`
+- [x] Import route enhanced: auto-push to Salla after DB save
+- [x] Profit margin calculator in detail modal (retail - cost = profit %)
+- [x] Save product to `products` table in Supabase
+- [x] Push product to connected Salla store via API (`POST /products`)
+- [x] Save `store_product_id` after Salla confirms
+- [x] Import success UX with "Manage Products" + "Keep Browsing" CTAs
 
-### AI Content (n8n WF5)
+### Import Wizard (Future Enhancement)
+- [ ] Multi-step import wizard: select variants → set retail price → generate description
+- [ ] Choose target store (multi-store support)
+
+### AI Content (n8n WF5 — Next Priority)
 - [ ] Product title + images → GPT/Gemini → bilingual description
 - [ ] Product inbox: AI-generated → pending_review → approved → published
 - [ ] Unit conversion (inch → cm, lb → kg)
 - [ ] SEO tag generation
 
-### My Products Page
-- [ ] List products from `products` table (paginated)
-- [ ] Edit retail price inline
-- [ ] Toggle active/inactive
-- [ ] Manual re-sync stock button
-- [ ] Delete product (remove from Supabase + Salla store)
+### My Products Page ✅
+- [x] List products from `products` table with images
+- [x] Edit retail price inline (click → edit → Enter/Escape)
+- [x] Toggle active/inactive
+- [x] Sync status indicators (Synced to Salla / Not Synced)
+- [x] Push-to-Salla button for unsynced products
+- [x] Delete product (remove from Supabase + Salla store) with confirmation
+- [x] Profit/margin column with percentage
+- [x] Search + status filter (All/Active/Inactive/Out of Stock/Synced/Not Synced)
+- [x] Toast notifications for all actions
+- [x] Empty state with link to Product Discovery
+- [ ] Manual re-sync stock button — **Phase 6 (Stock Sync)**
 
 ---
 

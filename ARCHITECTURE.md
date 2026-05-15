@@ -1,8 +1,8 @@
 # DropLinker — Architecture Map
 
 > Auto-generated from GitNexus Knowledge Graph
-> **775 nodes | 1,243 edges | 11 clusters | 44 execution flows**
-> Last updated: 2026-05-15 (Session 5)
+> **1286 nodes | 1,942 edges | 11 clusters | 63 execution flows**
+> Last updated: 2026-05-15 (Session 6 — Salla Push-to-Store)
 
 ---
 
@@ -67,6 +67,11 @@ graph TB
         WH["/api/webhooks/salla"]
     end
 
+    subgraph "API Routes — Products"
+        PROD_PUSH["/api/products/[id]/push"]
+        PROD_CRUD["PATCH|DELETE /api/products/[id]"]
+    end
+
     subgraph "API Routes — AliExpress"
         AE_SEARCH["/api/suppliers/aliexpress/search"]
         AE_DETAIL["/api/suppliers/aliexpress/product/[id]"]
@@ -79,6 +84,11 @@ graph TB
     subgraph "AliExpress SDK"
         AE_CLIENT["aliexpress/client.ts\n(HMAC-SHA256 signing)"]
         AE_NORM["normalizers.ts\n(search, feed, detail)"]
+    end
+
+    subgraph "Salla SDK"
+        SALLA_CLIENT["salla/client.ts\n(OAuth2 auto-refresh)"]
+        SALLA_TYPES["salla/types.ts\n(payload typedefs)"]
     end
 
     subgraph "External"
@@ -154,6 +164,13 @@ graph TB
     SALLA_CB --> SALLA
     DISC_API --> SC
     WH --> N8N
+
+    %% Product CRUD → Salla SDK → External
+    PROD_PUSH --> SALLA_CLIENT --> SALLA
+    PROD_CRUD --> SALLA_CLIENT
+    AE_IMPORT --> SALLA_CLIENT
+    PROD_PUSH --> AC
+    PROD_CRUD --> AC
 
     %% Supabase → DB
     CC --> DB
@@ -351,7 +368,10 @@ Each hook already calls `createClient()` and has a `fetch` function. Pages don't
 | `/api/suppliers/aliexpress/feeds` | GET | Feed list from DB config | Server createClient |
 | `/api/suppliers/aliexpress/feeds` | PUT | Admin saves feed config | Admin role check |
 | `/api/suppliers/aliexpress/feeds/sync` | POST | Sync live feeds from AliExpress API | Admin role check |
-| `/api/suppliers/aliexpress/import` | POST | Import product (stub) | Server createClient |
+| `/api/suppliers/aliexpress/import` | POST | Import product + auto-push to Salla | Server createClient |
+| `/api/products/[id]` | PATCH | Inline edit (price, status, titles) | Admin createClient |
+| `/api/products/[id]` | DELETE | Delete product + cleanup from Salla | Admin createClient |
+| `/api/products/[id]/push` | POST | Manual push to Salla store | Admin createClient |
 
 ---
 
@@ -447,21 +467,27 @@ app/src/
 │       ├── auth/aliexpress/callback/     # AliExpress OAuth callback
 │       ├── stores/[id]/disconnect/       # Store disconnect
 │       ├── webhooks/salla/               # Salla webhook handler
+│       ├── products/[id]/
+│       │   ├── route.ts                  # PATCH/DELETE product
+│       │   └── push/route.ts             # POST push to Salla
 │       └── suppliers/aliexpress/
 │           ├── search/route.ts           # Product search API
 │           ├── product/[id]/route.ts     # Product detail API
 │           ├── feeds/route.ts            # GET feeds / PUT save config
 │           ├── feeds/sync/route.ts       # POST sync from AliExpress
-│           └── import/route.ts           # Import product (stub)
+│           └── import/route.ts           # Import product + auto Salla push
 ├── components/shared/                    # Card, Button, Icon, ThemeToggle
 ├── hooks/                                # All data hooks
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts                     # Browser createClient
 │   │   └── server.ts                     # Server createClient + createAdminClient
-│   └── aliexpress/
-│       ├── client.ts                     # HMAC-SHA256 API client
-│       └── normalizers.ts                # 3 product normalizers (SAR)
+│   ├── aliexpress/
+│   │   ├── client.ts                     # HMAC-SHA256 API client
+│   │   └── normalizers.ts                # 3 product normalizers (SAR)
+│   └── salla/
+│       ├── client.ts                     # OAuth2 auto-refresh API client
+│       └── types.ts                      # Salla payload type definitions
 ├── data/mockData.ts                      # Static marketing content ONLY
 └── middleware.ts                          # Route protection
 ```

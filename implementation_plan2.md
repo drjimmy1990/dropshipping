@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-15 (Session 5 — Admin Security + Feed Sync + UX Fixes complete)
+> **Last Updated:** 2026-05-15 (Session 6 — Salla Push-to-Store Pipeline complete)
 
 ## 1. Business Concept
 
@@ -561,13 +561,20 @@ sequenceDiagram
 - [x] `platform_feeds` table SQL migration
 - [x] `useProductSearch` hook wired with `feedName` support
 
-### Phase 4C — Product Import & My Products (CURRENT)
-> Import products from AliExpress to merchant Salla stores
+### Phase 4C — Product Import & My Products (PARTIAL ✅)
+> Import products from AliExpress to merchant Salla stores — Salla pipeline done
 
-- [ ] Import wizard (variant selection, pricing, description editor)
-- [ ] Save to `products` table + push to Salla store API
-- [ ] My Products page (list, edit price, toggle status, delete)
-- [ ] AI product descriptions (n8n WF5 → GPT/Gemini)
+- [x] Salla API client (`lib/salla/client.ts`) with OAuth2 auto-refresh
+- [x] Schema mapper: DropLinker → Salla `POST /products` payload
+- [x] Product CRUD API: `PATCH /api/products/:id` (inline editing)
+- [x] Product CRUD API: `DELETE /api/products/:id` (with Salla cleanup)
+- [x] Push-to-Salla endpoint: `POST /api/products/:id/push`
+- [x] Import route enhanced with auto-push to Salla after DB save
+- [x] Save to `products` table + push to Salla store API
+- [x] My Products page (list, edit price, toggle status, delete, sync badges)
+- [x] `useProducts` hook with full CRUD mutations
+- [ ] Multi-step import wizard (variant selection, pricing, description editor)
+- [ ] AI product descriptions (n8n WF5 → GPT/Gemini) — **next priority**
 - [ ] Product inbox / quality gate workflow
 
 ### Phase 5 — Wallet & Payments

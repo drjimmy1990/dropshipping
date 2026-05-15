@@ -1,12 +1,12 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-15 (Session 5 — Admin Security + Feed Sync + UX Fixes)
+> **Last Updated:** 2026-05-15 (Session 6 — Salla Push-to-Store Pipeline + Inventory Management)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, and a complete AliExpress API integration with full Discovery UI. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products by feed category or keyword search, view product details with shipping estimates, and import products. The admin panel is secured behind role-based auth guards and can sync live feed data from the AliExpress API, configure which feeds merchants see, and persist all settings to the database. All prices are enforced in SAR. Sort and ship-to filters auto-trigger searches for instant UX.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, a complete AliExpress API integration with full Discovery UI, and a **production-ready Salla push-to-store pipeline**. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products by feed category or keyword search, view product details with shipping estimates, **import products directly to their catalog, push them to Salla with one click, and manage inventory inline** (edit prices, toggle status, delete with Salla cleanup). The Salla API client includes auto-refresh OAuth2 token logic. All prices are enforced in SAR.
 
-**What's next:** Build the product import wizard (save to DB + push to Salla), complete the auto-fulfillment engine, and add payment gateway integrations.
+**What's next:** Build the AI content generation pipeline (bilingual descriptions via GPT/Gemini), the auto-fulfillment engine, and payment gateway integrations.
 
 ---
 
@@ -99,19 +99,36 @@
 
 ---
 
+### ✅ Phase 4C — Product Import & Salla Push-to-Store (PARTIAL)
+
+| Task | Status | Notes |
+|---|---|---|
+| Salla API client (`lib/salla/client.ts`) | ✅ | OAuth2 auto-refresh on 401 |
+| Schema mapper (DropLinker → Salla payload) | ✅ | Images, options, pricing mapped |
+| `PATCH /api/products/:id` | ✅ | Inline editing (price, status, titles) |
+| `DELETE /api/products/:id` | ✅ | With automatic Salla cleanup |
+| `POST /api/products/:id/push` | ✅ | Manual push-to-Salla |
+| Import route + auto-push | ✅ | `POST /api/suppliers/aliexpress/import` enhanced |
+| My Products page rebuilt | ✅ | Inline edit, profit columns, sync badges |
+| `useProducts` hook + mutations | ✅ | update, delete, toggle, push |
+| Import success UX | ✅ | "Manage Products" + "Keep Browsing" CTAs |
+| AI description generation (n8n WF5) | 📋 | Next priority |
+| Import wizard (multi-step) | 📋 | Future enhancement |
+
+---
+
 ## What's NOT Done — Upcoming
 
-### 📋 Phase 4C: Product Import & My Products (NEXT)
+### 📋 Phase 4C Remaining: AI Content Generation (NEXT)
 
-> Priority: **HIGH** — Core merchant workflow
+> Priority: **HIGH** — Bilingual product descriptions
 
 | Task | Priority | Depends On |
 |---|---|---|
-| Import wizard (variants, pricing, description) | 🔴 P0 | Discovery working |
-| Save product to `products` table | 🔴 P0 | Import wizard |
-| Push product to Salla store API | 🔴 P0 | Salla API |
-| My Products page (list, edit, delete) | 🟡 P1 | Products in DB |
-| AI description generation (n8n WF5) | 🟠 P2 | Import working |
+| n8n WF5: Product → GPT/Gemini → bilingual desc | 🔴 P0 | Import working ✅ |
+| Product inbox / quality gate workflow | 🟡 P1 | AI generation |
+| Unit conversion (inch → cm, lb → kg) | 🟠 P2 | AI pipeline |
+| SEO tag generation | 🟠 P2 | AI pipeline |
 
 ### 📋 Phase 5: Wallet & Payments
 
@@ -150,7 +167,10 @@
 | `POST` | `/api/suppliers/aliexpress/feeds/sync` | Admin | Syncs live feeds from AliExpress API |
 | `GET` | `/api/suppliers/aliexpress/search` | Auth | Keyword + feed search |
 | `GET` | `/api/suppliers/aliexpress/product/:id` | Auth | Product detail with nested DTOs |
-| `POST` | `/api/suppliers/aliexpress/import` | Auth | Import product (stub) |
+| `POST` | `/api/suppliers/aliexpress/import` | Auth | Import product + auto-push to Salla |
+| `PATCH` | `/api/products/:id` | Auth | Inline edit (price, status, titles) |
+| `DELETE` | `/api/products/:id` | Auth | Delete product + cleanup from Salla |
+| `POST` | `/api/products/:id/push` | Auth | Manual push to Salla store |
 | `GET` | `/api/auth/salla` | Auth | Initiate Salla OAuth |
 | `GET` | `/api/auth/salla/callback` | Public | Salla OAuth callback |
 | `GET` | `/api/auth/aliexpress/callback` | Public | AliExpress OAuth callback |
