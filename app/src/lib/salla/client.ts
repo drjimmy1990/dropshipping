@@ -194,7 +194,7 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
   const images: SallaProductImage[] = (product.images || []).map((url, index) => ({
     original: url,
     thumbnail: url,
-    alt: product.title_en || "Product image",
+    alt: (product.title_en || "Product image").slice(0, 70),
     default: index === 0,
     sort: index + 1,
   }));
@@ -205,8 +205,11 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
   // Calculate total stock from variants or use product-level stock
   const quantity = product.stock_quantity || 100;
 
+  // Product name — Salla max is 250 chars
+  const name = (product.title_en || product.title_ar || "Untitled Product").slice(0, 250);
+
   return {
-    name: product.title_en || product.title_ar || "Untitled Product",
+    name,
     price: product.retail_price,
     product_type: "product",
     status: product.is_active ? "sale" : "hidden",
@@ -214,10 +217,12 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
     description: product.description_en || product.description_ar || "",
     cost_price: product.supplier_cost,
     require_shipping: true,
+    weight: 0.5, // Default weight in kg — AliExpress doesn't always provide weight
+    weight_type: "kg",
     sku: product.supplier_product_id || undefined,
     images: images.length > 0 ? images : undefined,
     options: options.length > 0 ? options : undefined,
-    metadata_title: (product.title_en || "").slice(0, 70) || undefined,
+    metadata_title: name.slice(0, 70) || undefined,
     metadata_description: (product.description_en || "").slice(0, 160) || undefined,
   };
 }
