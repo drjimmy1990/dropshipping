@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
-> **Last Updated:** 2026-05-15
-> **Current Phase:** Phase 4D ✅ (Product Management Hub — Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅)
+> **Last Updated:** 2026-05-16
+> **Current Phase:** Phase 4D ✅ (Product Management Hub — Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅, Product Shipping Editor ✅)
 
 ---
 
@@ -307,6 +307,25 @@
 - [x] "Below cost" warning when retail price < landed cost
 - [x] Product Editor pricing tab shows: supplier cost, shipping cost, total landed cost, retail price
 - [x] Full data chain: modal → hook → API → DB (shipping_cost, shipping_method, estimated_delivery)
+
+### Product Editor — Shipping Options ✅
+- [x] **"AliExpress Shipping Options" section** in Pricing tab of product editor
+- [x] **"Refresh Options" button** fetches live freight data from AliExpress
+- [x] **Radio-button shipping selector** with carrier name, cost, delivery estimate, tracking status
+- [x] Selecting a shipping method auto-updates shipping cost, method, and estimated delivery
+- [x] Auto-suggest retail price adjustment when shipping cost significantly increases landed cost
+- [x] **New API route:** `GET /api/products/[id]/shipping` — fetches live AliExpress shipping options
+- [x] `shipping_cost`, `shipping_method`, `estimated_delivery` added to PATCH whitelist
+- [x] Error toast feedback when shipping fetch fails (token expired, unavailable delivery)
+
+### AliExpress Token Auto-Refresh ✅
+- [x] **Automatic token refresh** when `IllegalAccessToken` error detected
+- [x] `refreshAccessToken()` function in `lib/aliexpress/client.ts`
+- [x] Uses stored `aliexpress_refresh_token` from `platform_config` table
+- [x] Calls AliExpress `/rest/auth/token/refresh` endpoint with HMAC-SHA256 signing
+- [x] Auto-saves new access_token + refresh_token to `platform_config`
+- [x] Retry logic in `apiRequest()` — transparent single retry on token expiry
+- [x] Non-retryable if using a provider-supplied token (prevents infinite loops)
 - [ ] Local-first import (save as draft, push to Salla later) — **Phase 5 enhancement**
 
 ---
@@ -452,7 +471,7 @@
 > - `Shipments APIs V2.0.6.postman_collection.json`
 
 > [!NOTE]
-> **AliExpress API fully operational.** 47 feeds available with 500K+ products. Text search, feed browse, product detail, and freight calculation all tested and working. See `aliexpress_api_reference.md` for full filter/feed documentation.
+> **AliExpress API fully operational.** 47 feeds available with 500K+ products. Text search, feed browse, product detail, and freight calculation all tested and working. Auto-refresh on token expiry is now built-in. See `aliexpress_api_reference.md` for full filter/feed documentation.
 
 > [!NOTE]
 > **Admin Panel Security:** All `/admin/*` routes protected by auth guard (checks login + `merchants.role = 'admin'`). Feed sync API requires admin role. Sign out uses full page reload to clear client state.

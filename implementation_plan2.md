@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-15 (Session 8 — Phase 4D Complete: Import Wizard + Shipping Integration)
+> **Last Updated:** 2026-05-16 (Session 9 — Product Shipping Editor + Token Auto-Refresh)
 
 ## 1. Business Concept
 
@@ -577,8 +577,8 @@ sequenceDiagram
 - [ ] AI product descriptions (n8n WF5 → GPT/Gemini) — **next priority**
 - [ ] Product inbox / quality gate workflow
 
-### Phase 4D — Product Management Hub (IN PROGRESS 🔧)
-> Salla 2-way sync, full product editor, image management, import wizard with shipping
+### Phase 4D — Product Management Hub (✅ COMPLETE)
+> Salla 2-way sync, full product editor, image management, import wizard with shipping, post-import shipping editor, token auto-refresh
 
 - [x] Salla category sync: `GET /api/salla/categories`
 - [x] Salla product sync: `GET /api/salla/products` (imports native Salla products with `direct` type)
@@ -589,9 +589,14 @@ sequenceDiagram
 - [x] Unsaved changes detection + indicator
 - [x] Images included in PATCH save payload
 - [x] Sidebar: AliExpress source link, image count
-- [ ] Import wizard with shipping: multi-step UI (shipping → pricing → review → import)
-- [ ] AliExpress shipping options displayed with costs + delivery times
-- [ ] Shipping cost factored into profit calculation
+- [x] Import wizard with shipping: selectable radio buttons for AliExpress shipping methods
+- [x] AliExpress shipping options displayed with costs + delivery times
+- [x] Shipping cost factored into profit calculation
+- [x] **Product editor shipping selector** — "Refresh Options" fetches live freight, radio buttons to change carrier
+- [x] **Shipping API route:** `GET /api/products/[id]/shipping` — live AliExpress freight data
+- [x] **Shipping fields in PATCH whitelist:** `shipping_cost`, `shipping_method`, `estimated_delivery`
+- [x] **AliExpress token auto-refresh** — `refreshAccessToken()` with retry logic in `apiRequest()`
+- [x] **Token refresh persistence** — new tokens auto-saved to `platform_config`
 
 ### Phase 5 — Wallet & Payments
 > Top-up flow + financial operations

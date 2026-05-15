@@ -2,7 +2,7 @@
 
 > Auto-generated from GitNexus Knowledge Graph
 > **1416 nodes | 2,165 edges | 11 clusters | 69 execution flows**
-> Last updated: 2026-05-15 (Session 8 — Phase 4D Complete: Import Wizard + Shipping)
+> Last updated: 2026-05-16 (Session 9 — Product Shipping Editor + Token Auto-Refresh)
 
 ---
 
@@ -84,7 +84,7 @@ graph TB
     end
 
     subgraph "AliExpress SDK"
-        AE_CLIENT["aliexpress/client.ts\n(HMAC-SHA256 signing)"]
+        AE_CLIENT["aliexpress/client.ts\n(HMAC-SHA256 signing\n+ auto token refresh)"]
         AE_NORM["normalizers.ts\n(search, feed, detail)"]
     end
 
@@ -371,9 +371,10 @@ Each hook already calls `createClient()` and has a `fetch` function. Pages don't
 | `/api/suppliers/aliexpress/feeds` | PUT | Admin saves feed config | Admin role check |
 | `/api/suppliers/aliexpress/feeds/sync` | POST | Sync live feeds from AliExpress API | Admin role check |
 | `/api/suppliers/aliexpress/import` | POST | Import product + auto-push to Salla | Server createClient |
-| `/api/products/[id]` | PATCH | Inline edit (price, status, titles) | Admin createClient |
+| `/api/products/[id]` | PATCH | Inline edit (price, status, titles, shipping) | Admin createClient |
 | `/api/products/[id]` | DELETE | Delete product + cleanup from Salla | Admin createClient |
 | `/api/products/[id]/push` | POST | Manual push to Salla store | Admin createClient |
+| `/api/products/[id]/shipping` | GET | Fetch live AliExpress shipping options | Server createClient |
 | `/api/salla/categories` | GET | Fetch Salla store categories | Server createClient |
 | `/api/salla/products` | GET | Sync native Salla products to DB | Admin createClient |
 
@@ -474,7 +475,8 @@ app/src/
 │       ├── webhooks/salla/               # Salla webhook handler
 │       ├── products/[id]/
 │       │   ├── route.ts                  # PATCH/DELETE product
-│       │   └── push/route.ts             # POST push to Salla
+│       │   ├── push/route.ts             # POST push to Salla
+│       │   └── shipping/route.ts         # GET live AliExpress shipping options
 │       └── suppliers/aliexpress/
 │           ├── search/route.ts           # Product search API
 │           ├── product/[id]/route.ts     # Product detail API
@@ -488,7 +490,7 @@ app/src/
 │   │   ├── client.ts                     # Browser createClient
 │   │   └── server.ts                     # Server createClient + createAdminClient
 │   ├── aliexpress/
-│   │   ├── client.ts                     # HMAC-SHA256 API client
+│   │   ├── client.ts                     # HMAC-SHA256 API client + auto token refresh
 │   │   └── normalizers.ts                # 3 product normalizers (SAR)
 │   └── salla/
 │       ├── client.ts                     # OAuth2 auto-refresh API client

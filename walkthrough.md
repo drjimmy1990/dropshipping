@@ -1,103 +1,103 @@
-# DropLinker — Session 5 Walkthrough
+# DropLinker — Session 9 Walkthrough
 
-> **Date:** 2026-05-15
+> **Date:** 2026-05-16
 > **Duration:** ~30 min
-> **Scope:** Bug fixes, UX polish, documentation sync
+> **Scope:** Product shipping editor, AliExpress token auto-refresh, documentation sync
 
 ---
 
 ## Summary
 
-This session focused on fixing production bugs reported by the user and bringing all project documentation up to date. Two commits were pushed to `main`.
+This session added two major features:
+1. **Interactive shipping options editor** on the product detail page — merchants can change shipping carriers post-import
+2. **Automatic AliExpress token refresh** — the system now transparently handles expired access tokens
+
+Three commits were pushed to `main`.
 
 ---
 
-## Bugs Fixed
+## Features Added
 
-### 1. "Get Started" → 404 (`/auth/register`)
+### 1. Shipping Options Editor (Product Detail Page)
 
-**Problem:** Every "Get Started" button on the site linked to `/auth/register`, a route that doesn't exist. The app only has `/auth/login` with a signup toggle.
+**Problem:** After importing a product, merchants had no way to change the shipping method. The shipping cost was locked at whatever was selected during import.
 
-**Root Cause:** Original marketing pages were scaffolded with a planned registration route that was never created.
+**Solution:** Added an "AliExpress Shipping Options" section to the Pricing tab of the product editor (`/dashboard/products/[id]`).
 
-**Fix:** Changed all 5 broken links across 3 files:
-
-| File | Links Fixed |
+| Component | Description |
 |---|---|
-| `page.tsx` (Landing) | Navbar "Get Started" button + CTA "Get Started Now" banner |
-| `features/page.tsx` | Navbar "Get Started" button + CTA "Get Started Free" button |
-| `pricing/page.tsx` | Navbar "Get Started" button |
+| **Refresh Options button** | Fetches live shipping methods from AliExpress for the product |
+| **Radio-button selector** | Lists all available carriers with cost, delivery time, tracking status |
+| **Auto-update** | Selecting a carrier updates shipping cost, method, and delivery estimate |
+| **Price suggestion** | If new shipping cost increases landed cost significantly, suggests retail price adjustment |
+| **Error feedback** | Toast notification when shipping fetch fails |
 
-Additionally, CTA buttons that were plain `<button>` tags with no navigation were converted to proper `<Link>` components.
+**Files changed:**
+- `app/src/app/dashboard/products/[id]/page.tsx` — UI for shipping selection
+- `app/src/app/api/products/[id]/shipping/route.ts` — **[NEW]** Shipping API endpoint
+- `app/src/app/api/products/[id]/route.ts` — Added shipping fields to PATCH whitelist
 
-### 2. Sign Out Bug
+### 2. AliExpress Token Auto-Refresh
 
-**Problem:** Sign Out used `router.push("/auth/login")` which is a client-side SPA navigation. Supabase's auth state remained in memory, causing stale session artifacts.
+**Problem:** `IllegalAccessToken` error — the AliExpress access token expired, breaking all API calls (product detail, shipping fetch, etc.). No automatic recovery existed.
 
-**Fix:** Changed both dashboard and admin sign-out handlers to use `window.location.href = "/auth/login"` — a full page reload that completely clears the Supabase client state.
+**Solution:** Added `refreshAccessToken()` to `lib/aliexpress/client.ts` with transparent retry logic in `apiRequest()`.
 
-| File | Change |
-|---|---|
-| `dashboard/layout.tsx` | `router.push` → `window.location.href` |
-| `admin/layout.tsx` | `router.push` → `window.location.href` |
+**How it works:**
+```
+apiRequest() → AliExpress API returns "IllegalAccessToken"
+  → Detect token error (not a retry, not a provided token)
+  → Call refreshAccessToken()
+    → Read refresh_token from platform_config
+    → POST /rest/auth/token/refresh with HMAC-SHA256 signature
+    → Save new access_token + refresh_token to platform_config
+  → Retry original request with new token
+  → Return result (transparent to caller)
+```
+
+**File changed:**
+- `app/src/lib/aliexpress/client.ts` — Added `refreshAccessToken()` + retry logic in `apiRequest()`
 
 ---
 
 ## Commits
 
-### Commit 1: `8c3abd4`
+### Commit 1: `66cbc50`
 ```
-fix: Get Started 404 + Sign Out cleanup
-
-- Fix /auth/register → /auth/login across all pages
-- Fix Sign Out to use window.location.href
+feat: add AliExpress shipping options selector to product editor page
 ```
+**Files:** 3 changed, 178 insertions
+- `app/src/app/api/products/[id]/route.ts`
+- `app/src/app/api/products/[id]/shipping/route.ts` (NEW)
+- `app/src/app/dashboard/products/[id]/page.tsx`
 
-**Files changed:** 5
-- `app/src/app/page.tsx`
-- `app/src/app/features/page.tsx`
-- `app/src/app/pricing/page.tsx`
-- `app/src/app/dashboard/layout.tsx`
-- `app/src/app/admin/layout.tsx`
-
-### Commit 2 (from previous turn): `9a360b6`
+### Commit 2: `c29c5c3`
 ```
-fix: sort auto-triggers + admin feeds persist to DB
+fix: add auto-refresh for expired AliExpress access tokens
+```
+**Files:** 2 changed, 107 insertions
+- `app/src/lib/aliexpress/client.ts`
+- `app/src/app/dashboard/products/[id]/page.tsx`
+
+### Commit 3: (docs update — pending)
+```
+docs: update all project documentation for session 9
 ```
 
 ---
 
 ## Documentation Updated
 
-All four project docs were synced to reflect everything completed through Session 5:
+All six project docs were synced:
 
-### TODO.md
-- Phase 4B expanded with 15+ new completed items
-- Added: sort/ship-to auto-trigger, admin feed sync, feed DB persistence, admin auth guard, role-based redirect, sign out fix, landing page link fixes
-- Added new "Auth & Security" and "Landing Page Fixes" subsections
-- Added note about admin panel security
-
-### project_status.md
-- Updated executive summary to mention admin auth guards, feed sync, and auto-trigger UX
-- Added 13 new rows to Phase 4B status table
-- Added full **API Routes Summary** table (11 routes with methods, auth, and purpose)
-
-### implementation_plan2.md
-- Header updated to "Session 5 — Admin Security + Feed Sync + UX Fixes"
-- Phase 4B expanded from 12 → 22 line items
-- Added admin security items (auth guard, role redirect, feed sync protection)
-- Added UX items (auto-trigger sort/ship-to, sign out fix, link fixes)
-
-### ARCHITECTURE.md (major rewrite)
-- **New:** AliExpress Integration Architecture section with Mermaid flow diagram
-- **New:** Admin Feed Management Flow diagram (Load → Sync → Save → DB → Discovery)
-- **New:** Auth & Security Architecture section with role-based access flowchart and auth boundaries table
-- **New:** Normalizer Pipeline table (3 mappers with SAR enforcement)
-- **New:** Complete File Structure tree
-- **Updated:** System Overview diagram (added admin auth guard, AliExpress API routes, `useProductSearch`)
-- **Updated:** Functional Areas table (added AliExpress, Admin, Discovery clusters)
-- **Updated:** API Routes table (4 → 11 routes)
-- **Updated:** Schema (19 → 20 tables, added `platform_config` relationship)
+| Document | Changes |
+|---|---|
+| `TODO.md` | Added "Product Editor — Shipping Options" and "AliExpress Token Auto-Refresh" subsections under Phase 4D |
+| `project_status.md` | Updated executive summary, added 5 new rows to Phase 4D table, added shipping API route |
+| `implementation_plan2.md` | Updated Phase 4D with shipping editor + token refresh items |
+| `dropshipping_full_plan.md` | Updated current state table with shipping editor and token refresh |
+| `ARCHITECTURE.md` | Added shipping route to API routes table, file structure, and AliExpress SDK section |
+| `walkthrough.md` | Complete rewrite for Session 9 |
 
 ---
 
@@ -107,8 +107,8 @@ All four project docs were synced to reflect everything completed through Sessio
 |---|---|
 | **Build** | ✅ Passes (`npx next build`) |
 | **Git** | ✅ Pushed to `main` |
-| **Phase 4B** | ✅ Fully complete |
-| **Current Phase** | 📋 Phase 4C — Product Import & My Products |
+| **Phase 4D** | ✅ Fully complete |
+| **Current Phase** | 📋 Phase 4C Remaining — AI Content Generation |
 | **Production** | Needs deploy (see below) |
 
 ### Deploy Command
@@ -119,12 +119,8 @@ rm -rf /www/server/nginx/proxy_cache_dir/*
 
 ---
 
-## What's Next (Phase 4C)
+## What's Next
 
-The next milestone is the **Product Import & My Products** flow:
-
-1. Import wizard: select variants → set retail price → edit description
-2. Save product to `products` table in Supabase
-3. Push product to connected Salla store via API
-4. My Products page: list, edit price, toggle active, delete
-5. AI description generation (n8n → GPT/Gemini)
+1. **AI Content Generation (n8n WF5)** — Bilingual product descriptions via GPT/Gemini
+2. **Product inbox / quality gate** — AI-generated content review workflow
+3. **Wallet & Payments (Phase 5)** — Moyasar + Stripe top-up integrations

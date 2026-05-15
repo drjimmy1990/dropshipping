@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
-> **Date:** 2026-05-15  
-> **Status:** Phase 4D Complete ✅ — Product Management Hub (Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅)
+> **Date:** 2026-05-16  
+> **Status:** Phase 4D Complete ✅ — Product Management Hub (Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅, Shipping Editor ✅, Token Auto-Refresh ✅)
 
 ---
 
@@ -33,6 +33,9 @@
 | **Unsaved changes indicator** | ✅ Working — pulsing dot on Save button |
 | **Import wizard with shipping** | ✅ Working — selectable shipping methods, landed cost, profit calc |
 | **Shipping cost in DB** | ✅ Working — `shipping_cost`, `shipping_method`, `estimated_delivery` columns |
+| **Product editor shipping selector** | ✅ Working — "Refresh Options" fetches live freight, radio buttons to change carrier post-import |
+| **Shipping API route** | ✅ Working — `GET /api/products/[id]/shipping` for live AliExpress freight |
+| **AliExpress token auto-refresh** | ✅ Working — transparent retry on expired token with `/auth/token/refresh` |
 
 ---
 
