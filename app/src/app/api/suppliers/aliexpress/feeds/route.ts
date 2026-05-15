@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/suppliers/aliexpress/feeds
@@ -28,16 +27,9 @@ const DEFAULT_FEEDS = [
 
 export async function GET() {
   try {
-    // Auth check
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // TODO: When platform_feeds table exists, fetch from Supabase instead
     // For now, return the hardcoded curated list
+    // No auth required — feeds are public catalog configuration
     return NextResponse.json({ feeds: DEFAULT_FEEDS });
   } catch (error) {
     console.error("[Feeds] Error:", error);
