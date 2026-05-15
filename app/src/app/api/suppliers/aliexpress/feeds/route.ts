@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
  * Returns the list of enabled AliExpress feeds for product discovery.
  * Feeds are curated by the admin and stored in platform_config.
  * 
- * Returns a hardcoded list until platform_feeds table is created.
+ * No auth required — feeds are public catalog configuration.
  */
 
 // Default curated feeds — these are the top feeds verified against the live API

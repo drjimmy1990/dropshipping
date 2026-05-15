@@ -637,11 +637,15 @@ export default function ProductDiscoveryPage() {
       maxPrice?: number;
       shipTo?: string;
     }) => {
-      // If user types a keyword, switch to "all" feed (keyword search mode)
-      if (params.keyword) {
-        setActiveFeed("all");
-      }
-      const merged = { ...params, feedName: params.keyword ? undefined : (activeFeed !== "all" ? activeFeed : undefined), page: 1 };
+      // Keep the active feed context when searching by keyword
+      // If on "all" feed, keyword search goes to text.search (no feedName)
+      // If on a specific feed, keyword search goes to text.search (feed is just UI context)
+      const feedName = activeFeed !== "all" ? activeFeed : undefined;
+      const merged = { 
+        ...params, 
+        feedName: params.keyword ? undefined : feedName, // text.search doesn't support feedName
+        page: 1 
+      };
       setCurrentFilters(merged);
       searchProducts(merged);
     },
@@ -653,10 +657,15 @@ export default function ProductDiscoveryPage() {
       setActiveFeed(feedName);
       const params = {
         ...currentFilters,
-        keyword: undefined, // Clear keyword when switching feeds
+        keyword: currentFilters.keyword, // Keep keyword when switching feeds
         feedName: feedName !== "all" ? feedName : undefined,
         page: 1,
       };
+      // If there's a keyword AND a specific feed, use keyword search (text.search)
+      // Feed context is visual only — text.search doesn't support feedName filtering
+      if (params.keyword && feedName !== "all") {
+        params.feedName = undefined; // text.search wins
+      }
       setCurrentFilters(params);
       searchProducts(params);
     },
