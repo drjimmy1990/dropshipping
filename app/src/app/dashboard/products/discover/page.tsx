@@ -523,7 +523,7 @@ function ProductDetailModal({
                 )}
 
                 {/* Shipping — Selectable */}
-                {product.shippingOptions.length > 0 && (
+                {product.shippingOptions.length > 0 ? (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-text mb-2">
                       <Icon name="local_shipping" className="text-sm mr-1 align-text-bottom" />
@@ -584,6 +584,18 @@ function ProductDetailModal({
                       <div className="flex justify-between text-xs font-semibold text-text mt-1 pt-1 border-t border-border">
                         <span>Total landed cost</span>
                         <span>SAR {(product.price + (product.shippingOptions[selectedShippingIdx]?.price || 0)).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-4">
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20">
+                      <Icon name="info" className="text-warning text-base mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-medium text-warning">Shipping not available to Saudi Arabia</p>
+                        <p className="text-xs text-text-muted mt-0.5">
+                          This product may not ship directly to SA. You can still import it and arrange shipping separately.
+                        </p>
                       </div>
                     </div>
                   </div>
