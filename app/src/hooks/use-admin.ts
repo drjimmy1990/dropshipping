@@ -81,13 +81,41 @@ export function useAdminTransfers() {
 
   const approve = useCallback(async (transferId: string, adminId: string) => {
     const supabase = createClient();
-    const { error } = await supabase
+
+    // Find the transfer to get amount + merchant_id
+    const transfer = transfers.find((t) => t.id === transferId);
+    if (!transfer) return false;
+
+    // 1. Update transfer status to approved
+    const { error: updateErr } = await supabase
       .from("bank_transfers")
       .update({ status: "approved", approved_by: adminId, reviewed_at: new Date().toISOString() })
       .eq("id", transferId);
-    if (!error) fetch();
-    return !error;
-  }, [fetch]);
+
+    if (updateErr) return false;
+
+    // 2. Credit the merchant's wallet via RPC (atomic: updates balance + creates transaction)
+    const { error: creditErr } = await supabase.rpc("wallet_credit", {
+      p_merchant_id: transfer.merchant_id,
+      p_amount: transfer.amount,
+      p_method: "bank_transfer",
+      p_description: `Bank transfer approved — Ref: ${transfer.reference_number || transferId.slice(0, 8)}`,
+      p_reference: transferId,
+    });
+
+    if (creditErr) {
+      console.error("wallet_credit failed:", creditErr.message);
+      // Revert approval status since credit failed
+      await supabase
+        .from("bank_transfers")
+        .update({ status: "pending", approved_by: null, reviewed_at: null })
+        .eq("id", transferId);
+      return false;
+    }
+
+    fetch();
+    return true;
+  }, [fetch, transfers]);
 
   const reject = useCallback(async (transferId: string, adminId: string, notes: string) => {
     const supabase = createClient();

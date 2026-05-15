@@ -105,35 +105,18 @@ async function handleOrderEvent(
   event: string
 ) {
   // 1. Find the DropLinker store that belongs to this Salla merchant.
-  //    We match by looking at all 'salla' stores. The sallaMerchantId comes
-  //    in the webhook payload — we need to find which DropLinker store has
-  //    the tokens for this merchant. Since the store was created via OAuth,
-  //    we look up by the access_token holder or by a query on all salla stores.
-  //    The simplest approach: look for the store via the salla merchant id.
-
-  // For now, we find any active salla store (since we need a salla_merchant_id column or
-  // alternative approach). Let's check the store_url or the access_token to identify.
-  // The pragmatic solution: query all salla stores and verify via Salla API
-  // OR store the salla merchant ID during OAuth (the better approach).
-
-  // For MVP: We'll try to match based on existing stores. If you have only one
-  // merchant initially this works. For production, we store salla_merchant_id in a
-  // metadata column or use webhook_secret per store.
-
-  const { data: stores, error: storeError } = await adminClient
+  //    We match by salla_merchant_id (stored during OAuth callback).
+  const { data: store, error: storeError } = await adminClient
     .from("stores")
     .select("id, merchant_id")
     .eq("platform", "salla")
-    .eq("is_active", true);
+    .eq("salla_merchant_id", sallaMerchantId)
+    .maybeSingle();
 
-  if (storeError || !stores?.length) {
-    console.warn(`[Salla Webhook] No active Salla store found for merchant ${sallaMerchantId}`);
+  if (storeError || !store) {
+    console.warn(`[Salla Webhook] No Salla store found for merchant_id ${sallaMerchantId}`);
     return;
   }
-
-  // If multiple stores exist, the best approach is to match by salla_merchant_id.
-  // For now, use the first active salla store.
-  const store = stores[0];
 
   // 2. Map the Salla order data to our orders table
   const sallaOrder = data as SallaOrderData;
@@ -184,10 +167,15 @@ async function handleOrderEvent(
     // Update the existing order status
     const statusMap: Record<string, string> = {
       created: "new",
+      under_review: "new",
       in_progress: "processing",
+      delivering: "shipped",
+      in_transit: "shipped",
+      delivered: "delivered",
       completed: "delivered",
       canceled: "cancelled",
       refunded: "cancelled",
+      restored: "processing",
     };
 
     const rawStatus = sallaOrder.status;

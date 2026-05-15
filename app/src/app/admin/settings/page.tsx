@@ -59,10 +59,20 @@ export default function PlatformSettingsPage() {
             <h3 className="text-base font-semibold text-text mb-2">Supplier API Keys (Platform Defaults)</h3>
             <p className="text-xs text-text-muted mb-4">Used when merchants haven&apos;t connected their own accounts.</p>
             <div className="space-y-4">
-              <GatewaySection name="AliExpress Open Platform" icon="shopping_bag" connected fields={[
-                { label: "App Key", value: "350****12" },
-                { label: "App Secret", value: "****...f3c2", secret: true },
-              ]} />
+              <GatewaySection 
+                name="AliExpress Open Platform" 
+                icon="shopping_bag" 
+                connected={!!config.aliexpress_access_token} 
+                onConnect={() => {
+                  const clientId = process.env.NEXT_PUBLIC_ALIEXPRESS_APP_KEY || "534306";
+                  const redirectUri = `${window.location.origin}/api/auth/aliexpress/callback`;
+                  window.location.href = `https://api-sg.aliexpress.com/oauth/authorize?response_type=code&force_auth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+                }}
+                fields={[
+                  { label: "App Key", value: "350****12" },
+                  { label: "App Secret", value: "****...f3c2", secret: true },
+                ]} 
+              />
               <GatewaySection name="CJDropshipping" icon="local_shipping" connected={false} fields={[
                 { label: "API Key", value: "" },
                 { label: "Email", value: "" },
@@ -112,7 +122,7 @@ function InputField({ label, value, secret }: { label: string; value: string; se
   );
 }
 
-function GatewaySection({ name, icon, connected, fields }: { name: string; icon: string; connected: boolean; fields: { label: string; value: string; secret?: boolean }[] }) {
+function GatewaySection({ name, icon, connected, onConnect, fields }: { name: string; icon: string; connected: boolean; onConnect?: () => void; fields: { label: string; value: string; secret?: boolean }[] }) {
   return (
     <div className="p-4 rounded-md border border-border-subtle">
       <div className="flex items-center justify-between mb-3">
@@ -121,7 +131,7 @@ function GatewaySection({ name, icon, connected, fields }: { name: string; icon:
           <span className="font-medium text-text text-sm">{name}</span>
           <Badge variant={connected ? "success" : "warning"}>{connected ? "Connected" : "Not Connected"}</Badge>
         </div>
-        <Button variant="secondary" size="sm">{connected ? "Update" : "Connect"}</Button>
+        <Button variant="secondary" size="sm" onClick={onConnect}>{connected ? "Reconnect" : "Connect"}</Button>
       </div>
       <div className="grid md:grid-cols-2 gap-3">
         {fields.map((f) => <InputField key={f.label} {...f} />)}

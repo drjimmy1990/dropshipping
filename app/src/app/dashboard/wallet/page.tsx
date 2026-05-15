@@ -1,11 +1,145 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
 import { useWallet } from "@/hooks/use-wallet";
+import { createClient } from "@/lib/supabase/client";
+
+/* ================================================================
+   WALLET PAGE — Balance, Top-Up, Transaction History
+   ================================================================ */
+
+function BankTransferForm({ onSuccess, onClose }: { onSuccess: () => void; onClose: () => void }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    const form = new FormData(e.currentTarget);
+    const amount = Number(form.get("amount"));
+    const bankName = form.get("bank_name") as string;
+    const senderName = form.get("sender_name") as string;
+    const referenceNumber = form.get("reference_number") as string;
+    const file = fileRef.current?.files?.[0];
+
+    if (!amount || amount <= 0) { setError("Enter a valid amount"); setSubmitting(false); return; }
+    if (!file) { setError("Please upload a receipt image"); setSubmitting(false); return; }
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setError("Not authenticated"); setSubmitting(false); return; }
+
+    // Upload receipt to Supabase Storage
+    const ext = file.name.split(".").pop() || "jpg";
+    const filePath = `receipts/${user.id}/${Date.now()}.${ext}`;
+    const { error: uploadErr } = await supabase.storage
+      .from("bank-receipts")
+      .upload(filePath, file);
+
+    let receiptUrl = filePath;
+    if (uploadErr) {
+      // If storage bucket doesn't exist, save a placeholder
+      console.warn("Storage upload failed (bucket may not exist yet):", uploadErr.message);
+      receiptUrl = `pending-upload/${filePath}`;
+    }
+
+    // Insert bank transfer record
+    const { error: insertErr } = await supabase
+      .from("bank_transfers")
+      .insert({
+        merchant_id: user.id,
+        amount,
+        receipt_url: receiptUrl,
+        bank_name: bankName || null,
+        sender_name: senderName || null,
+        reference_number: referenceNumber || null,
+        status: "pending",
+      });
+
+    setSubmitting(false);
+    if (insertErr) { setError(insertErr.message); return; }
+    onSuccess();
+  }
+
+  const inputClass = "w-full bg-surface rounded-md px-3 py-2.5 text-text text-sm border border-border focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-colors";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <Card className="w-full max-w-md p-6 mx-4 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-text-muted hover:text-text">
+          <Icon name="close" className="text-lg" />
+        </button>
+        <h3 className="text-lg font-semibold text-text mb-1">Bank Transfer Top-Up</h3>
+        <p className="text-sm text-text-secondary mb-5">Upload your transfer receipt for admin approval</p>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-md bg-error/10 border border-error/30 text-error text-sm flex items-center gap-2">
+            <Icon name="error" className="text-base" />
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">Amount (SAR) *</label>
+            <input name="amount" type="number" step="0.01" min="1" placeholder="500.00" className={inputClass} required />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">Bank Name</label>
+              <input name="bank_name" type="text" placeholder="Al Rajhi" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">Sender Name</label>
+              <input name="sender_name" type="text" placeholder="Ahmed Mohammed" className={inputClass} />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">Reference Number</label>
+            <input name="reference_number" type="text" placeholder="TRN-123456" className={inputClass} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">Receipt Image *</label>
+            <div className="relative">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,.pdf"
+                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                required
+              />
+              <div className="flex items-center gap-3 p-3 rounded-md border border-dashed border-border-subtle bg-surface-sunken text-sm text-text-secondary hover:border-accent transition-colors">
+                <Icon name="cloud_upload" className="text-xl text-text-muted" />
+                <span>Click or drag receipt image here</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button type="submit" disabled={submitting} className="flex-1">
+              {submitting ? "Submitting…" : "Submit Transfer"}
+            </Button>
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}
 
 export default function WalletPage() {
-  const { wallet, transactions, loading, error } = useWallet();
+  const { wallet, transactions, loading, error, refetch } = useWallet();
+  const [showTransferForm, setShowTransferForm] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const balance = wallet?.balance ?? 0;
   const reserved = wallet?.reserved ?? 0;
@@ -16,12 +150,27 @@ export default function WalletPage() {
     .filter((t) => t.type === "deduction" && t.created_at?.slice(0, 7) === thisMonth)
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
+  function handleTransferSuccess() {
+    setShowTransferForm(false);
+    setSuccessMsg("Bank transfer submitted! Admin will review and approve your deposit.");
+    refetch();
+    setTimeout(() => setSuccessMsg(null), 8000);
+  }
+
   return (
     <>
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-text">Wallet</h1>
         <p className="text-sm text-text-secondary">Manage your balance and view transaction history</p>
       </div>
+
+      {/* Success Message */}
+      {successMsg && (
+        <div className="mb-4 p-3 rounded-md bg-success/10 border border-success/30 text-success text-sm flex items-center gap-2">
+          <Icon name="check_circle" className="text-base" />
+          {successMsg}
+        </div>
+      )}
 
       {/* Balance + Stats */}
       <div className="grid md:grid-cols-3 gap-4 mb-6">
@@ -35,7 +184,7 @@ export default function WalletPage() {
             </div>
           )}
           <div className="flex gap-2">
-            <Button size="md">
+            <Button size="md" onClick={() => setShowTransferForm(true)}>
               <Icon name="add" className="text-sm" />
               Top Up Wallet
             </Button>
@@ -141,6 +290,14 @@ export default function WalletPage() {
           </table>
         </div>
       </Card>
+
+      {/* Transfer Form Modal */}
+      {showTransferForm && (
+        <BankTransferForm
+          onSuccess={handleTransferSuccess}
+          onClose={() => setShowTransferForm(false)}
+        />
+      )}
     </>
   );
 }
