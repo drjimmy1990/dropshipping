@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { deleteSallaProduct, SallaApiError } from "@/lib/salla/client";
+import { deleteSallaProduct, fullUpdateSallaProduct, SallaApiError } from "@/lib/salla/client";
+import type { SallaUpdateProductPayload } from "@/lib/salla/types";
 
 /**
  * PATCH /api/products/:id
  *
  * Updates a product's editable fields (retail_price, is_active, title, etc.)
  * Only the owning merchant can update their products.
+ * If the product is synced to Salla (has store_product_id), auto-syncs changes.
  */
 export async function PATCH(
   request: NextRequest,
@@ -38,6 +40,10 @@ export async function PATCH(
       "min_stock_threshold",
       "auto_hide_when_low",
       "tags",
+      "category",
+      "images",
+      "salla_category_id",
+      "stock_quantity",
     ];
 
     const updates: Record<string, unknown> = {};
@@ -64,7 +70,7 @@ export async function PATCH(
       .update(updates)
       .eq("id", id)
       .eq("merchant_id", user.id)
-      .select("id, retail_price, is_active, store_product_id")
+      .select("id, retail_price, is_active, store_product_id, store_id, title_en, description_en, salla_category_id")
       .single();
 
     if (error) {
@@ -82,7 +88,67 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json({ success: true, product: data });
+    // Auto-sync to Salla if product is synced
+    let sallaSynced = false;
+    let sallaSyncError: string | null = null;
+
+    if (data.store_product_id && data.store_id) {
+      try {
+        const { data: store } = await adminClient
+          .from("stores")
+          .select("access_token, refresh_token")
+          .eq("id", data.store_id)
+          .single();
+
+        if (store?.access_token && store?.refresh_token) {
+          // Map our updates to Salla's update payload
+          const sallaPayload: SallaUpdateProductPayload = {};
+
+          if (updates.title_en) sallaPayload.name = String(updates.title_en);
+          if (updates.retail_price) sallaPayload.price = Number(updates.retail_price);
+          if (updates.description_en) sallaPayload.description = String(updates.description_en);
+          if (updates.stock_quantity) sallaPayload.quantity = Number(updates.stock_quantity);
+          if (updates.salla_category_id) sallaPayload.categories = [Number(updates.salla_category_id)];
+          if (updates.title_en) sallaPayload.metadata_title = String(updates.title_en).slice(0, 70);
+
+          // Only sync if there are Salla-relevant changes
+          if (Object.keys(sallaPayload).length > 0) {
+            await fullUpdateSallaProduct(
+              {
+                accessToken: store.access_token,
+                refreshToken: store.refresh_token,
+                storeId: data.store_id,
+                onTokenRefresh: async (storeId, newAccess, newRefresh) => {
+                  await adminClient
+                    .from("stores")
+                    .update({
+                      access_token: newAccess,
+                      refresh_token: newRefresh,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", storeId);
+                },
+              },
+              Number(data.store_product_id),
+              sallaPayload
+            );
+            sallaSynced = true;
+          }
+        }
+      } catch (err) {
+        sallaSyncError = err instanceof SallaApiError
+          ? err.sallaMessage ?? "Salla sync error"
+          : "Failed to sync with Salla";
+        console.error("[Products PATCH] Salla sync failed:", sallaSyncError);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      product: data,
+      sallaSynced,
+      ...(sallaSyncError && { sallaSyncWarning: sallaSyncError }),
+    });
   } catch (error) {
     console.error("[Products PATCH] Unexpected error:", error);
     return NextResponse.json(

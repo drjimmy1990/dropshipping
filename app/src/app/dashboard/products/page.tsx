@@ -7,6 +7,7 @@ import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
 import { useProducts } from "@/hooks/use-products";
 
 type StatusFilter = "all" | "active" | "inactive" | "out_of_stock" | "synced" | "not_synced";
+type SourceFilter = "all" | "aliexpress" | "direct";
 
 export default function MyProductsPage() {
   const {
@@ -26,8 +27,10 @@ export default function MyProductsPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPriceValue, setEditPriceValue] = useState("");
+  const [syncing, setSyncing] = useState(false);
   const [actionLoading, setActionLoading] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -75,8 +78,18 @@ export default function MyProductsPage() {
         break;
     }
 
+    // Source filter
+    switch (sourceFilter) {
+      case "aliexpress":
+        result = result.filter((p) => p.supplier !== "direct");
+        break;
+      case "direct":
+        result = result.filter((p) => p.supplier === "direct");
+        break;
+    }
+
     return result;
-  }, [products, searchQuery, statusFilter]);
+  }, [products, searchQuery, statusFilter, sourceFilter]);
 
   // ---------- Action Handlers ----------
 
@@ -159,7 +172,30 @@ export default function MyProductsPage() {
     setEditPriceValue("");
   };
 
+  const handleSyncFromSalla = async () => {
+    setSyncing(true);
+    try {
+      const response = await fetch("/api/salla/products", { method: "POST" });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setToast({
+          type: "success",
+          message: `Synced ${data.synced} products (${data.created} new, ${data.updated} updated)`,
+        });
+        refetch();
+      } else {
+        setToast({ type: "error", message: data.error || "Sync failed" });
+      }
+    } catch {
+      setToast({ type: "error", message: "Sync failed" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // ---------- Stats ----------
+  const directCount = products.filter((p) => p.supplier === "direct").length;
+  const droplinkerCount = products.filter((p) => p.supplier !== "direct").length;
   const stats = [
     { label: "Total", value: loading ? "…" : `${total}`, icon: "inventory_2", color: "text-accent" },
     { label: "Active", value: loading ? "…" : `${activeCount}`, icon: "check_circle", color: "text-success" },
@@ -235,6 +271,15 @@ export default function MyProductsPage() {
           <p className="text-sm text-text-secondary">Manage your imported product inventory</p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleSyncFromSalla}
+            disabled={syncing}
+          >
+            <Icon name="cloud_download" className="text-sm" />
+            {syncing ? "Syncing..." : "Sync from Salla"}
+          </Button>
           <Button variant="secondary" size="sm" onClick={refetch}>
             <Icon name="sync" className="text-sm" />
             Refresh
@@ -292,7 +337,16 @@ export default function MyProductsPage() {
           <option value="synced">✅ Synced to Salla</option>
           <option value="not_synced">⏳ Not Synced</option>
         </select>
-        {(searchQuery || statusFilter !== "all") && (
+        <select
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value as SourceFilter)}
+          className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none cursor-pointer"
+        >
+          <option value="all">All Sources ({total})</option>
+          <option value="aliexpress">🔗 DropLinker ({droplinkerCount})</option>
+          <option value="direct">🏪 Direct / Salla ({directCount})</option>
+        </select>
+        {(searchQuery || statusFilter !== "all" || sourceFilter !== "all") && (
           <Badge variant="accent" icon="filter_list">
             {filteredProducts.length} of {total}
           </Badge>
@@ -410,9 +464,13 @@ export default function MyProductsPage() {
                         </div>
                       </td>
 
-                      {/* Supplier */}
+                      {/* Source */}
                       <td className="px-4 py-3">
-                        <Badge variant="neutral">{p.supplier}</Badge>
+                        <Badge variant={p.supplier === "direct" ? "info" : "accent"}
+                          icon={p.supplier === "direct" ? "storefront" : "link"}
+                        >
+                          {p.supplier === "direct" ? "Direct" : "AliExpress"}
+                        </Badge>
                       </td>
 
                       {/* Cost */}
@@ -503,6 +561,15 @@ export default function MyProductsPage() {
                       {/* Actions */}
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
+                          <Link href={`/dashboard/products/${p.id}`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Edit product"
+                            >
+                              <Icon name="edit" className="text-sm text-accent" />
+                            </Button>
+                          </Link>
                           {!p.store_product_id && (
                             <Button
                               variant="ghost"

@@ -8,7 +8,7 @@
 export type MerchantRole = "merchant" | "admin";
 export type MerchantPlan = "free" | "starter" | "growth" | "pro";
 export type StorePlatform = "salla" | "zid";
-export type SupplierType = "aliexpress" | "cj" | "makhazen";
+export type SupplierType = "aliexpress" | "cj" | "makhazen" | "direct";
 export type MarginType = "percentage" | "fixed";
 export type TransactionType = "deposit" | "deduction" | "refund" | "commission";
 export type PaymentMethod = "moyasar" | "stripe" | "bank_transfer" | "auto" | "system";
@@ -116,6 +116,7 @@ export interface Product {
   images: string[];
   variants: Record<string, unknown>[];
   category: string | null;
+  salla_category_id: number | null;
   tags: string[] | null;
   store_product_id: string | null;
   last_price_check: string | null;

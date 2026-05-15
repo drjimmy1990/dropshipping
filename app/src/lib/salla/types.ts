@@ -185,3 +185,101 @@ export interface SallaApiError {
     message?: string;
   };
 }
+
+// ---------- Category Types ----------
+
+export interface SallaCategoryItem {
+  id: number;
+  name: string;
+  image: string | null;
+  parent_id: number; // 0 = root
+  sort_order: number;
+  status: "active" | "inactive";
+  sub_categories: SallaCategoryItem[];
+}
+
+// ---------- Product List Types ----------
+
+/**
+ * Product item from GET /products (list endpoint).
+ * Fields sourced from Merchant APIs V2.7.6 Postman Collection.
+ */
+export interface SallaProductListItem {
+  id: number;
+  name: string;
+  sku: string;
+  type: string;
+  status: "sale" | "hidden" | "out";
+  quantity: string;
+  price: SallaPrice;
+  cost_price: string;
+  url: string;
+  main_image: string;
+  description: string;
+  require_shipping: boolean;
+  weight: number;
+  weight_type: string;
+  images: Array<{
+    id: number;
+    url: string;
+    main: boolean;
+    alt: string;
+    sort: number;
+  }>;
+  categories: Array<{
+    id: number;
+    name: string;
+  }>;
+  tags: Array<{
+    id: number;
+    name: string;
+  }>;
+  options: Array<{
+    id: number;
+    name: string;
+    display_type: string;
+    values: Array<{
+      id: number;
+      name: string;
+      price: SallaPrice;
+    }>;
+  }>;
+  updated_at: string;
+}
+
+/**
+ * Payload for PUT /products/:id (update endpoint).
+ * All fields are optional — send only what changed.
+ * Fields sourced from Merchant APIs V2.7.6 Postman Collection.
+ */
+export interface SallaUpdateProductPayload {
+  name?: string;
+  price?: number;
+  quantity?: number;
+  description?: string;
+  categories?: number[];
+  sale_price?: number;
+  cost_price?: number;
+  require_shipping?: boolean;
+  weight?: number;
+  weight_type?: "kg" | "g" | "lb" | "oz";
+  sku?: string;
+  metadata_title?: string;
+  metadata_description?: string;
+  tags?: number[];
+}
+
+/**
+ * Response from POST /products/:product/images (attach image).
+ * Image is sent as formdata with field "original" (URL) or "photo" (file).
+ */
+export interface SallaImageAttachResponse {
+  id: number;
+  image: {
+    original: { url: string };
+    thumbnail: { url: string };
+  };
+  sort: number;
+  default: boolean;
+  alt_seo: string;
+}

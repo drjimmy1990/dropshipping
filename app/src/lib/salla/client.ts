@@ -18,8 +18,13 @@ import type {
   SallaCreateProductPayload,
   SallaProductResponse,
   SallaApiResponse,
+  SallaListResponse,
   SallaTokenResponse,
   SallaProductImage,
+  SallaCategoryItem,
+  SallaUpdateProductPayload,
+  SallaImageAttachResponse,
+  SallaProductListItem,
 } from "./types";
 import type { Product } from "@/lib/supabase/types";
 
@@ -366,4 +371,189 @@ export async function updateSallaProduct(
   );
 
   console.log(`[Salla] ✅ Product ${sallaProductId} updated`);
+}
+
+// ---------- Categories ----------
+
+/**
+ * Fetches all categories from a Salla store.
+ * API: GET /categories?page=1&per_page=100
+ * Response fields: id, name, image, parent_id, sort_order, status, sub_categories
+ */
+export async function getSallaCategories(
+  tokens: StoreTokens
+): Promise<SallaCategoryItem[]> {
+  console.log(`[Salla] Fetching categories for store ${tokens.storeId}`);
+
+  const allCategories: SallaCategoryItem[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const result = await withAutoRefresh(tokens, (accessToken) =>
+      sallaRequest<SallaListResponse<SallaCategoryItem>>({
+        method: "GET",
+        path: `/categories?page=${page}&per_page=100`,
+        accessToken,
+      })
+    );
+
+    allCategories.push(...result.data);
+
+    if (result.pagination.currentPage >= result.pagination.totalPages) {
+      hasMore = false;
+    } else {
+      page++;
+    }
+  }
+
+  console.log(`[Salla] ✅ Fetched ${allCategories.length} categories`);
+  return allCategories;
+}
+
+// ---------- Full Product Update ----------
+
+/**
+ * Updates a product on Salla using PUT /products/:id.
+ * Accepts only changed fields — Salla merges them.
+ * 
+ * Fields from Merchant APIs V2.7.6:
+ *   name, price, quantity, description, categories[], sale_price, cost_price,
+ *   require_shipping, weight, weight_type, sku, metadata_title, metadata_description, tags[]
+ */
+export async function fullUpdateSallaProduct(
+  tokens: StoreTokens,
+  sallaProductId: number,
+  payload: SallaUpdateProductPayload
+): Promise<void> {
+  // Enforce field limits
+  if (payload.metadata_title) {
+    payload.metadata_title = payload.metadata_title.slice(0, 70);
+  }
+  if (payload.metadata_description) {
+    payload.metadata_description = payload.metadata_description.slice(0, 160);
+  }
+  if (payload.name) {
+    payload.name = payload.name.slice(0, 250);
+  }
+
+  console.log(`[Salla] PUT update product ${sallaProductId} on store ${tokens.storeId}`);
+
+  await withAutoRefresh(tokens, (accessToken) =>
+    sallaRequest<SallaApiResponse<SallaProductResponse>>({
+      method: "PUT",
+      path: `/products/${sallaProductId}`,
+      body: payload,
+      accessToken,
+    })
+  );
+
+  console.log(`[Salla] ✅ Product ${sallaProductId} updated via PUT`);
+}
+
+// ---------- Image Management ----------
+
+/**
+ * Attaches an image to a Salla product via URL.
+ * API: POST /products/:product/images
+ * Body: FormData with fields: original (URL), alt, default, sort
+ * 
+ * NOTE: Salla accepts ONE image per request.
+ * NOTE: Uses formdata, not JSON — the API requires multipart/form-data.
+ */
+export async function attachSallaImage(
+  tokens: StoreTokens,
+  sallaProductId: number,
+  imageUrl: string,
+  options?: { alt?: string; isDefault?: boolean; sort?: number }
+): Promise<SallaImageAttachResponse> {
+  console.log(`[Salla] Attaching image to product ${sallaProductId}`);
+
+  const result = await withAutoRefresh(tokens, async (accessToken) => {
+    const formData = new FormData();
+    formData.append("original", imageUrl);
+    formData.append("alt", options?.alt || "product-image");
+    formData.append("default", options?.isDefault ? "1" : "0");
+    formData.append("sort", String(options?.sort || 1));
+
+    const url = `${SALLA_API_BASE}/products/${sallaProductId}/images`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+        // No Content-Type — FormData sets it with boundary
+      },
+      body: formData,
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const errorMessage = data?.data?.message || data?.error?.message || `Salla API error: ${response.status}`;
+      console.error(`[Salla] POST /products/${sallaProductId}/images failed:`, response.status, errorMessage);
+      if (data) console.error(`[Salla] Full error response:`, JSON.stringify(data, null, 2));
+      throw new SallaApiError(response.status, errorMessage, data?.error?.fields);
+    }
+
+    return data as SallaApiResponse<SallaImageAttachResponse>;
+  });
+
+  console.log(`[Salla] ✅ Image attached: ID=${result.data.id}`);
+  return result.data;
+}
+
+/**
+ * Deletes an image from a Salla product.
+ * API: DELETE /products/images/:image
+ */
+export async function deleteSallaImage(
+  tokens: StoreTokens,
+  imageId: number
+): Promise<void> {
+  console.log(`[Salla] Deleting image ${imageId}`);
+
+  await withAutoRefresh(tokens, (accessToken) =>
+    sallaRequest<SallaApiResponse<{ message: string }>>({
+      method: "DELETE",
+      path: `/products/images/${imageId}`,
+      accessToken,
+    })
+  );
+
+  console.log(`[Salla] ✅ Image ${imageId} deleted`);
+}
+
+// ---------- Product Listing (for Sync) ----------
+
+/**
+ * Lists products from a Salla store (paginated).
+ * API: GET /products?page=X&per_page=20
+ * Response: SallaProductListItem[]
+ */
+export async function getSallaProducts(
+  tokens: StoreTokens,
+  page: number = 1,
+  perPage: number = 20
+): Promise<{ products: SallaProductListItem[]; pagination: { currentPage: number; totalPages: number; total: number } }> {
+  console.log(`[Salla] Fetching products page ${page} for store ${tokens.storeId}`);
+
+  const result = await withAutoRefresh(tokens, (accessToken) =>
+    sallaRequest<SallaListResponse<SallaProductListItem>>({
+      method: "GET",
+      path: `/products?page=${page}&per_page=${perPage}`,
+      accessToken,
+    })
+  );
+
+  console.log(`[Salla] ✅ Fetched ${result.data.length} products (page ${page}/${result.pagination.totalPages})`);
+
+  return {
+    products: result.data,
+    pagination: {
+      currentPage: result.pagination.currentPage,
+      totalPages: result.pagination.totalPages,
+      total: result.pagination.total,
+    },
+  };
 }
