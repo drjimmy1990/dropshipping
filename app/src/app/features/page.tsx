@@ -15,7 +15,7 @@ export default function FeaturesPage() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button size="sm">
-              <Link href="/auth/register">Get Started</Link>
+              <Link href="/auth/login">Get Started</Link>
             </Button>
           </div>
         </div>
@@ -57,9 +57,9 @@ export default function FeaturesPage() {
           <p className="text-base text-accent-on/80 mb-6">
             14-day free trial. No credit card required.
           </p>
-          <button className="bg-white text-accent px-6 py-3 rounded-md font-semibold hover:bg-white/90 transition-colors">
+          <Link href="/auth/login" className="inline-block bg-white text-accent px-6 py-3 rounded-md font-semibold hover:bg-white/90 transition-colors">
             Get Started Free
-          </button>
+          </Link>
         </div>
       </section>
     </main>

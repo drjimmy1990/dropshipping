@@ -32,7 +32,7 @@ export default function DashboardLayout({
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/auth/login");
+    window.location.href = "/auth/login";
   }
 
   return (

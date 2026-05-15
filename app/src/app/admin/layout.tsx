@@ -64,7 +64,7 @@ export default function AdminLayout({
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/auth/login");
+    window.location.href = "/auth/login";
   }
 
   // Show loading state while checking auth

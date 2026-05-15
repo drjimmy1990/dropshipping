@@ -44,7 +44,7 @@ function Navbar() {
             Login
           </Link>
           <Button size="sm">
-            <Link href="/auth/register">Get Started</Link>
+            <Link href="/auth/login">Get Started</Link>
           </Button>
         </div>
       </div>
@@ -251,9 +251,9 @@ function CTABanner() {
           Join 5,000+ Saudi merchants who have reclaimed their time with
           DropLinker automation.
         </p>
-        <button className="bg-white text-accent px-8 py-3 rounded-md text-base font-semibold hover:bg-white/90 transition-colors">
+        <Link href="/auth/login" className="inline-block bg-white text-accent px-8 py-3 rounded-md text-base font-semibold hover:bg-white/90 transition-colors">
           Get Started Now
-        </button>
+        </Link>
       </div>
     </section>
   );

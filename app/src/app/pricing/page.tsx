@@ -18,7 +18,7 @@ export default function PricingPage() {
               Login
             </Link>
             <Button size="sm">
-              <Link href="/auth/register">Get Started</Link>
+              <Link href="/auth/login">Get Started</Link>
             </Button>
           </div>
         </div>
