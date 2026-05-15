@@ -103,22 +103,36 @@ export interface AliExpressProductDetailResponse {
   is_success: boolean;
 }
 
-// ---------- Freight / Shipping ----------
+// ---------- Freight / Shipping (aliexpress.ds.freight.query) ----------
 
-export interface AliExpressFreightOption {
-  service_name: string;
-  amount: {
-    amount: string;
-    currency_code: string;
-    cent: number;
-  };
-  estimated_delivery_time: string;
-  tracking_available: string;
+export interface AliExpressDSFreightOption {
+  code: string;                      // e.g. "CAINIAO_STANDARD"
+  company: string;                   // e.g. "AliExpress standard shipping"
+  shipping_fee_cent: string;         // e.g. "172.71" (amount in selected currency)
+  shipping_fee_currency: string;     // e.g. "SAR"
+  shipping_fee_format: string;       // e.g. "SAR 172.71"
+  free_shipping: boolean;
+  tracking: boolean;
+  estimated_delivery_time: string;   // e.g. "Mar 08 - 25"
+  delivery_date_desc: string;        // e.g. "Mar 08 - 25"
+  min_delivery_days: number;
+  max_delivery_days: number;
+  guaranteed_delivery_days: string;
+  ship_from_country: string;         // e.g. "CN"
+  available_stock: string;
+  mayHavePFS: boolean;
+  ddpIncludeVATTax?: string;
+  free_shipping_threshold?: string;
 }
 
-export interface AliExpressFreightResponse {
-  freight_result: {
-    freight: AliExpressFreightOption[];
+export interface AliExpressDSFreightResponse {
+  result: {
+    msg: string;
+    code: number;
+    success: boolean;
+    delivery_options?: {
+      delivery_option_d_t_o: AliExpressDSFreightOption[];
+    };
   };
 }
 
@@ -227,4 +241,5 @@ export interface NormalizedShippingOption {
   currency: string;
   estimatedDays: string;
   trackingAvailable: boolean;
+  serviceCode?: string; // e.g. "CAINIAO_STANDARD" — used for aliexpress.ds.order.create
 }

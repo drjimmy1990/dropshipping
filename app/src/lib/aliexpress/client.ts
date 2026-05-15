@@ -12,7 +12,7 @@ import type {
   AliExpressSearchProduct,
   AliExpressProductDetail,
   AliExpressProductDetailResponse,
-  AliExpressFreightResponse,
+  AliExpressDSFreightResponse,
   AliExpressSkuInfo,
   AliExpressSkuProperty,
   NormalizedProduct,
@@ -378,49 +378,98 @@ export async function getProductDetail(
     throw new Error(`Product ${productId} not found`);
   }
 
+  // Extract the first SKU ID for freight query (required by DS API)
+  const skuInfos: any[] = product.ae_item_sku_info_dtos || [];
+  const firstSkuId = skuInfos[0]?.sku_id ? String(skuInfos[0].sku_id) : undefined;
+
   // Fetch shipping options
   let shippingOptions: NormalizedShippingOption[] = [];
   try {
-    shippingOptions = await getFreightOptions(productId, 1, shipTo, accessToken);
-  } catch {
-    console.warn(`[AliExpress] Failed to fetch freight for product ${productId}`);
+    shippingOptions = await getFreightOptions(productId, 1, shipTo, accessToken, firstSkuId);
+  } catch (err) {
+    console.warn(`[AliExpress] Failed to fetch freight for product ${productId}:`, err);
   }
 
   return normalizeProductDetail(product, shippingOptions);
 }
 
-// ---------- Freight / Shipping ----------
+// ---------- Freight / Shipping (aliexpress.ds.freight.query) ----------
 
 /**
- * Calculate shipping options for a product to a destination.
+ * Query shipping options for a product using the DS freight API.
+ * Requires selectedSkuId from the product detail response.
  */
 export async function getFreightOptions(
   productId: string | number,
   quantity: number = 1,
   countryCode: string = "SA",
-  accessToken?: string
+  accessToken?: string,
+  selectedSkuId?: string
 ): Promise<NormalizedShippingOption[]> {
-  const apiParams: Record<string, string> = {
-    product_id: String(productId),
-    product_num: String(quantity),
-    country_code: countryCode,
+  // Build the queryDeliveryReq JSON object
+  const queryReq: Record<string, string> = {
+    productId: String(productId),
+    quantity: String(quantity),
+    shipToCountry: countryCode,
+    language: "en_US",
+    locale: "en_US",
+    currency: "SAR",
   };
 
-  const response = await apiRequest<AliExpressFreightResponse>(
-    "aliexpress.logistics.buyer.freight.calculate",
+  // selectedSkuId is required by the API — if we don't have it, try without
+  if (selectedSkuId) {
+    queryReq.selectedSkuId = selectedSkuId;
+  }
+
+  const apiParams: Record<string, string> = {
+    queryDeliveryReq: JSON.stringify(queryReq),
+  };
+
+  console.log(`[AliExpress] Freight query for product ${productId}, SKU: ${selectedSkuId || 'none'}, country: ${countryCode}`);
+
+  const response = await apiRequest<AliExpressDSFreightResponse>(
+    "aliexpress.ds.freight.query",
     apiParams,
     accessToken
   );
 
-  const options = response?.freight_result?.freight || [];
+  // The DS API wraps result inside response.result
+  const result = response?.result || response;
 
-  return options.map((opt) => ({
-    name: opt.service_name,
-    price: parseFloat(opt.amount?.amount || "0"),
-    currency: opt.amount?.currency_code || "SAR",
-    estimatedDays: opt.estimated_delivery_time || "N/A",
-    trackingAvailable: opt.tracking_available === "true",
-  }));
+  if (!result?.success && result?.code !== 200) {
+    console.warn(`[AliExpress] Freight query failed: ${result?.msg || 'unknown error'}`);
+    return [];
+  }
+
+  const options = result?.delivery_options?.delivery_option_d_t_o || [];
+
+  return options.map((opt) => {
+    // Determine actual shipping cost:
+    // free_shipping=true → free
+    // mayHavePFS=true && free_shipping_threshold=0 → free
+    // mayHavePFS=true && threshold>0 → free if order >= threshold (assume not for single product)
+    let price = parseFloat(opt.shipping_fee_cent || "0");
+    if (opt.free_shipping) {
+      price = 0;
+    } else if (opt.mayHavePFS && opt.free_shipping_threshold === "0") {
+      price = 0;
+    }
+
+    // Build delivery estimate string
+    const deliveryDays = opt.min_delivery_days && opt.max_delivery_days
+      ? `${opt.min_delivery_days}-${opt.max_delivery_days} days`
+      : opt.delivery_date_desc || opt.estimated_delivery_time || "N/A";
+
+    return {
+      name: opt.company || opt.code,
+      price,
+      currency: opt.shipping_fee_currency || "SAR",
+      estimatedDays: deliveryDays,
+      trackingAvailable: opt.tracking === true,
+      // Extra fields for order creation (Phase 6)
+      serviceCode: opt.code,
+    };
+  });
 }
 
 // ---------- Normalization Helpers ----------
