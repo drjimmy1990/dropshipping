@@ -150,7 +150,15 @@ async function apiRequest<T>(
   const data = await response.json();
 
   // DEBUG: Log full raw response
-  console.log(`[AliExpress] RAW RESPONSE:`, JSON.stringify(data, null, 2).substring(0, 2000));
+  console.log(`[AliExpress] RAW RESPONSE for ${method}:`, JSON.stringify(data, null, 2).substring(0, 2000));
+
+  // Check for error_response (returned on auth/param failures)
+  if (data.error_response) {
+    console.error(`[AliExpress] error_response:`, data.error_response);
+    throw new Error(
+      data.error_response.msg || data.error_response.sub_msg || `AliExpress error: ${data.error_response.code}`
+    );
+  }
 
   // AliExpress wraps responses in a method-named key
   // e.g. { "aliexpress_ds_product_get_response": { ... } }
@@ -426,32 +434,45 @@ export async function getFreightOptions(
   };
 
   console.log(`[AliExpress] Freight query for product ${productId}, SKU: ${selectedSkuId || 'none'}, country: ${countryCode}`);
+  console.log(`[AliExpress] Freight queryDeliveryReq:`, apiParams.queryDeliveryReq);
 
-  const response = await apiRequest<AliExpressDSFreightResponse>(
-    "aliexpress.ds.freight.query",
-    apiParams,
-    accessToken
-  );
+  let response: AliExpressDSFreightResponse;
+  try {
+    response = await apiRequest<AliExpressDSFreightResponse>(
+      "aliexpress.ds.freight.query",
+      apiParams,
+      accessToken
+    );
+  } catch (err) {
+    console.error(`[AliExpress] Freight API call threw:`, err);
+    return [];
+  }
+
+  console.log(`[AliExpress] Freight parsed response:`, JSON.stringify(response, null, 2).substring(0, 1500));
 
   // The DS API wraps result inside response.result
-  const result = response?.result || response;
+  const result = (response as any)?.result || response;
 
   if (!result?.success && result?.code !== 200) {
-    console.warn(`[AliExpress] Freight query failed: ${result?.msg || 'unknown error'}`);
+    console.warn(`[AliExpress] Freight query failed: code=${result?.code}, msg=${result?.msg || 'unknown'}`);
     return [];
   }
 
   const options = result?.delivery_options?.delivery_option_d_t_o || [];
+  console.log(`[AliExpress] Freight options found: ${options.length}`);
 
-  return options.map((opt) => {
-    // Determine actual shipping cost:
+  return options.map((opt: any) => {
+    // Determine actual shipping cost per the docs:
     // free_shipping=true → free
-    // mayHavePFS=true && free_shipping_threshold=0 → free
+    // mayHavePFS=true && free_shipping_threshold="0" → free
     // mayHavePFS=true && threshold>0 → free if order >= threshold (assume not for single product)
     let price = parseFloat(opt.shipping_fee_cent || "0");
-    if (opt.free_shipping) {
+    if (opt.free_shipping === true || opt.free_shipping === "true") {
       price = 0;
-    } else if (opt.mayHavePFS && opt.free_shipping_threshold === "0") {
+    } else if (
+      (opt.mayHavePFS === true || opt.mayHavePFS === "true") &&
+      (opt.free_shipping_threshold === "0" || opt.free_shipping_threshold === 0)
+    ) {
       price = 0;
     }
 
@@ -461,12 +482,11 @@ export async function getFreightOptions(
       : opt.delivery_date_desc || opt.estimated_delivery_time || "N/A";
 
     return {
-      name: opt.company || opt.code,
+      name: opt.company || opt.code || "Standard Shipping",
       price,
       currency: opt.shipping_fee_currency || "SAR",
       estimatedDays: deliveryDays,
-      trackingAvailable: opt.tracking === true,
-      // Extra fields for order creation (Phase 6)
+      trackingAvailable: opt.tracking === true || opt.tracking === "true",
       serviceCode: opt.code,
     };
   });
