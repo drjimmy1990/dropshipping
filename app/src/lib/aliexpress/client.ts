@@ -236,21 +236,24 @@ async function searchByKeyword(
     }
 
     // Map text.search fields to traffic_product_dto fields so normalizeSearchProduct works
+    // IMPORTANT: Always prefer target_* prices (SAR) over raw prices (CNY/USD)
     const normalizedRawProducts = rawProducts.map((p: any) => ({
       product_id: p.itemId || p.product_id,
       product_title: p.title || p.product_title,
       product_main_image_url: p.itemMainPic || p.product_main_image_url,
+      // SAR prices — these are the target currency prices
       target_sale_price: p.targetSalePrice || p.target_sale_price,
-      sale_price: p.salePrice || p.sale_price,
       target_original_price: p.targetOriginalPrice || p.target_original_price,
-      original_price: p.originalPrice || p.original_price,
-      target_sale_price_currency: p.targetSalePriceCurrency || p.targetOriginalPriceCurrency || p.target_sale_price_currency || "SAR",
-      sale_price_currency: p.salePriceCurrency || p.sale_price_currency,
+      target_sale_price_currency: "SAR",
+      // DO NOT use salePrice/originalPrice — those are in CNY
+      sale_price: p.targetSalePrice || p.target_sale_price || p.salePrice || p.sale_price,
+      original_price: p.targetOriginalPrice || p.target_original_price || p.originalPrice || p.original_price,
+      sale_price_currency: "SAR",
       evaluate_rate: p.evaluateRate || p.evaluate_rate,
       lastest_volume: p.orders || p.lastest_volume,
       product_detail_url: p.itemUrl || p.product_detail_url,
       first_level_category_name: p.categoryId ? String(p.categoryId) : p.first_level_category_name,
-      ...p
+      discount: p.discount,
     }));
 
     const products: NormalizedProduct[] = normalizedRawProducts.map(normalizeSearchProduct);
@@ -390,9 +393,10 @@ export async function getFreightOptions(
 // ---------- Normalization Helpers ----------
 
 function normalizeSearchProduct(raw: AliExpressSearchProduct): NormalizedProduct {
-  const price = parseFloat(raw.target_sale_price || raw.sale_price || "0");
-  const originalPrice = parseFloat(raw.target_original_price || raw.original_price || "0");
-  const discount = originalPrice > 0 ? Math.round((1 - price / originalPrice) * 100) : 0;
+  // ALWAYS use target_sale_price (SAR) — never fall back to sale_price (CNY)
+  const price = parseFloat(raw.target_sale_price || "0");
+  const originalPrice = parseFloat(raw.target_original_price || "0");
+  const discount = originalPrice > 0 && price > 0 ? Math.round((1 - price / originalPrice) * 100) : 0;
   const ratingStr = (raw.evaluate_rate || "0").replace("%", "");
   const rating = parseFloat(ratingStr) / 20; // Convert percentage to 5-star scale
 
@@ -403,7 +407,7 @@ function normalizeSearchProduct(raw: AliExpressSearchProduct): NormalizedProduct
     images: raw.product_small_image_urls?.string || [raw.product_main_image_url].filter(Boolean),
     price,
     originalPrice,
-    currency: raw.target_sale_price_currency || raw.sale_price_currency || "SAR",
+    currency: "SAR", // Always SAR — we request target_currency=SAR from AliExpress
     discount,
     rating: Math.min(rating, 5),
     orders: raw.lastest_volume || raw.orders_count || 0,
@@ -421,10 +425,11 @@ function normalizeSearchProduct(raw: AliExpressSearchProduct): NormalizedProduct
  *   - lastest_volume is used for order count
  */
 function normalizeFeedProduct(raw: any): NormalizedProduct {
-  const price = parseFloat(raw.target_sale_price || raw.sale_price || "0");
-  const originalPrice = parseFloat(raw.target_original_price || raw.original_price || "0");
+  // ALWAYS use target_sale_price (SAR) — never fall back to sale_price (CNY/USD)
+  const price = parseFloat(raw.target_sale_price || "0");
+  const originalPrice = parseFloat(raw.target_original_price || "0");
   const discountStr = raw.discount ? String(raw.discount).replace("%", "") : "0";
-  const discount = parseInt(discountStr) || (originalPrice > 0 ? Math.round((1 - price / originalPrice) * 100) : 0);
+  const discount = parseInt(discountStr) || (originalPrice > 0 && price > 0 ? Math.round((1 - price / originalPrice) * 100) : 0);
   const ratingStr = (raw.evaluate_rate || "0").replace("%", "");
   const rating = parseFloat(ratingStr) / 20; // Convert percentage to 5-star scale
 
@@ -440,7 +445,7 @@ function normalizeFeedProduct(raw: any): NormalizedProduct {
     images,
     price,
     originalPrice,
-    currency: raw.target_sale_price_currency || raw.sale_price_currency || "SAR",
+    currency: "SAR", // Always SAR — we request target_currency=SAR from AliExpress
     discount,
     rating: Math.min(rating, 5),
     orders: raw.lastest_volume || 0,
@@ -467,6 +472,8 @@ function normalizeProductDetail(
   const imageList = imageStr.split(";").filter(Boolean);
 
   // Parse variants from ae_item_sku_info_dtos
+  // offer_sale_price is in target currency (SAR) when we pass target_currency=SAR
+  // sku_price is the original price (may be CNY/USD) — only use as last resort
   const variants: NormalizedVariant[] = skuInfos.map((sku: any) => ({
     skuId: String(sku.sku_id || sku.id),
     price: parseFloat(sku.offer_sale_price || sku.sku_price || "0"),
@@ -508,12 +515,12 @@ function normalizeProductDetail(
     images: imageList,
     price: minPrice,
     originalPrice: maxPrice > minPrice ? maxPrice : minPrice,
-    currency: baseInfo.currency_code || "SAR",
+    currency: "SAR", // Always SAR — we request target_currency=SAR from AliExpress
     discount: 0,
     rating: rating > 5 ? rating / 20 : rating,
     orders,
     shipping: shippingOptions.length > 0
-      ? `From ${shippingOptions[0].currency} ${shippingOptions[0].price}`
+      ? `From SAR ${shippingOptions[0].price.toFixed(2)}`
       : "Calculate at checkout",
     category: String(baseInfo.category_id || ""),
     url: `https://www.aliexpress.com/item/${productId}.html`,
