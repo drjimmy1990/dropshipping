@@ -56,14 +56,29 @@ export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     return { error: error.message };
   }
 
+  // Check if user is an admin — redirect to admin panel
+  let destination = "/dashboard";
+  if (data.user) {
+    const adminClient = createAdminClient();
+    const { data: merchant } = await adminClient
+      .from("merchants")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+
+    if (merchant?.role === "admin") {
+      destination = "/admin";
+    }
+  }
+
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(destination);
 }
 
 export async function signOut() {

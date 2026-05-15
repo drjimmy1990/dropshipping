@@ -66,7 +66,7 @@ export async function POST() {
     const { data: merchant } = await supabase
       .from("merchants")
       .select("role")
-      .eq("user_id", user.id)
+      .eq("id", user.id)
       .single();
 
     if (merchant?.role !== "admin") {
