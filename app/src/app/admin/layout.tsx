@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, ThemeToggle } from "@/components/shared";
@@ -24,11 +24,64 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [authState, setAuthState] = useState<"loading" | "authorized" | "unauthorized">("loading");
+
+  // Auth guard — check if user is logged in AND has admin role
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.replace("/auth/login");
+          return;
+        }
+
+        // Check if user has admin role
+        const { data: merchant } = await supabase
+          .from("merchants")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (merchant?.role !== "admin") {
+          // Not an admin — redirect to merchant dashboard
+          router.replace("/dashboard");
+          return;
+        }
+
+        setAuthState("authorized");
+      } catch (err) {
+        console.error("Admin auth check failed:", err);
+        router.replace("/auth/login");
+      }
+    }
+
+    checkAuth();
+  }, [router]);
 
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/auth/login");
+  }
+
+  // Show loading state while checking auth
+  if (authState === "loading") {
+    return (
+      <div className="flex h-screen items-center justify-center bg-bg">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-text-muted">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If unauthorized, useEffect already redirected — render nothing
+  if (authState !== "authorized") {
+    return null;
   }
 
   return (

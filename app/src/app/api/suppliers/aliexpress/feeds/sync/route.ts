@@ -62,14 +62,14 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is super_admin
+    // Check if user is admin
     const { data: merchant } = await supabase
       .from("merchants")
       .select("role")
       .eq("user_id", user.id)
       .single();
 
-    if (merchant?.role !== "super_admin") {
+    if (merchant?.role !== "admin") {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
