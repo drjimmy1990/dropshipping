@@ -351,9 +351,9 @@ function ProductDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-background rounded-xl border border-border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-xl border border-border shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background z-10">
+        <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-surface z-10 rounded-t-xl">
           <h2 className="text-lg font-semibold text-text">Product Details</h2>
           <button
             onClick={onClose}
@@ -456,7 +456,7 @@ function ProductDetailModal({
                       type="number"
                       value={retailPrice}
                       onChange={(e) => setRetailPrice(e.target.value)}
-                      className="bg-background text-text text-sm rounded-md px-3 py-2 border border-border outline-none flex-1 focus:border-accent"
+                      className="bg-surface text-text text-sm rounded-md px-3 py-2 border border-border outline-none flex-1 focus:border-accent"
                       min={product.price}
                       step="0.01"
                     />

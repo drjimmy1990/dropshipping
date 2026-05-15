@@ -119,3 +119,10 @@ sudo systemctl reload nginx
 1. Go to `https://droplinker.asra3.com/admin/settings` in your browser.
 2. Click the **Connect** button under the AliExpress section.
 3. You should be redirected to AliExpress, prompted to log in, and then successfully redirected back to your settings page!
+
+
+cd /www/wwwroot/dropshipping
+git pull origin main
+cd app && npm run build
+pm2 restart droplinker
+rm -rf /www/server/nginx/proxy_cache_dir/*
