@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
 > **Last Updated:** 2026-05-15
-> **Current Phase:** Phase 4C (Product Import & My Products — Salla Push-to-Store ✅, AI Content 📋)
+> **Current Phase:** Phase 4D ✅ (Product Management Hub — Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅)
 
 ---
 
@@ -256,6 +256,58 @@
 - [x] Toast notifications for all actions
 - [x] Empty state with link to Product Discovery
 - [ ] Manual re-sync stock button — **Phase 6 (Stock Sync)**
+
+---
+
+## ✅ Phase 4D — Product Management Hub (COMPLETED)
+
+> **Goal:** Full product lifecycle management — edit everything, image management, Salla 2-way sync, import wizard with shipping
+> **Completed:** All sub-items done. Shipping cost integration fully wired from UI → API → DB.
+
+### Salla 2-Way Sync ✅
+- [x] Salla category sync: `GET /api/salla/categories` → fetches all store categories
+- [x] Salla product sync: `GET /api/salla/products` → imports native Salla products to DB
+- [x] `supplier_type` enum fixed: added `'direct'` for native Salla products
+- [x] Idempotent sync: handles both insert (new) and update (existing) operations
+- [x] Safe number parsing for price, cost_price, quantity during import
+- [x] Error counting + detailed toast feedback on sync completion
+- [x] `salla_category_id` column added to products table
+
+### Product Editor ✅
+- [x] Full product editor page (`/dashboard/products/[id]`)
+- [x] Tabs: General, Images, Pricing, SEO
+- [x] Edit title (EN/AR), description (EN/AR), category picker
+- [x] Salla category dropdown (fetched from `GET /api/salla/categories`)
+- [x] Retail price, stock quantity editing
+- [x] Active/inactive toggle
+- [x] Auto-sync edits to Salla when product has `store_product_id`
+- [x] Push-to-Salla button for unsynced products
+- [x] Delete with Salla cleanup
+
+### Image Management ✅
+- [x] Full interactive Images tab (was read-only, now fully interactive)
+- [x] Delete individual images with hover overlay
+- [x] Set any image as main (move to position [0])
+- [x] Reorder images (move left/right buttons)
+- [x] Add new image by URL input
+- [x] `localImages` state tracks edits before save
+- [x] Images array included in PATCH payload → saved to DB + synced to Salla
+- [x] Unsaved changes indicator (pulsing dot on Save button)
+- [x] Sidebar enhancements: AliExpress source link, image count
+
+### Import Wizard with Shipping ✅
+- [x] DB columns added: `shipping_cost`, `shipping_method`, `estimated_delivery` on products table
+- [x] `Product` TypeScript interface updated with shipping fields
+- [x] AliExpress shipping options displayed as **selectable radio buttons** with cost + delivery estimates
+- [x] Merchant selects shipping method before import (first option auto-selected)
+- [x] Cost summary breakdown: product cost + shipping = total landed cost
+- [x] Shipping cost saved to DB via import API route
+- [x] Profit calculation includes shipping cost (retail − supplier − shipping = profit)
+- [x] Retail price auto-suggestion factors in shipping (30% markup on landed cost)
+- [x] "Below cost" warning when retail price < landed cost
+- [x] Product Editor pricing tab shows: supplier cost, shipping cost, total landed cost, retail price
+- [x] Full data chain: modal → hook → API → DB (shipping_cost, shipping_method, estimated_delivery)
+- [ ] Local-first import (save as draft, push to Salla later) — **Phase 5 enhancement**
 
 ---
 

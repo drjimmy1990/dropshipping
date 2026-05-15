@@ -179,6 +179,9 @@ export function useProductSearch() {
       marginType?: "percentage" | "fixed";
       marginValue?: number;
       pushToStore?: boolean;
+      shippingCost?: number;
+      shippingMethod?: string;
+      estimatedDelivery?: string;
     }) => {
       setImportState({ loading: true, error: null, success: false });
 

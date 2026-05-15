@@ -1,12 +1,12 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-15 (Session 6 — Salla Push-to-Store Pipeline + Inventory Management)
+> **Last Updated:** 2026-05-15 (Session 8 — Phase 4D Complete: Import Wizard with Shipping Cost Integration)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, a complete AliExpress API integration with full Discovery UI, and a **production-ready Salla push-to-store pipeline**. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products by feed category or keyword search, view product details with shipping estimates, **import products directly to their catalog, push them to Salla with one click, and manage inventory inline** (edit prices, toggle status, delete with Salla cleanup). The Salla API client includes auto-refresh OAuth2 token logic. All prices are enforced in SAR.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready Salla push-to-store pipeline**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, and a **shipping-inclusive import wizard** with selectable shipping methods, landed cost calculation, and accurate profit margins. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, push them to Salla, and manage everything including images and pricing**. All prices are enforced in SAR.
 
-**What's next:** Build the AI content generation pipeline (bilingual descriptions via GPT/Gemini), the auto-fulfillment engine, and payment gateway integrations.
+**What's next:** AI content generation pipeline (bilingual descriptions via GPT/Gemini), auto-fulfillment engine, and payment gateway integrations.
 
 ---
 
@@ -115,6 +115,26 @@
 | AI description generation (n8n WF5) | 📋 | Next priority |
 | Import wizard (multi-step) | 📋 | Future enhancement |
 
+### ✅ Phase 4D — Product Management Hub (COMPLETED)
+
+| Task | Status | Notes |
+|---|---|---|
+| Salla category sync API | ✅ | `GET /api/salla/categories` |
+| Salla product sync (2-way) | ✅ | `GET /api/salla/products` with `direct` supplier type |
+| `supplier_type` enum fix | ✅ | Added `'direct'` value for native Salla products |
+| `salla_category_id` column | ✅ | DB migration applied |
+| Product editor page | ✅ | `/dashboard/products/[id]` — General, Images, Pricing, SEO tabs |
+| Image management (interactive) | ✅ | Delete, reorder, set main, add by URL |
+| Unsaved changes indicator | ✅ | Pulsing dot on Save button |
+| Images in save payload | ✅ | PATCH now includes `images` array |
+| Sidebar enhancements | ✅ | AliExpress source link, image count |
+| **Import wizard — shipping selection** | ✅ | Selectable radio buttons for AliExpress shipping methods |
+| **Shipping cost DB columns** | ✅ | `shipping_cost`, `shipping_method`, `estimated_delivery` added |
+| **Landed cost calculation** | ✅ | Product + shipping = total cost breakdown |
+| **Profit includes shipping** | ✅ | Retail − supplier − shipping = accurate profit |
+| **Below-cost warning** | ✅ | Error when retail < landed cost |
+| **Editor pricing tab** | ✅ | Shows supplier cost, shipping cost, total landed cost |
+
 ---
 
 ## What's NOT Done — Upcoming
@@ -176,6 +196,8 @@
 | `GET` | `/api/auth/aliexpress/callback` | Public | AliExpress OAuth callback |
 | `POST` | `/api/webhooks/salla` | HMAC | Salla order webhooks |
 | `DELETE` | `/api/stores/:id/disconnect` | Auth | Disconnect Salla store |
+| `GET` | `/api/salla/categories` | Auth | Fetch Salla store categories |
+| `GET` | `/api/salla/products` | Auth | Sync native Salla products to DB |
 
 ---
 

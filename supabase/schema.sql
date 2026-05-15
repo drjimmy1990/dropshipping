@@ -54,6 +54,7 @@ preferred_shipping TEXT DEFAULT 'standard',
 fallback_supplier supplier_type,
 
 -- Sync preferences
+
 price_sync_interval_hours INTEGER NOT NULL DEFAULT 4,
   stock_min_threshold INTEGER NOT NULL DEFAULT 5,
   stock_auto_hide BOOLEAN NOT NULL DEFAULT true,
@@ -168,7 +169,13 @@ images JSONB DEFAULT '[]'::jsonb,
 -- Store sync
 store_product_id TEXT, -- ID on Salla/Zid after publishing
 
+-- Shipping (from AliExpress import wizard)
+shipping_cost NUMERIC(10, 2) DEFAULT 0,
+shipping_method TEXT,
+estimated_delivery TEXT,
+
 -- Sync timestamps
+
 last_price_check TIMESTAMPTZ,
   last_stock_check TIMESTAMPTZ,
 
@@ -358,6 +365,7 @@ converted_price_sar NUMERIC(10, 2), -- USD→SAR converted
 measurements_converted BOOLEAN NOT NULL DEFAULT false, -- inch→cm done?
 
 -- Review workflow
+
 status inbox_status NOT NULL DEFAULT 'draft',
   reviewer_notes TEXT,
   reviewed_at TIMESTAMPTZ,
@@ -836,3 +844,350 @@ CREATE POLICY "suppliers_select_own" ON supplier_accounts FOR
 SELECT USING (merchant_id = auth.uid ());
 
 ALTER TABLE stores ADD COLUMN salla_merchant_id TEXT;
+
+-- ============================================================
+-- Platform Feeds Table — Stores curated AliExpress feed configs
+-- Run this in Supabase SQL Editor
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS platform_feeds (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    feed_name TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    display_name_ar TEXT,
+    category TEXT DEFAULT 'general',
+    icon TEXT DEFAULT '📦',
+    product_count INTEGER DEFAULT 0,
+    is_enabled BOOLEAN DEFAULT true,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE platform_feeds ENABLE ROW LEVEL SECURITY;
+
+-- Everyone can read enabled feeds (merchants need to see them)
+CREATE POLICY "Anyone can read enabled feeds" ON platform_feeds FOR
+SELECT USING (is_enabled = true);
+
+-- Only super admins can manage feeds
+CREATE POLICY "Super admins can manage feeds" ON platform_feeds FOR ALL USING (
+    auth.uid () IN (
+        SELECT id
+        FROM auth.users
+        WHERE
+            raw_user_meta_data ->> 'role' = 'super_admin'
+    )
+);
+
+-- Seed the top curated feeds
+INSERT INTO
+    platform_feeds (
+        feed_name,
+        display_name,
+        display_name_ar,
+        category,
+        icon,
+        product_count,
+        is_enabled,
+        sort_order
+    )
+VALUES (
+        'DS_NewArrivals',
+        'New Arrivals',
+        'وصل حديثاً',
+        'trending',
+        '🆕',
+        14010,
+        true,
+        1
+    ),
+    (
+        'Bestseller 2024',
+        'Bestsellers 2024',
+        'الأكثر مبيعاً',
+        'trending',
+        '🏆',
+        201065,
+        true,
+        2
+    ),
+    (
+        'DS_ConsumerElectronics_bestsellers',
+        'Consumer Electronics',
+        'إلكترونيات',
+        'electronics',
+        '📱',
+        19470,
+        true,
+        3
+    ),
+    (
+        'DS_Home&Kitchen_bestsellers',
+        'Home & Kitchen',
+        'المنزل والمطبخ',
+        'home',
+        '🏠',
+        12300,
+        true,
+        4
+    ),
+    (
+        'DS_Sports&Outdoors_bestsellers',
+        'Sports & Outdoors',
+        'رياضة',
+        'sports',
+        '⚽',
+        27495,
+        true,
+        5
+    ),
+    (
+        'SA_Clothing&Shoes',
+        'Fashion (SA)',
+        'أزياء',
+        'fashion',
+        '👗',
+        13050,
+        true,
+        6
+    ),
+    (
+        'DS_Beauty_bestsellers',
+        'Beauty',
+        'جمال',
+        'beauty',
+        '💄',
+        2594,
+        true,
+        7
+    ),
+    (
+        'DS_Automobile&Accessories_bestsellers',
+        'Auto & Accessories',
+        'سيارات',
+        'auto',
+        '🚗',
+        20340,
+        true,
+        8
+    ),
+    (
+        'DS_ElectronicComponents_bestsellers',
+        'Electronic Components',
+        'مكونات إلكترونية',
+        'electronics',
+        '🔌',
+        2580,
+        true,
+        9
+    ),
+    (
+        'DS_Sports-Clothing&Shoes',
+        'Sportswear',
+        'ملابس رياضية',
+        'fashion',
+        '🏃',
+        7990,
+        true,
+        10
+    ),
+    (
+        'DS_Christmas-Decor',
+        'Seasonal / Christmas',
+        'موسمي',
+        'seasonal',
+        '🎄',
+        6840,
+        false,
+        11
+    ),
+    (
+        'DS center',
+        'DS Center (General)',
+        'مركز دروبشيبنج',
+        'general',
+        '📦',
+        0,
+        false,
+        12
+    ),
+    (
+        'DS_HealthAndBeauty',
+        'Health & Beauty',
+        'صحة وجمال',
+        'beauty',
+        '💊',
+        0,
+        false,
+        13
+    ),
+    (
+        'DS_Toys&Games_bestsellers',
+        'Toys & Games',
+        'ألعاب',
+        'toys',
+        '🎮',
+        0,
+        false,
+        14
+    ),
+    (
+        'DS_Jewelry&Watches_bestsellers',
+        'Jewelry & Watches',
+        'مجوهرات وساعات',
+        'fashion',
+        '💎',
+        0,
+        false,
+        15
+    ),
+    (
+        'DS_Home-Textile_bestsellers',
+        'Home Textile',
+        'مفروشات',
+        'home',
+        '🛏️',
+        0,
+        false,
+        16
+    ),
+    (
+        'DS_Home-Improvement_bestsellers',
+        'Home Improvement',
+        'تحسين المنزل',
+        'home',
+        '🔨',
+        0,
+        false,
+        17
+    ),
+    (
+        'DS_Security&Protection_bestsellers',
+        'Security & Protection',
+        'أمن وحماية',
+        'electronics',
+        '🔒',
+        0,
+        false,
+        18
+    ),
+    (
+        'DS_Tools_bestsellers',
+        'Tools',
+        'أدوات',
+        'tools',
+        '🔧',
+        0,
+        false,
+        19
+    ),
+    (
+        'DS_Office&School-Supplies_bestsellers',
+        'Office & School',
+        'مكتبية ومدرسية',
+        'office',
+        '📚',
+        0,
+        false,
+        20
+    ) ON CONFLICT (feed_name) DO NOTHING;
+
+-- ================================================================
+-- Phase 4D: Product Management Hub
+-- Salla category caching + multi-store support
+-- ================================================================
+
+-- ---------- Salla Categories Cache ----------
+-- Caches categories from each merchant's Salla store
+-- for category pickers in import wizard and product editor.
+
+CREATE TABLE IF NOT EXISTS salla_categories (
+    id UUID DEFAULT gen_random_uuid () PRIMARY KEY,
+    store_id UUID NOT NULL REFERENCES stores (id) ON DELETE CASCADE,
+    salla_category_id BIGINT NOT NULL,
+    name TEXT NOT NULL,
+    parent_id BIGINT DEFAULT 0,
+    status TEXT DEFAULT 'active',
+    synced_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (store_id, salla_category_id)
+);
+
+CREATE INDEX idx_salla_categories_store ON salla_categories (store_id);
+
+-- RLS: merchants can only see categories for their own stores
+ALTER TABLE salla_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "salla_categories_select_via_store" ON salla_categories FOR
+SELECT USING (
+        store_id IN (
+            SELECT id
+            FROM stores
+            WHERE
+                merchant_id = auth.uid ()
+        )
+    );
+
+-- Allow service role to INSERT/UPDATE/DELETE (used by API routes with adminClient)
+-- No merchant-level write policies needed — only server writes to this table.
+
+-- ---------- Products: add category_id for Salla category mapping ----------
+-- Links a product to its Salla category ID (nullable — not all products have categories)
+ALTER TABLE products
+ADD COLUMN IF NOT EXISTS salla_category_id BIGINT;
+
+-- ---------- Products: add source tracking ----------
+-- 'aliexpress' | 'cj' | 'makhazen' | 'direct' (merchant's own Salla product)
+-- The existing 'supplier' column already handles this, but we need to allow 'direct'
+-- NOTE: supplier column is TEXT type, no enum constraint — 'direct' works as-is.
+
+-- ---------- Stores: ensure multi-store index ----------
+CREATE INDEX IF NOT EXISTS idx_stores_merchant_platform ON stores (merchant_id, platform);
+
+-- Add the missing column
+ALTER TABLE products
+ADD COLUMN IF NOT EXISTS salla_category_id BIGINT DEFAULT NULL;
+
+-- Create the categories cache table
+CREATE TABLE IF NOT EXISTS salla_categories (
+    id UUID DEFAULT gen_random_uuid () PRIMARY KEY,
+    store_id UUID NOT NULL REFERENCES stores (id) ON DELETE CASCADE,
+    salla_category_id BIGINT NOT NULL,
+    name TEXT NOT NULL,
+    parent_id BIGINT DEFAULT 0,
+    status TEXT DEFAULT 'active',
+    synced_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (store_id, salla_category_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_salla_categories_store ON salla_categories (store_id);
+
+ALTER TABLE salla_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Merchants see own store categories" ON salla_categories FOR
+SELECT USING (
+        store_id IN (
+            SELECT id
+            FROM stores
+            WHERE
+                merchant_id = auth.uid ()
+        )
+    );
+
+ALTER TYPE supplier_type ADD VALUE IF NOT EXISTS 'direct';
+
+-- Add shipping columns to products table for import wizard
+-- Run this in Supabase SQL editor
+
+ALTER TABLE products
+ADD COLUMN IF NOT EXISTS shipping_cost NUMERIC(10, 2) DEFAULT 0,
+ADD COLUMN IF NOT EXISTS shipping_method TEXT,
+ADD COLUMN IF NOT EXISTS estimated_delivery TEXT;
+
+-- Comment on columns for documentation
+COMMENT ON COLUMN products.shipping_cost IS 'AliExpress shipping cost selected during import (SAR)';
+
+COMMENT ON COLUMN products.shipping_method IS 'Selected shipping carrier name (e.g. "AliExpress Standard Shipping")';
+
+COMMENT ON COLUMN products.estimated_delivery IS 'Estimated delivery timeframe (e.g. "15-30 days")';

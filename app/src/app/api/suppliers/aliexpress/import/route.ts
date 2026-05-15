@@ -41,6 +41,9 @@ export async function POST(request: NextRequest) {
       marginType = "percentage",
       marginValue = 30,
       pushToStore = false,
+      shippingCost = 0,
+      shippingMethod = null,
+      estimatedDelivery = null,
     } = body;
 
     if (!productId) {
@@ -119,6 +122,9 @@ export async function POST(request: NextRequest) {
       variants: product.variants,
       category: product.category || null,
       tags: [],
+      shipping_cost: shippingCost || 0,
+      shipping_method: shippingMethod || null,
+      estimated_delivery: estimatedDelivery || null,
     };
 
     const { data: insertedProduct, error: insertError } = await adminClient

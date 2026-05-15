@@ -119,6 +119,9 @@ export interface Product {
   salla_category_id: number | null;
   tags: string[] | null;
   store_product_id: string | null;
+  shipping_cost: number;
+  shipping_method: string | null;
+  estimated_delivery: string | null;
   last_price_check: string | null;
   last_stock_check: string | null;
   created_at: string;

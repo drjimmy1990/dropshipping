@@ -1,8 +1,8 @@
 # DropLinker — Architecture Map
 
 > Auto-generated from GitNexus Knowledge Graph
-> **1286 nodes | 1,942 edges | 11 clusters | 63 execution flows**
-> Last updated: 2026-05-15 (Session 6 — Salla Push-to-Store)
+> **1416 nodes | 2,165 edges | 11 clusters | 69 execution flows**
+> Last updated: 2026-05-15 (Session 8 — Phase 4D Complete: Import Wizard + Shipping)
 
 ---
 
@@ -65,6 +65,8 @@ graph TB
         SALLA_CB["/api/auth/salla/callback"]
         DISC_API["/api/stores/[id]/disconnect"]
         WH["/api/webhooks/salla"]
+        SALLA_CATS["/api/salla/categories"]
+        SALLA_PRODS["/api/salla/products"]
     end
 
     subgraph "API Routes — Products"
@@ -372,6 +374,8 @@ Each hook already calls `createClient()` and has a `fetch` function. Pages don't
 | `/api/products/[id]` | PATCH | Inline edit (price, status, titles) | Admin createClient |
 | `/api/products/[id]` | DELETE | Delete product + cleanup from Salla | Admin createClient |
 | `/api/products/[id]/push` | POST | Manual push to Salla store | Admin createClient |
+| `/api/salla/categories` | GET | Fetch Salla store categories | Server createClient |
+| `/api/salla/products` | GET | Sync native Salla products to DB | Admin createClient |
 
 ---
 
@@ -449,7 +453,8 @@ app/src/
 │   │   ├── layout.tsx                    # Dashboard shell + sign out
 │   │   ├── page.tsx                      # Overview widgets
 │   │   ├── products/discover/page.tsx    # AliExpress discovery UI
-│   │   ├── products/page.tsx             # My Products (stub)
+│   │   ├── products/page.tsx             # My Products (list + manage)
+│   │   ├── products/[id]/page.tsx        # Product Editor (4 tabs: General, Images, Pricing, SEO)
 │   │   ├── orders/page.tsx               # Order list
 │   │   ├── wallet/page.tsx               # Balance + transactions
 │   │   ├── settings/page.tsx             # Profile + fulfillment config

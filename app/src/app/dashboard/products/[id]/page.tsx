@@ -197,8 +197,10 @@ export default function ProductEditorPage() {
     );
   }
 
-  const profit = parseFloat(retailPrice) - product.supplier_cost;
-  const margin = product.supplier_cost > 0 ? ((profit / product.supplier_cost) * 100).toFixed(0) : "∞";
+  const shippingCost = product.shipping_cost || 0;
+  const totalCost = product.supplier_cost + shippingCost;
+  const profit = parseFloat(retailPrice) - totalCost;
+  const margin = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(0) : "0";
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: "general", label: "General", icon: "edit_note" },
@@ -499,6 +501,20 @@ export default function ProductEditorPage() {
                       {product.supplier_currency} {product.supplier_cost.toFixed(2)}
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-text-secondary mb-1">Shipping Cost</label>
+                    <div className="px-3 py-2 bg-surface-sunken border border-border rounded-md text-sm text-text-muted font-mono">
+                      SAR {shippingCost.toFixed(2)}
+                      {shippingCost === 0 && <span className="text-text-muted ml-1 text-xs">(Free / Not set)</span>}
+                    </div>
+                  </div>
+                </div>
+                {/* Total Landed Cost */}
+                <div className="bg-accent/5 border border-accent/20 rounded-lg px-4 py-2.5 flex items-center justify-between">
+                  <span className="text-xs font-medium text-accent">Total Landed Cost</span>
+                  <span className="text-sm font-bold text-accent font-mono">SAR {totalCost.toFixed(2)}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-text-secondary mb-1">Retail Price (SAR)</label>
                     <input type="number" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)} min={0} step="0.01"

@@ -331,7 +331,7 @@ function ProductDetailModal({
   loading: boolean;
   error: string | null;
   onClose: () => void;
-  onImport: (productId: number, retailPrice?: number) => void;
+  onImport: (productId: number, retailPrice?: number, shippingCost?: number, shippingMethod?: string, estimatedDelivery?: string) => void;
   importing: boolean;
   importError: string | null;
   importSuccess: boolean;
@@ -339,12 +339,17 @@ function ProductDetailModal({
 }) {
   const [retailPrice, setRetailPrice] = useState("");
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedShippingIdx, setSelectedShippingIdx] = useState<number>(0);
 
   useEffect(() => {
     if (product) {
-      // Suggest 30% markup as default retail price
+      // Default select first shipping option
+      setSelectedShippingIdx(0);
+      // Suggest 30% markup INCLUDING shipping cost
+      const shippingCost = product.shippingOptions[0]?.price || 0;
+      const totalCost = product.price + shippingCost;
       setRetailPrice(
-        Math.ceil(product.price * 1.3).toString()
+        Math.ceil(totalCost * 1.3).toString()
       );
     }
   }, [product]);
@@ -450,10 +455,13 @@ function ProductDetailModal({
                       {product.currency} {product.price.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-text-secondary whitespace-nowrap">
+                  <div className="mt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-text-secondary">
                       Your Retail Price (SAR):
                     </label>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
                     <input
                       type="number"
                       value={retailPrice}
@@ -463,18 +471,31 @@ function ProductDetailModal({
                       step="0.01"
                     />
                   </div>
-                  {retailPrice && parseFloat(retailPrice) > product.price && (
-                    <div className="mt-2 text-xs text-success">
-                      Profit: SAR{" "}
-                      {(parseFloat(retailPrice) - product.price).toFixed(2)} (
-                      {(
-                        ((parseFloat(retailPrice) - product.price) /
-                          product.price) *
-                        100
-                      ).toFixed(0)}
-                      % margin)
-                    </div>
-                  )}
+                  {(() => {
+                    const shippingCost = product.shippingOptions[selectedShippingIdx]?.price || 0;
+                    const totalCost = product.price + shippingCost;
+                    const retail = parseFloat(retailPrice);
+                    if (retailPrice && retail > totalCost) {
+                      const profit = retail - totalCost;
+                      const margin = (profit / totalCost) * 100;
+                      return (
+                        <div className="mt-2 text-xs text-success">
+                          Profit: SAR {profit.toFixed(2)} ({margin.toFixed(0)}% margin)
+                          <span className="text-text-muted ml-1">
+                            (cost {product.price.toFixed(2)} + ship {shippingCost.toFixed(2)})
+                          </span>
+                        </div>
+                      );
+                    } else if (retailPrice && retail > 0 && retail <= totalCost) {
+                      return (
+                        <div className="mt-2 text-xs text-error">
+                          ⚠ Price is below total cost (SAR {totalCost.toFixed(2)} = product + shipping)
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
                 </div>
 
                 {/* Variants */}
@@ -501,29 +522,69 @@ function ProductDetailModal({
                   </div>
                 )}
 
-                {/* Shipping */}
+                {/* Shipping — Selectable */}
                 {product.shippingOptions.length > 0 && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-text mb-2">
-                      Shipping to Saudi Arabia
+                      <Icon name="local_shipping" className="text-sm mr-1 align-text-bottom" />
+                      Select Shipping Method
                     </h4>
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {product.shippingOptions.map((opt, i) => (
-                        <div
+                        <label
                           key={i}
-                          className="flex items-center justify-between text-xs p-2 rounded bg-surface border border-border"
+                          className={`flex items-center justify-between text-xs p-2.5 rounded-lg cursor-pointer border transition-all ${
+                            selectedShippingIdx === i
+                              ? "border-accent bg-accent/5 ring-1 ring-accent/30"
+                              : "border-border bg-surface hover:border-accent/40"
+                          }`}
+                          onClick={() => {
+                            setSelectedShippingIdx(i);
+                            // Recalculate suggested retail price with new shipping
+                            const newTotal = product.price + opt.price;
+                            setRetailPrice(Math.ceil(newTotal * 1.3).toString());
+                          }}
                         >
-                          <span className="text-text-secondary">
-                            {opt.name}
-                          </span>
-                          <span className="text-text">
-                            {opt.price > 0
-                              ? `SAR ${opt.price.toFixed(2)}`
-                              : "Free"}{" "}
-                            · {opt.estimatedDays}
-                          </span>
-                        </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                              selectedShippingIdx === i
+                                ? "border-accent"
+                                : "border-border"
+                            }`}>
+                              {selectedShippingIdx === i && (
+                                <div className="w-2 h-2 rounded-full bg-accent" />
+                              )}
+                            </div>
+                            <div>
+                              <span className="text-text font-medium">{opt.name}</span>
+                              {opt.trackingAvailable && (
+                                <span className="ml-1.5 text-[10px] bg-success/10 text-success px-1.5 py-0.5 rounded">Tracked</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-text font-semibold">
+                              {opt.price > 0 ? `SAR ${opt.price.toFixed(2)}` : "Free"}
+                            </span>
+                            <span className="text-text-muted ml-1">· {opt.estimatedDays}</span>
+                          </div>
+                        </label>
                       ))}
+                    </div>
+                    {/* Cost summary */}
+                    <div className="mt-2 px-2.5 py-2 bg-surface-sunken rounded-md">
+                      <div className="flex justify-between text-xs text-text-secondary">
+                        <span>Product cost</span>
+                        <span>SAR {product.price.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-text-secondary mt-0.5">
+                        <span>Shipping ({product.shippingOptions[selectedShippingIdx]?.name || "—"})</span>
+                        <span>SAR {(product.shippingOptions[selectedShippingIdx]?.price || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs font-semibold text-text mt-1 pt-1 border-t border-border">
+                        <span>Total landed cost</span>
+                        <span>SAR {(product.price + (product.shippingOptions[selectedShippingIdx]?.price || 0)).toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -561,12 +622,16 @@ function ProductDetailModal({
                 ) : (
                   <Button
                     className="w-full"
-                    onClick={() =>
+                    onClick={() => {
+                      const selectedShipping = product.shippingOptions[selectedShippingIdx];
                       onImport(
                         product.id,
-                        retailPrice ? parseFloat(retailPrice) : undefined
-                      )
-                    }
+                        retailPrice ? parseFloat(retailPrice) : undefined,
+                        selectedShipping?.price || 0,
+                        selectedShipping?.name || undefined,
+                        selectedShipping?.estimatedDays || undefined
+                      );
+                    }}
                     disabled={importing || !product.stock}
                   >
                     {importing ? (
@@ -788,8 +853,8 @@ export default function ProductDiscoveryPage() {
   const [importedProductId, setImportedProductId] = useState<string | null>(null);
 
   const handleImport = useCallback(
-    async (productId: number, retailPrice?: number) => {
-      const result = await importProduct({ productId, retailPrice });
+    async (productId: number, retailPrice?: number, shippingCost?: number, shippingMethod?: string, estimatedDelivery?: string) => {
+      const result = await importProduct({ productId, retailPrice, shippingCost, shippingMethod, estimatedDelivery });
       if (result?.success && result.product?.id) {
         setImportedProductId(result.product.id);
       }

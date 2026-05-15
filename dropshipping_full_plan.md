@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
 > **Date:** 2026-05-15  
-> **Status:** Phase 4C Partial — Salla Push-to-Store ✅, AI Content 📋
+> **Status:** Phase 4D Complete ✅ — Product Management Hub (Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅)
 
 ---
 
@@ -26,6 +26,13 @@
 | **Product CRUD** (PATCH/DELETE) | ✅ Working |
 | **My Products page** (inline edit, sync badges) | ✅ Working |
 | **Push-to-Salla** (manual + auto on import) | ✅ Working |
+| **Salla 2-way product sync** | ✅ Working — native Salla products imported as `direct` type |
+| **Salla category sync** | ✅ Working — `GET /api/salla/categories` |
+| **Product editor** (4 tabs) | ✅ Working — General, Images, Pricing, SEO |
+| **Image management** (interactive) | ✅ Working — delete, reorder, set main, add by URL |
+| **Unsaved changes indicator** | ✅ Working — pulsing dot on Save button |
+| **Import wizard with shipping** | ✅ Working — selectable shipping methods, landed cost, profit calc |
+| **Shipping cost in DB** | ✅ Working — `shipping_cost`, `shipping_method`, `estimated_delivery` columns |
 
 ---
 
@@ -65,6 +72,9 @@ Merchant browses Product Discovery
 | `images` | Array of image URLs |
 | `store_id` | Which Salla store it's pushed to |
 | `store_product_id` | Salla's product ID after push |
+| `shipping_cost` | AliExpress shipping cost selected during import (SAR) |
+| `shipping_method` | Selected shipping carrier name |
+| `estimated_delivery` | Estimated delivery timeframe (e.g., "15-30 days") |
 | `status` | `draft` / `active` / `inactive` / `out_of_stock` |
 | `stock_quantity` | Last synced stock from AliExpress |
 | `variants` | JSON array of selected variants |
@@ -72,10 +82,12 @@ Merchant browses Product Discovery
 ### Pricing Model:
 
 ```
-Merchant retail price = AliExpress price + Merchant markup + Platform commission
+Merchant retail price = AliExpress price + Shipping cost + Merchant markup + Platform commission
+Profit = Retail price - AliExpress cost - Shipping cost - Platform commission
 
 Example:
   AliExpress price:     25.76 SAR
+  Shipping cost:        12.00 SAR
   Platform commission:   2.58 SAR (10%)
   Merchant markup:      21.66 SAR (suggested 75%)
   ─────────────────────────────
@@ -163,6 +175,9 @@ When a customer orders, AliExpress ships **directly to the customer's address**.
 | **Total deducted from wallet** | **41.54 SAR** |
 | Customer paid | 65.00 SAR |
 | **Merchant net profit** | **23.46 SAR** |
+
+> [!WARNING]
+> **Shipping cost gap:** Currently the `freight.calculate` API returns shipping options in the discovery modal, but shipping cost is NOT saved to DB during import. The Import Wizard (Phase 4D) will fix this by letting merchants select a shipping method before importing, so `supplier_cost + shipping_cost` reflects true COGS.
 
 ---
 

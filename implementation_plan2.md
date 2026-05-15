@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-15 (Session 6 — Salla Push-to-Store Pipeline complete)
+> **Last Updated:** 2026-05-15 (Session 8 — Phase 4D Complete: Import Wizard + Shipping Integration)
 
 ## 1. Business Concept
 
@@ -576,6 +576,22 @@ sequenceDiagram
 - [ ] Multi-step import wizard (variant selection, pricing, description editor)
 - [ ] AI product descriptions (n8n WF5 → GPT/Gemini) — **next priority**
 - [ ] Product inbox / quality gate workflow
+
+### Phase 4D — Product Management Hub (IN PROGRESS 🔧)
+> Salla 2-way sync, full product editor, image management, import wizard with shipping
+
+- [x] Salla category sync: `GET /api/salla/categories`
+- [x] Salla product sync: `GET /api/salla/products` (imports native Salla products with `direct` type)
+- [x] `supplier_type` enum fix: added `'direct'` value
+- [x] `salla_category_id` DB column added
+- [x] Full product editor page (`/dashboard/products/[id]`) with 4 tabs
+- [x] Interactive image management (delete, reorder, set main, add by URL)
+- [x] Unsaved changes detection + indicator
+- [x] Images included in PATCH save payload
+- [x] Sidebar: AliExpress source link, image count
+- [ ] Import wizard with shipping: multi-step UI (shipping → pricing → review → import)
+- [ ] AliExpress shipping options displayed with costs + delivery times
+- [ ] Shipping cost factored into profit calculation
 
 ### Phase 5 — Wallet & Payments
 > Top-up flow + financial operations
