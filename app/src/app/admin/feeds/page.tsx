@@ -202,17 +202,59 @@ export default function AdminFeedsPage() {
     }
   };
 
-  // Load saved config on mount — try localStorage first (has full config with disabled feeds)
+  // Load saved config on mount — try DB API first, then localStorage backup
   useEffect(() => {
-    try {
-      const savedConfig = localStorage.getItem("admin_feeds_config");
-      if (savedConfig) {
-        const parsed = JSON.parse(savedConfig);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setFeeds(parsed);
+    const loadFeeds = async () => {
+      try {
+        // 1. Try loading from DB via API (source of truth)
+        const res = await fetch("/api/suppliers/aliexpress/feeds");
+        const data = await res.json();
+
+        if (data.feeds && Array.isArray(data.feeds) && data.feeds.length > 0) {
+          // Filter out the "All" tab (it's auto-prepended by the API)
+          const dbFeeds = data.feeds.filter((f: Feed) => f.id !== "all");
+          
+          if (dbFeeds.length > 0) {
+            // Merge DB feeds (enabled) with DEFAULT_FEEDS (to get disabled ones too)
+            const dbFeedMap = new Map(dbFeeds.map((f: Feed) => [f.name, f]));
+            const mergedFeeds: Feed[] = DEFAULT_FEEDS.map((defaultFeed) => {
+              const dbFeed = dbFeedMap.get(defaultFeed.name);
+              if (dbFeed) {
+                // Feed exists in DB → it's enabled
+                return { ...defaultFeed, ...dbFeed, isEnabled: true };
+              }
+              // Feed not in DB → disabled
+              return { ...defaultFeed, isEnabled: false };
+            });
+
+            // Also add any DB feeds not in DEFAULT_FEEDS (custom/synced feeds)
+            dbFeeds.forEach((dbFeed: Feed) => {
+              if (!DEFAULT_FEEDS.some((d) => d.name === dbFeed.name)) {
+                mergedFeeds.push({ ...dbFeed, isEnabled: true } as Feed);
+              }
+            });
+
+            setFeeds(mergedFeeds);
+            return; // Success — don't fall through
+          }
         }
+      } catch {
+        // API failed — fall through to localStorage
       }
-    } catch {}
+
+      // 2. Fallback: try localStorage
+      try {
+        const savedConfig = localStorage.getItem("admin_feeds_config");
+        if (savedConfig) {
+          const parsed = JSON.parse(savedConfig);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setFeeds(parsed);
+          }
+        }
+      } catch {}
+    };
+
+    loadFeeds();
   }, []);
 
   const enableAll = () => {

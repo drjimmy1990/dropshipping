@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-15 (Session 4 — Discovery UI + Feed Management complete)
+> **Last Updated:** 2026-05-15 (Session 5 — Admin Security + Feed Sync + UX Fixes complete)
 
 ## 1. Business Concept
 
@@ -537,18 +537,27 @@ sequenceDiagram
 - [x] Tested filters: sort, minPrice/maxPrice, shipToCountry, countryCode
 
 ### Phase 4B — Discovery UI & Filters ✅ DONE
-> Feed tabs, search filters, admin feed management, SAR enforcement
+> Feed tabs, search filters, admin feed management, SAR enforcement, admin security
 
 - [x] Keyword search bar → `text.search` with debounce
 - [x] Feed category tabs (12 curated feeds with emoji icons + product counts)
-- [x] Sort dropdown (price ASC/DESC, best selling)
+- [x] Sort dropdown (price ASC/DESC, best selling) — **auto-triggers search on change**
+- [x] Ship-To country selector (SA, AE, KW, BH, QA, OM) — **auto-triggers search on change**
 - [x] Price range filter (min/max SAR inputs)
-- [x] Country/region selector (SA, AE, KW, BH, QA, OM)
 - [x] Pagination controls (page numbers + prev/next)
 - [x] Product detail modal (images, variants, shipping estimate)
 - [x] SAR currency enforcement (all 3 normalizers hardcode SAR)
 - [x] Admin feed management page `/admin/feeds` (20 feeds, toggle on/off)
-- [x] Feeds API route: `GET /api/suppliers/aliexpress/feeds`
+- [x] Admin feed sync from AliExpress API (`POST /api/suppliers/aliexpress/feeds/sync`)
+- [x] Inline emoji editor + editable display names (EN/AR) + category per feed
+- [x] Enable All / Disable All quick action buttons + search bar in feed table
+- [x] Feed config persists to `platform_config` DB table (`PUT /api/suppliers/aliexpress/feeds`)
+- [x] Feeds API reads from DB with fallback to defaults (`GET /api/suppliers/aliexpress/feeds`)
+- [x] Admin auth guard on `/admin/*` — requires login + `merchants.role = 'admin'`
+- [x] Role-based login redirect — admin → `/admin`, merchant → `/dashboard`
+- [x] Feed sync API protected — requires admin role
+- [x] Sign Out uses `window.location.href` (full page reload clears Supabase client state)
+- [x] Fixed "Get Started" 404 — all buttons → `/auth/login` (was broken `/auth/register`)
 - [x] `platform_feeds` table SQL migration
 - [x] `useProductSearch` hook wired with `feedName` support
 

@@ -617,6 +617,7 @@ export default function ProductDiscoveryPage() {
 
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [activeFeed, setActiveFeed] = useState("all");
+  const [searchFeedNotice, setSearchFeedNotice] = useState<string | null>(null);
   const [currentFilters, setCurrentFilters] = useState<{
     keyword?: string;
     feedName?: string;
@@ -651,35 +652,51 @@ export default function ProductDiscoveryPage() {
       maxPrice?: number;
       shipTo?: string;
     }) => {
-      // Keep the active feed context when searching by keyword
-      // If on "all" feed, keyword search goes to text.search (no feedName)
-      // If on a specific feed, keyword search goes to text.search (feed is just UI context)
       const feedName = activeFeed !== "all" ? activeFeed : undefined;
-      const merged = { 
-        ...params, 
+
+      if (params.keyword && feedName) {
+        // AliExpress text.search API doesn't support feedName filtering.
+        // Auto-reset to "All" and show notice.
+        const previousFeedLabel = feeds.find(f => f.name === activeFeed)?.displayName || activeFeed;
+        setActiveFeed("all");
+        setSearchFeedNotice(
+          `Keyword search applies to all products. "${previousFeedLabel}" feed was reset to All.`
+        );
+      } else if (!params.keyword) {
+        // Keyword cleared — dismiss any notice and use the active feed
+        setSearchFeedNotice(null);
+      }
+
+      const merged = {
+        ...params,
         feedName: params.keyword ? undefined : feedName, // text.search doesn't support feedName
-        page: 1 
+        page: 1,
       };
       setCurrentFilters(merged);
       searchProducts(merged);
     },
-    [searchProducts, activeFeed]
+    [searchProducts, activeFeed, feeds]
   );
 
   const handleFeedChange = useCallback(
     (feedName: string) => {
       setActiveFeed(feedName);
+      setSearchFeedNotice(null); // Clear notice on manual feed switch
+
+      // If there's a keyword active, switching feeds clears it (feeds and keyword are exclusive)
+      const keyword = currentFilters.keyword;
       const params = {
         ...currentFilters,
-        keyword: currentFilters.keyword, // Keep keyword when switching feeds
         feedName: feedName !== "all" ? feedName : undefined,
         page: 1,
       };
-      // If there's a keyword AND a specific feed, use keyword search (text.search)
-      // Feed context is visual only — text.search doesn't support feedName filtering
-      if (params.keyword && feedName !== "all") {
-        params.feedName = undefined; // text.search wins
+
+      if (keyword && feedName !== "all") {
+        // User picked a feed while keyword is active — feed browsing takes over
+        params.keyword = undefined;
+        params.feedName = feedName;
       }
+
       setCurrentFilters(params);
       searchProducts(params);
     },
@@ -724,6 +741,20 @@ export default function ProductDiscoveryPage() {
       </div>
 
       <SearchFilters onSearch={handleSearch} loading={search.loading} />
+
+      {/* Info banner: keyword search resets feed */}
+      {searchFeedNotice && (
+        <div className="mb-3 flex items-center gap-2 px-3 py-2.5 rounded-lg bg-accent/10 border border-accent/20 text-sm text-accent">
+          <Icon name="info" className="text-base flex-shrink-0" />
+          <span className="flex-1">{searchFeedNotice}</span>
+          <button
+            onClick={() => setSearchFeedNotice(null)}
+            className="text-accent/60 hover:text-accent transition-colors"
+          >
+            <Icon name="close" className="text-base" />
+          </button>
+        </div>
+      )}
 
       {/* Feed Category Tabs */}
       {feeds.length > 0 && (

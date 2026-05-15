@@ -142,6 +142,8 @@
 - [x] Keyword search bar → calls `text.search` with real-time results
 - [x] Feed category tabs (12 curated feeds with emoji icons + product counts)
 - [x] Sort dropdown (Cheapest, Most Expensive, Best Selling)
+- [x] **Sort auto-triggers search on change** (no need to click Search button)
+- [x] **Ship-To auto-triggers search on change** (immediate re-fetch)
 - [x] Price range filter (min/max SAR inputs)
 - [x] Country/region selector (SA, AE, KW, BH, QA, OM)
 - [x] Pagination (page numbers + prev/next)
@@ -165,9 +167,43 @@
 - [x] Product count per feed
 - [x] "Feeds" nav item in admin sidebar
 - [x] `platform_feeds` table SQL migration created (`supabase/migrations/platform_feeds.sql`)
+- [x] **Live sync from AliExpress API** (`POST /api/suppliers/aliexpress/feeds/sync`)
+  - Calls `aliexpress.ds.feedname.get` to pull all live feeds with product counts
+  - Auto-categorizes and assigns emojis to new feeds
+  - Merges with existing config (preserves admin edits)
+- [x] **Inline emoji editor** per feed (39 emoji options in dropdown)
+- [x] **Editable display names** (English + Arabic) + category per feed
+- [x] **Enable All / Disable All** quick action buttons
+- [x] **Search bar** to filter admin feed table
+- [x] **Save to database** — admin saves persist to `platform_config` table (key: `feed_config`)
+  - `PUT /api/suppliers/aliexpress/feeds` — admin-only save endpoint
+  - `GET /api/suppliers/aliexpress/feeds` — reads from DB, falls back to defaults
+  - Merchant discovery page now reflects admin-configured feeds
+
+### Auth & Security
+- [x] **Admin auth guard** on `/admin/*` layout
+  - Checks Supabase auth + `merchants.role = 'admin'`
+  - Unauthenticated users → redirect to `/auth/login`
+  - Non-admin merchants → redirect to `/dashboard`
+  - Loading spinner while verifying
+- [x] **Role-based login redirect**
+  - `signIn()` checks merchant role after authentication
+  - `role = 'admin'` → redirect to `/admin`
+  - `role = 'merchant'` → redirect to `/dashboard`
+- [x] **Feed sync route protected** — requires `role = 'admin'` (POST `/api/suppliers/aliexpress/feeds/sync`)
+- [x] **Sign Out** uses `window.location.href` (full page reload clears Supabase client state)
+
+### Landing Page Fixes
+- [x] **Fixed "Get Started" 404** — all buttons linked to `/auth/register` (doesn't exist), now link to `/auth/login`
+  - Landing page navbar "Get Started" button
+  - Landing page CTA "Get Started Now" banner
+  - Features page navbar + CTA button
+  - Pricing page navbar
 
 ### API Routes
-- [x] `GET /api/suppliers/aliexpress/feeds` — returns curated feed list
+- [x] `GET /api/suppliers/aliexpress/feeds` — returns admin-configured feeds from DB
+- [x] `PUT /api/suppliers/aliexpress/feeds` — admin saves feed config to `platform_config`
+- [x] `POST /api/suppliers/aliexpress/feeds/sync` — admin-only sync from AliExpress API
 - [x] `GET /api/suppliers/aliexpress/search` — enhanced with `feedName` param
 - [x] `useProductSearch` hook — wired with `feedName` support
 
@@ -349,3 +385,6 @@
 
 > [!NOTE]
 > **AliExpress API fully operational.** 47 feeds available with 500K+ products. Text search, feed browse, product detail, and freight calculation all tested and working. See `aliexpress_api_reference.md` for full filter/feed documentation.
+
+> [!NOTE]
+> **Admin Panel Security:** All `/admin/*` routes protected by auth guard (checks login + `merchants.role = 'admin'`). Feed sync API requires admin role. Sign out uses full page reload to clear client state.

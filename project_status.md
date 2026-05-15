@@ -1,10 +1,10 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-15
+> **Last Updated:** 2026-05-15 (Session 5 — Admin Security + Feed Sync + UX Fixes)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, and a complete AliExpress API integration with full Discovery UI. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products by feed category or keyword search, view product details with shipping estimates, and import products. The admin can manage merchants, approve bank transfers, and control which product feeds are visible to merchants. All prices are enforced in SAR.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, and a complete AliExpress API integration with full Discovery UI. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products by feed category or keyword search, view product details with shipping estimates, and import products. The admin panel is secured behind role-based auth guards and can sync live feed data from the AliExpress API, configure which feeds merchants see, and persist all settings to the database. All prices are enforced in SAR. Sort and ship-to filters auto-trigger searches for instant UX.
 
 **What's next:** Build the product import wizard (save to DB + push to Salla), complete the auto-fulfillment engine, and add payment gateway integrations.
 
@@ -65,15 +65,22 @@
 |---|---|---|
 | Keyword search bar with debounce | ✅ | Real-time `text.search` results |
 | Feed category tabs (12 curated feeds) | ✅ | Emoji icons + product count badges |
-| Sort dropdown (price, volume) | ✅ | ASC, DESC, LAST_VOLUME_DESC |
+| Sort dropdown (price, volume) | ✅ | ASC, DESC, LAST_VOLUME_DESC — **auto-triggers** |
+| Ship-To country selector | ✅ | SA, AE, KW, BH, QA, OM — **auto-triggers** |
 | Price range filter (min/max SAR) | ✅ | Inputs wired to API |
-| Country/region selector | ✅ | SA, AE, KW, BH, QA, OM |
 | Pagination controls | ✅ | Page numbers + prev/next |
 | Product detail modal (images, variants) | ✅ | Gallery + variant selector + shipping |
 | Shipping estimation in detail | ✅ | SAR-only pricing |
 | SAR currency enforcement | ✅ | All 3 normalizers hardcode SAR |
 | Admin feed management page | ✅ | `/admin/feeds` — 20 feeds, toggle enable/disable |
-| Feeds API route | ✅ | `GET /api/suppliers/aliexpress/feeds` |
+| **Admin feed sync from AliExpress** | ✅ | `POST /api/suppliers/aliexpress/feeds/sync` |
+| **Inline emoji + name editor** | ✅ | Edit emoji, display name (EN/AR), category per feed |
+| **Feed config persists to DB** | ✅ | `PUT /api/suppliers/aliexpress/feeds` → `platform_config` |
+| **Feeds API reads from DB** | ✅ | `GET /api/suppliers/aliexpress/feeds` with fallback defaults |
+| **Admin auth guard** | ✅ | Login + `role='admin'` required for `/admin/*` |
+| **Role-based login redirect** | ✅ | Admin → `/admin`, merchant → `/dashboard` |
+| **Sign Out fix** | ✅ | Full page reload clears auth state |
+| **Landing page link fixes** | ✅ | All "Get Started" → `/auth/login` (was 404 `/auth/register`) |
 | `platform_feeds` table SQL | ✅ | Migration in `supabase/migrations/` |
 | `useProductSearch` + feedName | ✅ | Hook wired with feed browsing support |
 
@@ -131,6 +138,24 @@
 - Mobile optimization
 - Subscription billing
 - Team member roles
+
+---
+
+## API Routes Summary (Current)
+
+| Method | Route | Auth | Purpose |
+|---|---|---|---|
+| `GET` | `/api/suppliers/aliexpress/feeds` | Public | Returns admin-configured feed list from DB |
+| `PUT` | `/api/suppliers/aliexpress/feeds` | Admin | Saves feed config to `platform_config` |
+| `POST` | `/api/suppliers/aliexpress/feeds/sync` | Admin | Syncs live feeds from AliExpress API |
+| `GET` | `/api/suppliers/aliexpress/search` | Auth | Keyword + feed search |
+| `GET` | `/api/suppliers/aliexpress/product/:id` | Auth | Product detail with nested DTOs |
+| `POST` | `/api/suppliers/aliexpress/import` | Auth | Import product (stub) |
+| `GET` | `/api/auth/salla` | Auth | Initiate Salla OAuth |
+| `GET` | `/api/auth/salla/callback` | Public | Salla OAuth callback |
+| `GET` | `/api/auth/aliexpress/callback` | Public | AliExpress OAuth callback |
+| `POST` | `/api/webhooks/salla` | HMAC | Salla order webhooks |
+| `DELETE` | `/api/stores/:id/disconnect` | Auth | Disconnect Salla store |
 
 ---
 

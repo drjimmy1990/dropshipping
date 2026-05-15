@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
+// Force dynamic rendering — feeds are admin-configured and change at runtime
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/suppliers/aliexpress/feeds
  *

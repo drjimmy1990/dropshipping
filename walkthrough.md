@@ -1,152 +1,130 @@
-# DropLinker — Design Screens Walkthrough
+# DropLinker — Session 5 Walkthrough
 
-## Stitch Project
-**Project:** `DropLinker — Dropshipping Automation SaaS`
-**Project ID:** `2699193768354039664`
-**Design System:** "Ethereal Velocity" — Glassmorphism + Corporate Modernism
-
-> [!TIP]
-> **Open the project in Stitch to view all designs:** Navigate to [Google Stitch](https://stitch.withgoogle.com/) and open project `2699193768354039664`
+> **Date:** 2026-05-15
+> **Duration:** ~30 min
+> **Scope:** Bug fixes, UX polish, documentation sync
 
 ---
 
-## Design System: "Ethereal Velocity"
+## Summary
 
-| Token | Value |
+This session focused on fixing production bugs reported by the user and bringing all project documentation up to date. Two commits were pushed to `main`.
+
+---
+
+## Bugs Fixed
+
+### 1. "Get Started" → 404 (`/auth/register`)
+
+**Problem:** Every "Get Started" button on the site linked to `/auth/register`, a route that doesn't exist. The app only has `/auth/login` with a signup toggle.
+
+**Root Cause:** Original marketing pages were scaffolded with a planned registration route that was never created.
+
+**Fix:** Changed all 5 broken links across 3 files:
+
+| File | Links Fixed |
 |---|---|
-| **Primary** | Electric Purple `#6C5CE7` |
-| **Secondary** | Cyan Flare `#00D2FF` |
-| **Tertiary** | Emerald `#00B894` |
-| **Background** | Midnight Obsidian `#13121B` |
-| **Font** | Inter (all weights) |
-| **Mode** | Dark |
-| **Style** | Glassmorphism + backdrop blur + tonal borders |
-| **Corner Radius** | 8px (buttons) / 16px (cards) |
+| `page.tsx` (Landing) | Navbar "Get Started" button + CTA "Get Started Now" banner |
+| `features/page.tsx` | Navbar "Get Started" button + CTA "Get Started Free" button |
+| `pricing/page.tsx` | Navbar "Get Started" button |
+
+Additionally, CTA buttons that were plain `<button>` tags with no navigation were converted to proper `<Link>` components.
+
+### 2. Sign Out Bug
+
+**Problem:** Sign Out used `router.push("/auth/login")` which is a client-side SPA navigation. Supabase's auth state remained in memory, causing stale session artifacts.
+
+**Fix:** Changed both dashboard and admin sign-out handlers to use `window.location.href = "/auth/login"` — a full page reload that completely clears the Supabase client state.
+
+| File | Change |
+|---|---|
+| `dashboard/layout.tsx` | `router.push` → `window.location.href` |
+| `admin/layout.tsx` | `router.push` → `window.location.href` |
 
 ---
 
-## Screens Generated (8 total)
+## Commits
 
-### 1. 🏠 Landing Page
-**Screen ID:** `34c7263e64ad4874864c90ee191f2a6a`
+### Commit 1: `8c3abd4`
+```
+fix: Get Started 404 + Sign Out cleanup
 
-Full marketing landing page with:
-- Hero section: "Automate Your Dropshipping Business"
-- Trusted by logos (Salla, Zid, AliExpress, CJ)
-- How it works (3 steps)
-- Features grid (6 cards)
-- Pricing tiers (Starter, Growth, Pro)
-- CTA banner + Footer
+- Fix /auth/register → /auth/login across all pages
+- Fix Sign Out to use window.location.href
+```
 
----
+**Files changed:** 5
+- `app/src/app/page.tsx`
+- `app/src/app/features/page.tsx`
+- `app/src/app/pricing/page.tsx`
+- `app/src/app/dashboard/layout.tsx`
+- `app/src/app/admin/layout.tsx`
 
-### 2. 📊 Dashboard Overview
-Merchant command center with:
-- Wallet balance, orders today, active products, revenue stats
-- Revenue line chart (30 days)
-- Recent orders table
-- Quick actions + alerts panel
-- Sidebar navigation
-
----
-
-### 3. 🔍 Product Discovery
-Product search engine:
-- Search bar with filters (supplier, category, price, shipping, rating)
-- Product grid (4 columns) with cards showing image, price, rating, supplier badge
-- "Import to Store" button per product
-- Pagination
+### Commit 2 (from previous turn): `9a360b6`
+```
+fix: sort auto-triggers + admin feeds persist to DB
+```
 
 ---
 
-### 4. 📥 Import Wizard
-Multi-step product import flow:
-- 5-step progress stepper
-- Product image gallery (left)
-- Content editing form with bilingual fields (EN/AR)
-- AI rewrite buttons (calls n8n → GPT-4o)
-- Profit margin calculator
-- Store selection
+## Documentation Updated
+
+All four project docs were synced to reflect everything completed through Session 5:
+
+### TODO.md
+- Phase 4B expanded with 15+ new completed items
+- Added: sort/ship-to auto-trigger, admin feed sync, feed DB persistence, admin auth guard, role-based redirect, sign out fix, landing page link fixes
+- Added new "Auth & Security" and "Landing Page Fixes" subsections
+- Added note about admin panel security
+
+### project_status.md
+- Updated executive summary to mention admin auth guards, feed sync, and auto-trigger UX
+- Added 13 new rows to Phase 4B status table
+- Added full **API Routes Summary** table (11 routes with methods, auth, and purpose)
+
+### implementation_plan2.md
+- Header updated to "Session 5 — Admin Security + Feed Sync + UX Fixes"
+- Phase 4B expanded from 12 → 22 line items
+- Added admin security items (auth guard, role redirect, feed sync protection)
+- Added UX items (auto-trigger sort/ship-to, sign out fix, link fixes)
+
+### ARCHITECTURE.md (major rewrite)
+- **New:** AliExpress Integration Architecture section with Mermaid flow diagram
+- **New:** Admin Feed Management Flow diagram (Load → Sync → Save → DB → Discovery)
+- **New:** Auth & Security Architecture section with role-based access flowchart and auth boundaries table
+- **New:** Normalizer Pipeline table (3 mappers with SAR enforcement)
+- **New:** Complete File Structure tree
+- **Updated:** System Overview diagram (added admin auth guard, AliExpress API routes, `useProductSearch`)
+- **Updated:** Functional Areas table (added AliExpress, Admin, Discovery clusters)
+- **Updated:** API Routes table (4 → 11 routes)
+- **Updated:** Schema (19 → 20 tables, added `platform_config` relationship)
 
 ---
 
-### 5. 📦 My Products
-Inventory management table:
-- Stats row (total, active, out of stock, draft)
-- Filterable/searchable product table
-- Stock status badges (green/yellow/red)
-- Bulk actions (sync, pause, delete)
+## Current State
+
+| Area | Status |
+|---|---|
+| **Build** | ✅ Passes (`npx next build`) |
+| **Git** | ✅ Pushed to `main` |
+| **Phase 4B** | ✅ Fully complete |
+| **Current Phase** | 📋 Phase 4C — Product Import & My Products |
+| **Production** | Needs deploy (see below) |
+
+### Deploy Command
+```bash
+cd /www/wwwroot/dropshipping && git pull origin main && cd app && npm run build && pm2 restart droplinker
+rm -rf /www/server/nginx/proxy_cache_dir/*
+```
 
 ---
 
-### 6. 🛒 Orders
-Fulfillment operations center:
-- Status filter tabs (New, Processing, Ordered, Shipped, Delivered, Failed)
-- Order status pipeline visualization
-- Detailed orders table with profit column
-- Bulk retry/fulfill actions
+## What's Next (Phase 4C)
 
----
+The next milestone is the **Product Import & My Products** flow:
 
-### 7. 💳 Wallet
-Financial center:
-- Large balance card with reserved amount
-- Top-up methods (Moyasar, Stripe, Bank Transfer)
-- Balance chart (30 days)
-- Transaction history table (deposits, deductions, commissions, refunds)
-- Auto top-up settings
-
----
-
-### 8. 🔗 Integrations
-Store & supplier connections:
-- Salla connection card (with webhook status)
-- Zid connection card
-- AliExpress connection card
-- CJDropshipping connection card
-- Default supplier selector
-
----
-
-### 9. 🛡️ Admin Panel
-Platform owner dashboard:
-- Merchant stats, revenue, deposits overview
-- Revenue breakdown (subscriptions vs commissions)
-- Recent merchants table
-- Pending bank transfer approvals
-- System health indicators
-
----
-
-### 10. 🔐 Auth (Login/Register)
-Split-view auth page:
-- Login form (left): email, password, Google OAuth
-- Register form (right): business name, email, phone, platform preference, language
-- Glassmorphic cards on gradient mesh background
-
----
-
-## Remaining Pages (to generate later)
-
-| # | Page | Status |
-|---|---|---|
-| 11 | Settings | ⏳ Not yet designed |
-| 12 | Admin Merchants | ⏳ Not yet designed |
-| 13 | Admin Revenue Config | ⏳ Not yet designed |
-| 14 | Admin Bank Transfers | ⏳ Not yet designed |
-| 15 | Admin Order Monitor | ⏳ Not yet designed |
-| 16 | Admin Platform Settings | ⏳ Not yet designed |
-| 17 | Features Page (public) | ⏳ Not yet designed |
-| 18 | Pricing Page (public) | ⏳ Not yet designed |
-| 19 | Forgot Password | ⏳ Not yet designed |
-
-> [!NOTE]
-> The 10 screens above cover the **core user flows**. The remaining 9 are secondary pages that can be designed during development or as follow-up iterations.
-
----
-
-## Next Steps
-
-1. **Review designs in Stitch** — check if the visual style works for you
-2. **Request changes** — I can edit any screen or generate variants
-3. **Approve & Start Building** — once designs are approved, we begin Next.js implementation
+1. Import wizard: select variants → set retail price → edit description
+2. Save product to `products` table in Supabase
+3. Push product to connected Salla store via API
+4. My Products page: list, edit price, toggle active, delete
+5. AI description generation (n8n → GPT/Gemini)

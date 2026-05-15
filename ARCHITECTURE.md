@@ -2,7 +2,7 @@
 
 > Auto-generated from GitNexus Knowledge Graph
 > **775 nodes | 1,243 edges | 11 clusters | 44 execution flows**
-> Last indexed: 2026-05-15
+> Last updated: 2026-05-15 (Session 5)
 
 ---
 
@@ -18,7 +18,6 @@ graph TB
 
     subgraph "Auth Layer"
         Login["LoginPage"]
-        Register["RegisterPage"]
         Actions["auth/actions.ts\n(signUp, signIn, signOut)"]
         MW["middleware.ts\n(route protection)"]
         ServerClient["server.ts\n(createClient + createAdminClient)"]
@@ -39,7 +38,9 @@ graph TB
         AMP["MerchantsPage"]
         AOP["AdminOrdersPage"]
         ATP["TransfersPage"]
+        AFP["FeedsPage"]
         ASP["PlatformSettingsPage"]
+        AdminLayout["AdminLayout\n(auth guard)"]
     end
 
     subgraph "Data Hooks Layer"
@@ -50,6 +51,7 @@ graph TB
         HI["useIntegrations"]
         HA["useAuth"]
         HAD["useAdmin\n(merchants, orders,\ntransfers, revenue, config)"]
+        HPS["useProductSearch\n(keywords, feeds,\nfilters, pagination)"]
     end
 
     subgraph "Supabase"
@@ -58,27 +60,43 @@ graph TB
         AC["createAdminClient\n(service role)"]
     end
 
-    subgraph "API Routes"
+    subgraph "API Routes — Salla"
         SALLA_INIT["/api/auth/salla"]
         SALLA_CB["/api/auth/salla/callback"]
         DISC_API["/api/stores/[id]/disconnect"]
         WH["/api/webhooks/salla"]
     end
 
-    subgraph "External"
-        SALLA["Salla API"]
-        N8N["n8n Webhooks"]
-        DB[("Supabase DB\n19 tables")]
+    subgraph "API Routes — AliExpress"
+        AE_SEARCH["/api/suppliers/aliexpress/search"]
+        AE_DETAIL["/api/suppliers/aliexpress/product/[id]"]
+        AE_FEEDS_GET["GET /feeds"]
+        AE_FEEDS_PUT["PUT /feeds"]
+        AE_FEEDS_SYNC["POST /feeds/sync"]
+        AE_IMPORT["/api/suppliers/aliexpress/import"]
     end
 
-    %% Public → Shared Components
-    LP --> ThemeToggle
-    LP --> Navbar
-    
+    subgraph "AliExpress SDK"
+        AE_CLIENT["aliexpress/client.ts\n(HMAC-SHA256 signing)"]
+        AE_NORM["normalizers.ts\n(search, feed, detail)"]
+    end
+
+    subgraph "External"
+        SALLA["Salla API"]
+        AE_API["AliExpress API"]
+        N8N["n8n Webhooks"]
+        DB[("Supabase DB\n20 tables")]
+    end
+
+    %% Public → Auth
+    LP -->|"Get Started"| Login
+    FP -->|"Get Started"| Login
+    PP -->|"Get Started"| Login
+
     %% Auth flow
     Login --> Actions
-    Register --> Actions
     Actions --> ServerClient
+    Actions -->|"role check"| AdminLayout
     MW --> ServerClient
 
     %% Dashboard → Hooks
@@ -89,13 +107,18 @@ graph TB
     MP --> HP
     SP --> HM
     IP --> HI
+    DISC --> HPS
 
-    %% Admin → Hooks
+    %% Admin → Auth Guard → Hooks
+    AdminLayout -->|"verify admin"| SC
     ADP --> HAD
     AMP --> HAD
     AOP --> HAD
     ATP --> HAD
     ASP --> HAD
+    AFP -->|"load/save"| AE_FEEDS_GET
+    AFP -->|"save config"| AE_FEEDS_PUT
+    AFP -->|"sync API"| AE_FEEDS_SYNC
 
     %% Hooks → Supabase
     HW --> CC
@@ -106,7 +129,25 @@ graph TB
     HA --> CC
     HAD --> CC
 
-    %% API Routes → External
+    %% Discovery Hook → API Routes
+    HPS --> AE_SEARCH
+    HPS --> AE_FEEDS_GET
+
+    %% AliExpress API Routes → SDK → External
+    AE_SEARCH --> AE_CLIENT
+    AE_DETAIL --> AE_CLIENT
+    AE_FEEDS_SYNC --> AE_CLIENT
+    AE_CLIENT --> AE_API
+    AE_SEARCH --> AE_NORM
+    AE_DETAIL --> AE_NORM
+
+    %% Feed persistence
+    AE_FEEDS_GET --> SC
+    AE_FEEDS_PUT --> SC
+    AE_FEEDS_SYNC --> SC
+    SC --> DB
+
+    %% Salla API Routes → External
     SALLA_INIT --> SC
     SALLA_INIT --> SALLA
     SALLA_CB --> AC
@@ -116,7 +157,6 @@ graph TB
 
     %% Supabase → DB
     CC --> DB
-    SC --> DB
     AC --> DB
 ```
 
@@ -127,12 +167,134 @@ graph TB
 | Module | Symbols | Cohesion | Key Files |
 |---|---|---|---|
 | **Hooks** | 25 | 60% | `use-wallet.ts`, `use-orders.ts`, `use-products.ts`, `use-merchant.ts`, `use-integrations.ts`, `use-admin.ts`, `use-auth.ts` |
+| **AliExpress** | 20+ | — | `lib/aliexpress/client.ts`, `normalizers.ts`, 5 API routes, `useProductSearch` |
+| **Admin** | 15+ | — | `admin/layout.tsx` (auth guard), `admin/feeds/page.tsx`, admin hooks |
 | **Settings** | 13 | 46% | `dashboard/settings/page.tsx` (ProfileTab, BillingTab, FulfillmentTab, NotificationsTab, TeamTab) |
 | **App** | 12 | 47% | `layout.tsx`, `page.tsx`, shared components |
 | **Dashboard** | 11 | 60% | `dashboard/page.tsx` (StatsRow, RecentOrders, AlertsPanel, RevenueChart) |
-| **Auth** | 11 | 100% | `auth/actions.ts`, `login/page.tsx`, `register/page.tsx`, `middleware.ts` |
+| **Auth** | 11 | 100% | `auth/actions.ts`, `login/page.tsx`, `middleware.ts` |
+| **Discovery** | 10+ | — | `discover/page.tsx`, `SearchFilters`, `ProductGrid`, `ProductDetailModal` |
 | **Pricing** | 9 | 43% | `pricing/page.tsx` |
 | **Integrations** | 6 | 56% | `integrations/page.tsx`, `use-integrations.ts` |
+
+---
+
+## Auth & Security Architecture
+
+### Role-Based Access
+
+```mermaid
+flowchart TD
+    Login["Login Page\n(signIn action)"] --> AuthCheck{Supabase Auth}
+    AuthCheck -->|Success| RoleQuery["Query merchants.role"]
+    AuthCheck -->|Failure| LoginError["Show error"]
+    
+    RoleQuery -->|"role = 'admin'"| AdminRedirect["/admin"]
+    RoleQuery -->|"role = 'merchant'"| DashRedirect["/dashboard"]
+    
+    AdminRedirect --> AdminGuard["AdminLayout\n(auth guard)"]
+    AdminGuard --> CheckAuth{Is authenticated?}
+    CheckAuth -->|No| RedirectLogin["/auth/login"]
+    CheckAuth -->|Yes| CheckRole{Is admin?}
+    CheckRole -->|No| RedirectDash["/dashboard"]
+    CheckRole -->|Yes| AdminContent["Render admin page"]
+    
+    DashRedirect --> Middleware["middleware.ts"]
+    Middleware --> DashContent["Render dashboard"]
+```
+
+### Auth Boundaries
+
+| Area | Protection | Method |
+|---|---|---|
+| `/dashboard/*` | Auth required | `middleware.ts` checks Supabase session |
+| `/admin/*` | Admin role required | `AdminLayout` checks `merchants.role = 'admin'` |
+| `PUT /api/suppliers/aliexpress/feeds` | Admin role required | Route handler checks merchant role |
+| `POST /api/suppliers/aliexpress/feeds/sync` | Admin role required | Route handler checks merchant role |
+| `/api/webhooks/salla` | HMAC signature | Token + SHA256 verification |
+| Sign Out | Full session clear | `window.location.href` (not `router.push`) |
+
+---
+
+## AliExpress Integration Architecture
+
+```mermaid
+flowchart LR
+    subgraph "Merchant UI"
+        DiscPage["Discovery Page"]
+        SearchBar["Keyword Search"]
+        FeedTabs["Feed Tabs"]
+        Filters["Sort · Ship-To\n(auto-trigger)"]
+        Modal["Product Detail\nModal"]
+    end
+    
+    subgraph "Hook Layer"
+        UPS["useProductSearch"]
+    end
+    
+    subgraph "API Routes"
+        SearchAPI["GET /search"]
+        DetailAPI["GET /product/:id"]
+        FeedsAPI["GET /feeds"]
+    end
+    
+    subgraph "AliExpress SDK"
+        Client["client.ts\nHMAC-SHA256"]
+        Norm["normalizers.ts\n3 mappers"]
+    end
+    
+    subgraph "AliExpress APIs"
+        TextSearch["ds.text.search"]
+        FeedGet["ds.recommend.feed.get"]
+        ProdGet["ds.product.get"]
+        Freight["freight.calculate"]
+    end
+    
+    DiscPage --> SearchBar & FeedTabs & Filters
+    SearchBar & FeedTabs & Filters --> UPS
+    DiscPage --> Modal
+    
+    UPS --> SearchAPI
+    UPS --> FeedsAPI
+    Modal --> DetailAPI
+    
+    SearchAPI --> Client --> TextSearch
+    SearchAPI --> Client --> FeedGet
+    DetailAPI --> Client --> ProdGet
+    DetailAPI --> Client --> Freight
+    
+    SearchAPI --> Norm
+    DetailAPI --> Norm
+    
+    FeedsAPI -->|"read from"| DB2[("platform_config\n(feed_config)")]
+```
+
+### Admin Feed Management Flow
+
+```mermaid
+flowchart TD
+    AdminFeed["Admin /feeds page"]
+    
+    AdminFeed -->|"Load"| FeedsGET["GET /feeds\nReads platform_config"]
+    AdminFeed -->|"Sync from API"| FeedsSYNC["POST /feeds/sync\nCalls ds.feedname.get"]
+    AdminFeed -->|"Save changes"| FeedsPUT["PUT /feeds\nWrites platform_config"]
+    
+    FeedsSYNC -->|"Merges with\nexisting config"| AdminFeed
+    FeedsPUT -->|"Persists to DB"| PConfig[("platform_config\nkey: feed_config")]
+    FeedsGET -->|"Reads from DB"| PConfig
+    
+    PConfig -->|"Merchant discovery\nreads same config"| MerchantDisc["Discovery Page\nFeed Tabs"]
+```
+
+### Normalizer Pipeline
+
+| Source API | Normalizer | Output | Key Fields |
+|---|---|---|---|
+| `ds.text.search` | `normalizeSearchProduct()` | `NormalizedProduct` | itemId, targetSalePrice (SAR), orders, discount% |
+| `ds.recommend.feed.get` | `normalizeFeedProduct()` | `NormalizedProduct` | product_id, product_title, sale_price (SAR) |
+| `ds.product.get` | `normalizeProductDetail()` | `NormalizedProductDetail` | Nested DTOs: base_info, multimedia, sku_info |
+
+**Currency:** All normalizers enforce SAR via `target_currency` parameter. No USD/CNY leaks.
 
 ---
 
@@ -148,17 +310,13 @@ This is the **single most impactful symbol** in the codebase. Changing its inter
 | d=2 (LIKELY AFFECTED) | 12 hook exports | `useWallet`, `useOrders`, `useProducts`, `useMerchant`, `useIntegrations`, 5 admin hooks, `ProfileTab`, `TransfersPage` |
 | d=3 (MAY NEED TESTING) | 14 page components | All dashboard + admin pages |
 
-### Key Insight for Phase 2
-
-**The hooks layer is the correct place to wire real data.** The architecture already has a clean separation:
+### Architecture Pattern
 
 ```
 Page Component → Custom Hook → createClient → Supabase
 ```
 
-Each hook already calls `createClient()` and has a `fetch` function. Phase 2 work is:
-1. Replace the mock data return inside each hook's `fetch()` with real Supabase queries
-2. The pages don't need to change at all if the hook return shape stays the same
+Each hook already calls `createClient()` and has a `fetch` function. Pages don't need to change if the hook return shape stays the same.
 
 ---
 
@@ -174,16 +332,8 @@ Each hook already calls `createClient()` and has a `fetch` function. Phase 2 wor
 | 6 | WalletPage → CreateClient | 4 | cross_community |
 | 7 | OrdersPage → CreateClient | 4 | cross_community |
 | 8 | MyProductsPage → CreateClient | 4 | cross_community |
-| 9 | MerchantsPage → CreateClient | 4 | cross_community |
-| 10 | FulfillmentTab → CreateClient | 4 | cross_community |
-
-### Pattern: Every flow follows the same architecture
-
-```
-Page → [SubComponent] → useHook → fetch() → createClient() → Supabase
-```
-
-**This means Phase 2 is a hooks-only change** — pages stay untouched as long as we maintain the same return types from each hook.
+| 9 | DiscoverPage → useProductSearch → API → AliExpress | 6 | cross_community |
+| 10 | AdminFeedsPage → API → platform_config | 4 | cross_community |
 
 ---
 
@@ -193,8 +343,15 @@ Page → [SubComponent] → useHook → fetch() → createClient() → Supabase
 |---|---|---|---|
 | `/api/auth/salla` | GET | Salla OAuth initiation | Server createClient |
 | `/api/auth/salla/callback` | GET | Salla OAuth token exchange | Admin createClient |
-| `/api/stores/[id]/disconnect` | POST | Store deactivation | Server createClient |
-| `/api/webhooks/salla` | POST | Salla webhook proxy to n8n | None (forwarded) |
+| `/api/auth/aliexpress/callback` | GET | AliExpress OAuth token exchange | Admin createClient |
+| `/api/stores/[id]/disconnect` | DELETE | Store deactivation | Server createClient |
+| `/api/webhooks/salla` | POST | Salla webhook receiver | HMAC-SHA256 |
+| `/api/suppliers/aliexpress/search` | GET | Keyword + feed product search | Server createClient |
+| `/api/suppliers/aliexpress/product/[id]` | GET | Product detail + shipping | Server createClient |
+| `/api/suppliers/aliexpress/feeds` | GET | Feed list from DB config | Server createClient |
+| `/api/suppliers/aliexpress/feeds` | PUT | Admin saves feed config | Admin role check |
+| `/api/suppliers/aliexpress/feeds/sync` | POST | Sync live feeds from AliExpress API | Admin role check |
+| `/api/suppliers/aliexpress/import` | POST | Import product (stub) | Server createClient |
 
 ---
 
@@ -206,14 +363,15 @@ Page → [SubComponent] → useHook → fetch() → createClient() → Supabase
 |---|---|---|
 | d=1 | `signUp` | `auth/actions.ts` |
 | d=1 | `signIn` | `auth/actions.ts` |
-| d=1 | `signOut` | `auth/actions.ts` |
 | d=1 | `GET` (Salla OAuth) | `api/auth/salla/route.ts` |
 | d=1 | `POST` (Disconnect) | `api/stores/[id]/disconnect/route.ts` |
+| d=1 | `GET/PUT` (Feeds) | `api/suppliers/aliexpress/feeds/route.ts` |
+| d=1 | `POST` (Feed Sync) | `api/suppliers/aliexpress/feeds/sync/route.ts` |
 | d=2 | `handleSubmit` (Login) | `auth/login/page.tsx` |
 
 ---
 
-## Supabase Schema (19 Tables)
+## Supabase Schema (20 Tables)
 
 ```mermaid
 erDiagram
@@ -233,4 +391,77 @@ erDiagram
     merchants ||--o{ product_inbox : "reviews"
     merchants ||--o{ analytics_daily : "aggregates"
     merchants ||--o{ bank_transfers : "submits"
+    platform_config ||--|| platform_feeds : "configures"
+```
+
+### Key Tables for Feed Management
+
+| Table | Purpose |
+|---|---|
+| `platform_config` | Stores feed config (key: `feed_config`) as JSON — single source of truth for admin feed settings |
+| `platform_feeds` | SQL migration for curated feeds (20 default feeds with enable/disable + bilingual names) |
+
+### Key Functions
+
+| Function | Purpose |
+|---|---|
+| `wallet_credit()` | Atomic deposit with transaction logging |
+| `wallet_deduct()` | Atomic deduction with insufficient balance check |
+| `calculate_retail_price()` | Margin calculator (percentage or fixed) |
+| `is_admin()` | RLS helper — checks merchant role |
+| `create_merchant_wallet()` | Trigger — auto-create wallet on signup |
+| `update_timestamp()` | Trigger — auto-update `updated_at` |
+
+---
+
+## File Structure (Key Paths)
+
+```
+app/src/
+├── app/
+│   ├── page.tsx                          # Landing page
+│   ├── features/page.tsx                 # Features page
+│   ├── pricing/page.tsx                  # Pricing page
+│   ├── auth/
+│   │   ├── login/page.tsx                # Login form
+│   │   └── actions.ts                    # signUp, signIn (role-based redirect)
+│   ├── dashboard/
+│   │   ├── layout.tsx                    # Dashboard shell + sign out
+│   │   ├── page.tsx                      # Overview widgets
+│   │   ├── products/discover/page.tsx    # AliExpress discovery UI
+│   │   ├── products/page.tsx             # My Products (stub)
+│   │   ├── orders/page.tsx               # Order list
+│   │   ├── wallet/page.tsx               # Balance + transactions
+│   │   ├── settings/page.tsx             # Profile + fulfillment config
+│   │   └── integrations/page.tsx         # Salla connect/disconnect
+│   ├── admin/
+│   │   ├── layout.tsx                    # Auth guard (admin role check)
+│   │   ├── page.tsx                      # Admin dashboard
+│   │   ├── feeds/page.tsx                # Feed management (sync, edit, save)
+│   │   ├── merchants/page.tsx            # Merchant management
+│   │   ├── orders/page.tsx               # Global order monitor
+│   │   ├── transfers/page.tsx            # Bank transfer approvals
+│   │   └── settings/page.tsx             # Platform settings
+│   └── api/
+│       ├── auth/salla/                   # Salla OAuth
+│       ├── auth/aliexpress/callback/     # AliExpress OAuth callback
+│       ├── stores/[id]/disconnect/       # Store disconnect
+│       ├── webhooks/salla/               # Salla webhook handler
+│       └── suppliers/aliexpress/
+│           ├── search/route.ts           # Product search API
+│           ├── product/[id]/route.ts     # Product detail API
+│           ├── feeds/route.ts            # GET feeds / PUT save config
+│           ├── feeds/sync/route.ts       # POST sync from AliExpress
+│           └── import/route.ts           # Import product (stub)
+├── components/shared/                    # Card, Button, Icon, ThemeToggle
+├── hooks/                                # All data hooks
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts                     # Browser createClient
+│   │   └── server.ts                     # Server createClient + createAdminClient
+│   └── aliexpress/
+│       ├── client.ts                     # HMAC-SHA256 API client
+│       └── normalizers.ts                # 3 product normalizers (SAR)
+├── data/mockData.ts                      # Static marketing content ONLY
+└── middleware.ts                          # Route protection
 ```
