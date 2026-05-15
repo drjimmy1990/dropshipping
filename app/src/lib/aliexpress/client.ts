@@ -209,8 +209,8 @@ async function searchByKeyword(
   };
 
   if (params.sort) apiParams.sort = params.sort;
-  if (params.minPrice) apiParams.min_price = String(params.minPrice); // Assuming these remain snake_case if documented
-  if (params.maxPrice) apiParams.max_price = String(params.maxPrice);
+  if (params.minPrice) apiParams.minPrice = String(params.minPrice);
+  if (params.maxPrice) apiParams.maxPrice = String(params.maxPrice);
   if (params.category_id) apiParams.categoryId = params.category_id;
 
   try {
@@ -289,7 +289,17 @@ async function searchByFeed(
   };
 
   if (params.category_id) apiParams.category_id = params.category_id;
-  if (params.sort) apiParams.sort = params.sort;
+  // Feed API uses different sort values than text search:
+  // text.search: SALE_PRICE_ASC, SALE_PRICE_DESC, LAST_VOLUME_DESC
+  // feed.get:   priceAsc, priceDesc, volumeAsc, volumeDesc, discountAsc, discountDesc
+  if (params.sort) {
+    const feedSortMap: Record<string, string> = {
+      SALE_PRICE_ASC: "priceAsc",
+      SALE_PRICE_DESC: "priceDesc",
+      LAST_VOLUME_DESC: "volumeDesc",
+    };
+    apiParams.sort = feedSortMap[params.sort] || params.sort;
+  }
   if (params.shipTo) apiParams.country = params.shipTo;
   if (params.minPrice) apiParams.min_sale_price = String(params.minPrice);
   if (params.maxPrice) apiParams.max_sale_price = String(params.maxPrice);
