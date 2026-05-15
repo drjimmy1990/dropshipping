@@ -123,6 +123,12 @@ async function sallaRequest<T>(options: SallaRequestOptions): Promise<T> {
     const fields = data?.error?.fields;
 
     console.error(`[Salla] ${method} ${path} failed:`, response.status, errorMessage);
+    if (fields) {
+      console.error(`[Salla] Invalid fields:`, JSON.stringify(fields, null, 2));
+    }
+    if (data) {
+      console.error(`[Salla] Full error response:`, JSON.stringify(data, null, 2));
+    }
     throw new SallaApiError(response.status, errorMessage, fields);
   }
 
@@ -279,6 +285,7 @@ export async function pushProductToSalla(
   const payload = mapDroplinkerToSalla(product);
 
   console.log(`[Salla] Pushing product "${payload.name}" to store ${tokens.storeId}`);
+  console.log(`[Salla] Payload:`, JSON.stringify(payload, null, 2));
 
   const result = await withAutoRefresh(tokens, (accessToken) =>
     sallaRequest<SallaApiResponse<SallaProductResponse>>({
