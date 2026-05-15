@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,6 +35,24 @@ export default function ProductEditorPage() {
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDesc, setMetaDesc] = useState("");
   const [isActive, setIsActive] = useState(true);
+  // Image management
+  const [localImages, setLocalImages] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  // Unsaved changes tracking
+  const hasChanges = useMemo(() => {
+    if (!product) return false;
+    return (
+      titleEn !== (product.title_en || "") ||
+      titleAr !== (product.title_ar || "") ||
+      descEn !== (product.description_en || "") ||
+      descAr !== (product.description_ar || "") ||
+      retailPrice !== String(product.retail_price) ||
+      stockQty !== String(product.stock_quantity) ||
+      isActive !== product.is_active ||
+      JSON.stringify(localImages) !== JSON.stringify(product.images || [])
+    );
+  }, [product, titleEn, titleAr, descEn, descAr, retailPrice, stockQty, isActive, localImages]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -71,6 +89,7 @@ export default function ProductEditorPage() {
       setMetaTitle((p.title_en || "").slice(0, 70));
       setMetaDesc((p.description_en || "").slice(0, 160));
       setIsActive(p.is_active);
+      setLocalImages(p.images || []);
     }
     setLoading(false);
   }, [id]);
@@ -92,6 +111,7 @@ export default function ProductEditorPage() {
         stock_quantity: parseInt(stockQty) || product.stock_quantity,
         is_active: isActive,
         salla_category_id: categoryId ? parseInt(categoryId) : null,
+        images: localImages,
       };
 
       const res = await fetch(`/api/products/${product.id}`, {
@@ -255,6 +275,9 @@ export default function ProductEditorPage() {
           <Button size="sm" onClick={handleSave} disabled={saving}>
             <Icon name="save" className="text-sm" />
             {saving ? "Saving..." : "Save Changes"}
+            {hasChanges && !saving && (
+              <span className="w-2 h-2 rounded-full bg-warning animate-pulse ml-1" />
+            )}
           </Button>
         </div>
       </div>
@@ -340,25 +363,127 @@ export default function ProductEditorPage() {
 
           {tab === "images" && (
             <Card className="p-6">
-              <h2 className="font-semibold text-text mb-4">Product Images</h2>
-              {product.images && product.images.length > 0 ? (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-text">Product Images</h2>
+                <Badge variant="neutral">{localImages.length} image{localImages.length !== 1 ? "s" : ""}</Badge>
+              </div>
+
+              {/* Add image by URL */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  placeholder="Paste image URL here..."
+                  className="flex-1 px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newImageUrl.trim()) {
+                      setLocalImages((prev) => [...prev, newImageUrl.trim()]);
+                      setNewImageUrl("");
+                    }
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!newImageUrl.trim()}
+                  onClick={() => {
+                    if (newImageUrl.trim()) {
+                      setLocalImages((prev) => [...prev, newImageUrl.trim()]);
+                      setNewImageUrl("");
+                    }
+                  }}
+                >
+                  <Icon name="add_photo_alternate" className="text-sm" /> Add
+                </Button>
+              </div>
+
+              {localImages.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {product.images.map((img, i) => (
-                    <div key={i} className="relative aspect-square bg-surface-sunken rounded-lg overflow-hidden border border-border group">
+                  {localImages.map((img, i) => (
+                    <div key={`${img}-${i}`} className="relative aspect-square bg-surface-sunken rounded-lg overflow-hidden border border-border group">
                       <Image src={img} alt={`Product image ${i + 1}`} fill sizes="200px" className="object-cover" unoptimized />
+                      {/* Main badge */}
                       {i === 0 && (
                         <div className="absolute top-2 left-2">
                           <Badge variant="accent" icon="star">Main</Badge>
                         </div>
                       )}
+                      {/* Hover overlay with actions */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {/* Set as Main */}
+                        {i !== 0 && (
+                          <button
+                            onClick={() => {
+                              setLocalImages((prev) => {
+                                const next = [...prev];
+                                const [item] = next.splice(i, 1);
+                                next.unshift(item);
+                                return next;
+                              });
+                            }}
+                            className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-accent hover:text-white transition-colors"
+                            title="Set as main image"
+                          >
+                            <Icon name="star" className="text-sm" />
+                          </button>
+                        )}
+                        {/* Move left */}
+                        {i > 0 && (
+                          <button
+                            onClick={() => {
+                              setLocalImages((prev) => {
+                                const next = [...prev];
+                                [next[i - 1], next[i]] = [next[i], next[i - 1]];
+                                return next;
+                              });
+                            }}
+                            className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-accent hover:text-white transition-colors"
+                            title="Move left"
+                          >
+                            <Icon name="chevron_left" className="text-sm" />
+                          </button>
+                        )}
+                        {/* Move right */}
+                        {i < localImages.length - 1 && (
+                          <button
+                            onClick={() => {
+                              setLocalImages((prev) => {
+                                const next = [...prev];
+                                [next[i], next[i + 1]] = [next[i + 1], next[i]];
+                                return next;
+                              });
+                            }}
+                            className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-accent hover:text-white transition-colors"
+                            title="Move right"
+                          >
+                            <Icon name="chevron_right" className="text-sm" />
+                          </button>
+                        )}
+                        {/* Delete */}
+                        <button
+                          onClick={() => setLocalImages((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-error hover:text-white transition-colors"
+                          title="Delete image"
+                        >
+                          <Icon name="delete" className="text-sm" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12 text-text-muted">
                   <Icon name="photo_library" className="text-4xl mb-2" />
-                  <p className="text-sm">No images available</p>
+                  <p className="text-sm">No images — add one above</p>
                 </div>
+              )}
+
+              {/* Hint */}
+              {localImages.length > 0 && (
+                <p className="text-[10px] text-text-muted mt-3">
+                  <Icon name="info" className="text-xs align-middle mr-1" />
+                  Hover images to reorder, set main, or delete. First image = main. Remember to save.
+                </p>
               )}
             </Card>
           )}
@@ -458,6 +583,23 @@ export default function ProductEditorPage() {
               <div className="flex justify-between">
                 <span className="text-text-secondary">Supplier</span>
                 <span className="text-text font-medium">{product.supplier}</span>
+              </div>
+              {product.supplier !== "direct" && product.supplier_product_id && (
+                <div className="flex justify-between">
+                  <span className="text-text-secondary">Source</span>
+                  <a
+                    href={`https://www.aliexpress.com/item/${product.supplier_product_id}.html`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent text-xs hover:underline flex items-center gap-1"
+                  >
+                    View on AliExpress <Icon name="open_in_new" className="text-[10px]" />
+                  </a>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-text-secondary">Images</span>
+                <span className="text-text text-xs">{localImages.length} image{localImages.length !== 1 ? "s" : ""}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-secondary">SKU</span>
