@@ -31,6 +31,13 @@ export default function ProductEditorPage() {
   const [retailPrice, setRetailPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
   const [stockQty, setStockQty] = useState("");
+  // Shipping options
+  const [shippingCostInput, setShippingCostInput] = useState("");
+  const [shippingMethodInput, setShippingMethodInput] = useState("");
+  const [estimatedDeliveryInput, setEstimatedDeliveryInput] = useState("");
+  const [shippingOptions, setShippingOptions] = useState<{ name: string; price: number; currency: string; estimatedDays: string; trackingAvailable: boolean; serviceCode?: string }[]>([]);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [selectedShippingIdx, setSelectedShippingIdx] = useState<number>(-1);
   const [categoryId, setCategoryId] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDesc, setMetaDesc] = useState("");
@@ -90,6 +97,9 @@ export default function ProductEditorPage() {
       setMetaDesc((p.description_en || "").slice(0, 160));
       setIsActive(p.is_active);
       setLocalImages(p.images || []);
+      setShippingCostInput(String(p.shipping_cost || 0));
+      setShippingMethodInput(p.shipping_method || "");
+      setEstimatedDeliveryInput(p.estimated_delivery || "");
     }
     setLoading(false);
   }, [id]);
@@ -112,6 +122,9 @@ export default function ProductEditorPage() {
         is_active: isActive,
         salla_category_id: categoryId ? parseInt(categoryId) : null,
         images: localImages,
+        shipping_cost: parseFloat(shippingCostInput) || 0,
+        shipping_method: shippingMethodInput || null,
+        estimated_delivery: estimatedDeliveryInput || null,
       };
 
       const res = await fetch(`/api/products/${product.id}`, {
@@ -197,10 +210,32 @@ export default function ProductEditorPage() {
     );
   }
 
-  const shippingCost = product.shipping_cost || 0;
+  const shippingCost = parseFloat(shippingCostInput) || 0;
   const totalCost = product.supplier_cost + shippingCost;
   const profit = parseFloat(retailPrice) - totalCost;
   const margin = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(0) : "0";
+
+  const fetchShippingOptions = async () => {
+    if (!product.supplier_product_id || product.supplier !== "aliexpress") return;
+    setShippingLoading(true);
+    try {
+      const res = await fetch(`/api/products/${product.id}/shipping`);
+      const data = await res.json();
+      if (data.success && data.options?.length > 0) {
+        setShippingOptions(data.options);
+        // Pre-select current method if it matches
+        const currentIdx = data.options.findIndex((o: any) => o.name === shippingMethodInput || o.serviceCode === shippingMethodInput);
+        setSelectedShippingIdx(currentIdx >= 0 ? currentIdx : 0);
+      } else {
+        setShippingOptions([]);
+        setSelectedShippingIdx(-1);
+      }
+    } catch {
+      setShippingOptions([]);
+    } finally {
+      setShippingLoading(false);
+    }
+  };
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: "general", label: "General", icon: "edit_note" },
@@ -505,7 +540,8 @@ export default function ProductEditorPage() {
                     <label className="block text-xs font-medium text-text-secondary mb-1">Shipping Cost</label>
                     <div className="px-3 py-2 bg-surface-sunken border border-border rounded-md text-sm text-text-muted font-mono">
                       SAR {shippingCost.toFixed(2)}
-                      {shippingCost === 0 && <span className="text-text-muted ml-1 text-xs">(Free / Not set)</span>}
+                      {shippingMethodInput && <span className="text-text-muted ml-1 text-xs">({shippingMethodInput})</span>}
+                      {shippingCost === 0 && !shippingMethodInput && <span className="text-text-muted ml-1 text-xs">(Free / Not set)</span>}
                     </div>
                   </div>
                 </div>
@@ -548,6 +584,81 @@ export default function ProductEditorPage() {
                       className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent font-mono" />
                   </div>
                 </div>
+
+                {/* AliExpress Shipping Options */}
+                {product.supplier === "aliexpress" && product.supplier_product_id && (
+                  <div className="border border-border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-text flex items-center gap-1.5">
+                        <Icon name="local_shipping" className="text-sm" />
+                        AliExpress Shipping Options
+                      </h3>
+                      <button
+                        onClick={fetchShippingOptions}
+                        disabled={shippingLoading}
+                        className="text-xs px-3 py-1.5 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {shippingLoading ? (
+                          <><span className="animate-spin inline-block w-3 h-3 border border-accent/30 border-t-accent rounded-full" /> Fetching...</>
+                        ) : (
+                          <><Icon name="refresh" className="text-xs" /> Refresh Options</>
+                        )}
+                      </button>
+                    </div>
+
+                    {shippingOptions.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {shippingOptions.map((opt, i) => (
+                          <label
+                            key={i}
+                            className={`flex items-center justify-between text-xs p-2.5 rounded-lg cursor-pointer border transition-all ${
+                              selectedShippingIdx === i
+                                ? "border-accent bg-accent/5 ring-1 ring-accent/30"
+                                : "border-border bg-surface hover:border-accent/40"
+                            }`}
+                            onClick={() => {
+                              setSelectedShippingIdx(i);
+                              setShippingCostInput(String(opt.price));
+                              setShippingMethodInput(opt.serviceCode || opt.name);
+                              setEstimatedDeliveryInput(opt.estimatedDays);
+                              // Recalculate retail price suggestion
+                              const newTotal = product.supplier_cost + opt.price;
+                              if (parseFloat(retailPrice) < newTotal) {
+                                setRetailPrice(Math.ceil(newTotal * 1.3).toString());
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                selectedShippingIdx === i ? "border-accent" : "border-border"
+                              }`}>
+                                {selectedShippingIdx === i && (
+                                  <div className="w-2 h-2 rounded-full bg-accent" />
+                                )}
+                              </div>
+                              <div>
+                                <span className="text-text font-medium">{opt.name}</span>
+                                {opt.trackingAvailable && (
+                                  <span className="ml-1.5 text-[10px] bg-success/10 text-success px-1.5 py-0.5 rounded">Tracked</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-text font-semibold">
+                                {opt.price > 0 ? `SAR ${opt.price.toFixed(2)}` : "Free"}
+                              </span>
+                              <span className="text-text-muted ml-1">· {opt.estimatedDays}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    ) : !shippingLoading ? (
+                      <p className="text-xs text-text-muted py-2">
+                        Click &quot;Refresh Options&quot; to fetch available shipping methods from AliExpress.
+                      </p>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </Card>
           )}

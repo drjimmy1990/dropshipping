@@ -44,6 +44,9 @@ export async function PATCH(
       "images",
       "salla_category_id",
       "stock_quantity",
+      "shipping_cost",
+      "shipping_method",
+      "estimated_delivery",
     ];
 
     const updates: Record<string, unknown> = {};
