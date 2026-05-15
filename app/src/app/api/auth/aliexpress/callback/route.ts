@@ -16,11 +16,15 @@ function generateSignature(params: Record<string, string>): string {
 }
 
 export async function GET(req: NextRequest) {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "droplinker.asra3.com";
+  const proto = req.headers.get("x-forwarded-proto") || "https";
+  const baseUrl = `${proto}://${host}`;
+
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
 
   if (!code) {
-    return NextResponse.redirect(new URL("/admin/settings?error=no_code", req.url));
+    return NextResponse.redirect(new URL("/admin/settings?error=no_code", baseUrl));
   }
 
   try {
@@ -44,14 +48,14 @@ export async function GET(req: NextRequest) {
 
     if (data.code && data.code !== "0" && data.code !== 0) {
       console.error("[AliExpress Auth] API error:", data);
-      return NextResponse.redirect(new URL("/admin/settings?error=auth_failed", req.url));
+      return NextResponse.redirect(new URL("/admin/settings?error=auth_failed", baseUrl));
     }
 
     const { access_token, refresh_token } = data;
 
     if (!access_token) {
       console.error("[AliExpress Auth] No token in response:", data);
-      return NextResponse.redirect(new URL("/admin/settings?error=no_token", req.url));
+      return NextResponse.redirect(new URL("/admin/settings?error=no_token", baseUrl));
     }
 
     // Save to Supabase using admin client
@@ -76,9 +80,9 @@ export async function GET(req: NextRequest) {
       if (err2) console.error("[AliExpress Auth] Failed to save refresh token:", err2);
     }
 
-    return NextResponse.redirect(new URL("/admin/settings?aliexpress=success", req.url));
+    return NextResponse.redirect(new URL("/admin/settings?aliexpress=success", baseUrl));
   } catch (error) {
     console.error("[AliExpress Auth] Route error:", error);
-    return NextResponse.redirect(new URL("/admin/settings?error=internal", req.url));
+    return NextResponse.redirect(new URL("/admin/settings?error=internal", baseUrl));
   }
 }
