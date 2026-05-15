@@ -194,7 +194,7 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
   const images: SallaProductImage[] = (product.images || []).map((url, index) => ({
     original: url,
     thumbnail: url,
-    alt: (product.title_en || "Product image").slice(0, 70),
+    alt: `product-image-${index + 1}`,
     default: index === 0,
     sort: index + 1,
   }));
