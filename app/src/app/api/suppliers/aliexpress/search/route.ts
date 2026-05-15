@@ -11,6 +11,7 @@ import { searchProducts } from "@/lib/aliexpress/client";
  *
  * Query params:
  *  - keyword: search term
+ *  - feedName: AliExpress feed name for browse mode (e.g. DS_NewArrivals)
  *  - category: category ID
  *  - page: page number (default 1)
  *  - sort: SALE_PRICE_ASC | SALE_PRICE_DESC | LAST_VOLUME_DESC
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
     // 2. Parse search parameters
     const params = request.nextUrl.searchParams;
     const keyword = params.get("keyword") || undefined;
+    const feedName = params.get("feedName") || undefined;
     const category_id = params.get("category") || undefined;
     const page = parseInt(params.get("page") || "1", 10);
     const sort = params.get("sort") as
@@ -51,6 +53,7 @@ export async function GET(request: NextRequest) {
     // 3. Execute search using platform-level app key (no per-merchant token)
     const results = await searchProducts({
       keyword,
+      feedName,
       category_id,
       page,
       pageSize: 20,

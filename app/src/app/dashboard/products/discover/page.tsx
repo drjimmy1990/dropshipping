@@ -5,6 +5,17 @@ import { Card, Button, Badge, Icon } from "@/components/shared";
 import { useProductSearch } from "@/hooks/use-product-search";
 import type { NormalizedProduct, NormalizedProductDetail } from "@/lib/aliexpress/types";
 
+// ---------- Feed Type ----------
+interface Feed {
+  id: string;
+  name: string;
+  displayName: string;
+  displayNameAr: string;
+  category: string;
+  productCount: number;
+  sortOrder: number;
+}
+
 // ---------- Search Filters ----------
 
 function SearchFilters({
@@ -486,7 +497,7 @@ function ProductDetailModal({
                           </span>
                           <span className="text-text">
                             {opt.price > 0
-                              ? `${opt.currency} ${opt.price.toFixed(2)}`
+                              ? `SAR ${opt.price.toFixed(2)}`
                               : "Free"}{" "}
                             · {opt.estimatedDays}
                           </span>
@@ -530,6 +541,52 @@ function ProductDetailModal({
   );
 }
 
+// ---------- Feed Tabs ----------
+
+function FeedTabs({
+  feeds,
+  activeFeed,
+  onFeedChange,
+  loading,
+}: {
+  feeds: Feed[];
+  activeFeed: string;
+  onFeedChange: (feedName: string) => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="mb-4 -mx-1">
+      <div className="flex gap-1.5 overflow-x-auto pb-2 px-1 scrollbar-thin">
+        {feeds.map((feed) => (
+          <button
+            key={feed.id}
+            onClick={() => onFeedChange(feed.name)}
+            disabled={loading}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 border ${
+              activeFeed === feed.name
+                ? "bg-accent text-accent-on border-accent shadow-sm"
+                : "bg-surface text-text-secondary border-border hover:bg-surface-sunken hover:text-text"
+            }`}
+          >
+            <span>{feed.displayName}</span>
+            {feed.productCount > 0 && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                activeFeed === feed.name
+                  ? "bg-white/20 text-accent-on"
+                  : "bg-surface-sunken text-text-muted"
+              }`}>
+                {feed.productCount >= 1000
+                  ? `${(feed.productCount / 1000).toFixed(0)}k`
+                  : feed.productCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ---------- Main Page ----------
 
 export default function ProductDiscoveryPage() {
@@ -544,8 +601,11 @@ export default function ProductDiscoveryPage() {
     clearImportState,
   } = useProductSearch();
 
+  const [feeds, setFeeds] = useState<Feed[]>([]);
+  const [activeFeed, setActiveFeed] = useState("all");
   const [currentFilters, setCurrentFilters] = useState<{
     keyword?: string;
+    feedName?: string;
     category?: string;
     sort?: string;
     minPrice?: number;
@@ -553,17 +613,54 @@ export default function ProductDiscoveryPage() {
     shipTo?: string;
   }>({});
 
+  // Fetch available feeds on mount
+  useEffect(() => {
+    fetch("/api/suppliers/aliexpress/feeds")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.feeds) setFeeds(data.feeds);
+      })
+      .catch(console.error);
+  }, []);
+
   // Initial load — fetch recommended products
   useEffect(() => {
     searchProducts({ shipTo: "SA" });
   }, [searchProducts]);
 
   const handleSearch = useCallback(
-    (params: typeof currentFilters) => {
-      setCurrentFilters(params);
-      searchProducts({ ...params, page: 1 });
+    (params: {
+      keyword?: string;
+      category?: string;
+      sort?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      shipTo?: string;
+    }) => {
+      // If user types a keyword, switch to "all" feed (keyword search mode)
+      if (params.keyword) {
+        setActiveFeed("all");
+      }
+      const merged = { ...params, feedName: params.keyword ? undefined : (activeFeed !== "all" ? activeFeed : undefined), page: 1 };
+      setCurrentFilters(merged);
+      searchProducts(merged);
     },
-    [searchProducts]
+    [searchProducts, activeFeed]
+  );
+
+  const handleFeedChange = useCallback(
+    (feedName: string) => {
+      setActiveFeed(feedName);
+      const params = {
+        ...currentFilters,
+        keyword: undefined, // Clear keyword when switching feeds
+        feedName: feedName !== "all" ? feedName : undefined,
+        page: 1,
+      };
+      setCurrentFilters(params);
+      searchProducts(params);
+    },
+    [searchProducts, currentFilters]
   );
 
   const handlePageChange = useCallback(
@@ -605,11 +702,26 @@ export default function ProductDiscoveryPage() {
 
       <SearchFilters onSearch={handleSearch} loading={search.loading} />
 
+      {/* Feed Category Tabs */}
+      {feeds.length > 0 && (
+        <FeedTabs
+          feeds={feeds}
+          activeFeed={activeFeed}
+          onFeedChange={handleFeedChange}
+          loading={search.loading}
+        />
+      )}
+
       {/* Results count */}
       {search.totalCount > 0 && (
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-text-secondary">
             {search.totalCount.toLocaleString()} products found
+            {activeFeed !== "all" && !currentFilters.keyword && (
+              <span className="text-text-muted ml-1">
+                in {feeds.find(f => f.name === activeFeed)?.displayName || activeFeed}
+              </span>
+            )}
           </span>
         </div>
       )}
@@ -648,3 +760,4 @@ export default function ProductDiscoveryPage() {
     </>
   );
 }
+

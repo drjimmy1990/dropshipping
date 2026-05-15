@@ -68,6 +68,7 @@ export function useProductSearch() {
   const searchProducts = useCallback(
     async (params: {
       keyword?: string;
+      feedName?: string;
       category?: string;
       page?: number;
       sort?: string;
@@ -80,6 +81,7 @@ export function useProductSearch() {
       try {
         const query = new URLSearchParams();
         if (params.keyword) query.set("keyword", params.keyword);
+        if (params.feedName) query.set("feedName", params.feedName);
         if (params.category) query.set("category", params.category);
         if (params.page) query.set("page", String(params.page));
         if (params.sort) query.set("sort", params.sort);
