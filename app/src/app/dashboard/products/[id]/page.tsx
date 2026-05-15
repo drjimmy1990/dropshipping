@@ -229,9 +229,11 @@ export default function ProductEditorPage() {
       } else {
         setShippingOptions([]);
         setSelectedShippingIdx(-1);
+        setToast({ type: "error", message: data.error || "No shipping options available for SA" });
       }
     } catch {
       setShippingOptions([]);
+      setToast({ type: "error", message: "Failed to fetch shipping options — token may need refresh" });
     } finally {
       setShippingLoading(false);
     }

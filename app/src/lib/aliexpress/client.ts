@@ -67,6 +67,94 @@ async function getMasterAccessToken(): Promise<string | undefined> {
   return undefined;
 }
 
+/**
+ * Refreshes an expired AliExpress access token using the stored refresh_token.
+ * AliExpress refresh endpoint: /rest/auth/token/refresh
+ * Returns the new access token or undefined if refresh fails.
+ */
+async function refreshAccessToken(): Promise<string | undefined> {
+  console.log("[AliExpress] Attempting token refresh...");
+  try {
+    const config = getConfig();
+    const supabase = createAdminClient();
+
+    // Get the refresh token from platform_config
+    const { data: refreshData } = await supabase
+      .from("platform_config")
+      .select("value")
+      .eq("key", "aliexpress_refresh_token")
+      .single();
+
+    if (!refreshData?.value) {
+      console.error("[AliExpress] No refresh token found in platform_config");
+      return undefined;
+    }
+
+    let refreshToken = refreshData.value as string;
+    if (refreshToken.startsWith('"') && refreshToken.endsWith('"')) {
+      refreshToken = refreshToken.slice(1, -1);
+    }
+
+    // Build refresh request params
+    const params: Record<string, string> = {
+      app_key: config.appKey,
+      timestamp: Date.now().toString(),
+      sign_method: "sha256",
+      refresh_token: refreshToken,
+    };
+
+    // Generate signature for token refresh
+    const sortedKeys = Object.keys(params).sort();
+    let signStr = "/auth/token/refresh";
+    for (const key of sortedKeys) {
+      signStr += `${key}${params[key]}`;
+    }
+    params.sign = crypto
+      .createHmac("sha256", config.appSecret)
+      .update(signStr, "utf8")
+      .digest("hex")
+      .toUpperCase();
+
+    const body = new URLSearchParams(params).toString();
+
+    const response = await fetch(`${config.apiUrl}/rest/auth/token/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
+      body,
+    });
+
+    const data = await response.json();
+    console.log("[AliExpress] Token refresh response:", JSON.stringify(data, null, 2).substring(0, 500));
+
+    if (data.access_token) {
+      // Save the new access token
+      await supabase.from("platform_config").upsert({
+        key: "aliexpress_access_token",
+        value: `"${data.access_token}"`,
+        description: "Master access token for AliExpress Open Platform",
+      }, { onConflict: "key" });
+
+      // Save new refresh token if provided
+      if (data.refresh_token) {
+        await supabase.from("platform_config").upsert({
+          key: "aliexpress_refresh_token",
+          value: `"${data.refresh_token}"`,
+          description: "Master refresh token for AliExpress Open Platform",
+        }, { onConflict: "key" });
+      }
+
+      console.log("[AliExpress] Token refreshed successfully");
+      return data.access_token;
+    }
+
+    console.error("[AliExpress] Token refresh failed - no access_token in response:", data);
+    return undefined;
+  } catch (err) {
+    console.error("[AliExpress] Token refresh error:", err);
+    return undefined;
+  }
+}
+
 // ---------- Request Signing (HMAC-SHA256) ----------
 
 /**
@@ -98,11 +186,13 @@ function generateSignature(
 
 /**
  * Makes a signed request to the AliExpress Open Platform REST API.
+ * Automatically retries once with a refreshed token on IllegalAccessToken errors.
  */
 async function apiRequest<T>(
   method: string,
   params: Record<string, string> = {},
-  providedToken?: string
+  providedToken?: string,
+  _isRetry: boolean = false
 ): Promise<T> {
   const config = getConfig();
   const accessToken = providedToken || await getMasterAccessToken();
@@ -165,11 +255,23 @@ async function apiRequest<T>(
   const responseKey = method.replace(/\./g, "_") + "_response";
   const result = data[responseKey] || data;
 
-  // Check for API-level errors
+  // Check for API-level errors — auto-refresh on expired token
   if (result?.code && result.code !== "0" && result.code !== 0) {
+    // Detect expired token and try to refresh (only once)
+    const isTokenError = result.code === "IllegalAccessToken" ||
+      result.type === "ISV" && (result.message || "").includes("expired");
+
+    if (isTokenError && !_isRetry && !providedToken) {
+      console.warn("[AliExpress] Token expired — attempting auto-refresh...");
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        return apiRequest<T>(method, params, newToken, true);
+      }
+    }
+
     console.error(`[AliExpress] API error:`, result);
     throw new Error(
-      result.msg || result.sub_msg || `AliExpress API error: ${result.code}`
+      `AliExpress API error: ${result.code}`
     );
   }
 
