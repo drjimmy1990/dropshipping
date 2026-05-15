@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-15
+> **Last Updated:** 2026-05-15 (Session 3 — AliExpress API fully operational)
 
 ## 1. Business Concept
 
@@ -501,33 +501,58 @@ sequenceDiagram
 - [x] n8n webhook scaffold: Token validation, event router, app.uninstalled handler
 - [x] Frontend UI shell: All 22 routes (mock data)
 
-### Phase 2 — Live Data Migration (NEXT)
-> Replace mock data with real Supabase queries
+### Phase 2 — Live Data Migration ✅ DONE
+> All dashboard/admin pages wired to real Supabase queries
 
-- [ ] Dashboard overview → real stats (order count, wallet balance, products)
-- [ ] Wallet page → real balance + transaction history
-- [ ] Settings page → persist profile to `merchants` table
-- [ ] Admin dashboard → real cross-merchant aggregate stats
-- [ ] Admin merchants → list/search real merchants
-- [ ] Admin bank transfers → real transfer queue
+- [x] Dashboard overview → real stats (order count, wallet balance, products)
+- [x] Wallet page → real balance + transaction history + bank transfer upload
+- [x] Settings page → persist profile to `merchants` table
+- [x] Admin dashboard → real cross-merchant aggregate stats
+- [x] Admin merchants → list/search real merchants
+- [x] Admin bank transfers → approve/reject with atomic `wallet_credit()`
 
-### Phase 3 — Order Processing Pipeline
-> n8n order.created + order.updated handlers
+### Phase 3 — Order Processing Pipeline ✅ DONE
+> Salla order.created + order.updated webhook handlers
 
-- [ ] n8n: `order.created` → Find Store by salla_merchant_id → Insert order + items
-- [ ] n8n: `order.updated` → Find Store → PATCH order status
-- [ ] n8n: Fallback → Respond 200 for unknown events
-- [ ] Orders page → live orders from Supabase
-- [ ] Order detail modal/page with customer info + status
+- [x] `order.created` → INSERT order with duplicate detection
+- [x] `order.updated` → UPDATE order status (full Salla slug mapping)
+- [x] Store lookup via `salla_merchant_id` (multi-merchant fix)
+- [x] HMAC-SHA256 signature verification
+- [x] Orders page → live data with status filter tabs
 
-### Phase 4 — AliExpress Integration
-> Product discovery, import, and sync
+### Phase 4A — AliExpress API Integration ✅ DONE
+> API client, search, detail, feeds — all operational
 
-- [ ] AliExpress API credentials + SDK setup
-- [ ] Product search endpoint (`/api/suppliers/aliexpress/search`)
-- [ ] Product detail fetch with variants/images
-- [ ] Import wizard → Supabase + push to Salla store via API
-- [ ] My Products → live CRUD against `products` table
+- [x] AliExpress OAuth + token storage in `platform_config`
+- [x] API client (`lib/aliexpress/client.ts`) with HMAC-SHA256 signing
+- [x] `ds.text.search` — keyword search (45K+ results)
+- [x] `ds.recommend.feed.get` — feed browsing (47 feeds, 500K+ products)
+- [x] `ds.feedname.get` — enumerate all feeds
+- [x] `ds.product.get` — product detail with nested DTO parsing
+- [x] `freight.calculate` — shipping cost/time estimation
+- [x] Search API route: `GET /api/suppliers/aliexpress/search`
+- [x] Detail API route: `GET /api/suppliers/aliexpress/product/:id`
+- [x] Normalizers: text.search, feed, product detail (3 separate mappers)
+- [x] Tested filters: sort, minPrice/maxPrice, shipToCountry, countryCode
+
+### Phase 4B — Discovery UI & Filters (CURRENT)
+> Wire Discovery page to use all search options and feeds
+
+- [ ] Keyword search bar → `text.search` with debounce
+- [ ] Feed category browser (tabs/dropdown from enabled feeds)
+- [ ] Sort dropdown (price ASC/DESC, best selling)
+- [ ] Price range filter (min/max SAR inputs)
+- [ ] Pagination controls
+- [ ] Product detail modal (images, variants, shipping estimate)
+- [ ] Admin feed management page (enable/disable, display names, tier)
+- [ ] `platform_feeds` table in Supabase
+
+### Phase 4C — Product Import & My Products
+> Import products from AliExpress to merchant Salla stores
+
+- [ ] Import wizard (variant selection, pricing, description editor)
+- [ ] Save to `products` table + push to Salla store API
+- [ ] My Products page (list, edit price, toggle status, delete)
 - [ ] AI product descriptions (n8n WF5 → GPT/Gemini)
 - [ ] Product inbox / quality gate workflow
 

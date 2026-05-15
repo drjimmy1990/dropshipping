@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
 > **Date:** 2026-05-15  
-> **Status:** Planning — Awaiting Approval
+> **Status:** Phase 4A Complete — Discovery UI next
 
 ---
 
@@ -10,13 +10,17 @@
 | Feature | Status |
 |---------|--------|
 | AliExpress OAuth (platform-level) | ✅ Working |
-| Product search via `recommend.feed.get` | ✅ Working — 13,946+ products available |
-| Product detail via `ds.product.get` | ✅ Fixed (just pushed) |
-| Text search (`ds.text.search`) | ⚠️ Returns empty — AliExpress account propagation pending |
-| Feed catalog (`ds.feedname.get`) | ✅ Working — 176 feed categories available |
+| Text search (`ds.text.search`) | ✅ Working — 45K+ results for "phone" |
+| Feed browse (`ds.recommend.feed.get`) | ✅ Working — 47 feeds, 500K+ products |
+| Feed catalog (`ds.feedname.get`) | ✅ Working — 47 feed categories |
+| Product detail (`ds.product.get`) | ✅ Working — nested DTO parsing |
+| Shipping estimate (`freight.calculate`) | ✅ Working |
 | Salla store integration | ✅ Working |
 | Order webhooks from Salla | ✅ Working |
 | Merchant wallet system | ✅ Working |
+| Sort filter (price, volume) | ✅ Tested |
+| Price range filter (min/max) | ✅ Tested |
+| Country filter (SA, US, etc.) | ✅ Tested |
 
 ---
 
@@ -163,23 +167,27 @@ When a customer orders, AliExpress ships **directly to the customer's address**.
 
 ### Option A: Feed-Based Curation (Recommended — Easiest)
 
-AliExpress already provides **176 curated feed categories** for your account. The super admin can:
+AliExpress provides **47 curated feed categories** for your account. The super admin can:
 
 1. **Select which feeds are visible** to merchants
 2. **Create custom feed mappings** with friendly names
 3. **Hide/show specific categories** per merchant tier
 
-**Available feeds right now (sample):**
+**Available feeds right now (top picks for Saudi market):**
 
 | Feed Name | Products | Category |
 |-----------|----------|----------|
-| `DS_NewArrivals` | 13,946 | New products |
+| `Bestseller 2024` | 201,065 | 🏆 All bestsellers |
+| `DS_NewArrivals` | 14,010 | 🆕 New products |
 | `DS_ConsumerElectronics_bestsellers` | 19,470 | Electronics |
 | `DS_Home&Kitchen_bestsellers` | 12,300 | Home & Kitchen |
 | `DS_Beauty_bestsellers` | 2,594 | Beauty |
 | `DS_Sports&Outdoors_bestsellers` | 27,495 | Sports |
 | `SA_Clothing&Shoes` | 13,050 | Fashion (SA) |
 | `DS_Automobile&Accessories_bestsellers` | 20,340 | Auto |
+| `US 3PL-Warehouse 20240202` | 2,836 | 🚀 US warehouse (fast ship) |
+
+> See `aliexpress_api_reference.md` for the full list of all 47 feeds.
 
 **Implementation:** Add a `product_feeds` table where the super admin enables/disables feeds. The merchant's Product Discovery page only shows enabled feeds.
 

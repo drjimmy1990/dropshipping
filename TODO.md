@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
 > **Last Updated:** 2026-05-15
-> **Current Phase:** Phase 3 (Order Processing Pipeline)
+> **Current Phase:** Phase 4 (AliExpress Product Discovery & Import)
 
 ---
 
@@ -95,39 +95,101 @@
 
 ---
 
-## 📋 Phase 4 — AliExpress Integration
+## ✅ Phase 4A — AliExpress API Integration (COMPLETED)
 
-> **Goal:** Product search, detail fetch, import to store
+> **Goal:** Connect to AliExpress, search products, fetch details
 
 ### API Setup
-- [x] Ensure the authorizing account (`dr.gimy@gmail.com`) is enrolled in the AliExpress Dropshipping program.
-- [ ] If enrollment is active, wait up to 24 hours for AliExpress platform propagation to complete.
-- [x] Build the "Connect AliExpress" button in `app/admin/settings/page.tsx` to allow seamless re-authorization via the Admin Dashboard.
-- [x] Implement token refresh logic in the callback to securely store both the `access_token` and `refresh_token` in `platform_config`.
-- [ ] Ensure the AliExpress product fetching returns valid data before scaling to bulk imports.
-- [ ] Create API client (`lib/aliexpress/client.ts`)
-- [ ] Product search endpoint: `GET /api/suppliers/aliexpress/search`
-- [ ] Product detail endpoint: `GET /api/suppliers/aliexpress/product/:id`
+- [x] AliExpress developer account enrolled in DS program (`dr.gimy@gmail.com`)
+- [x] Account propagation completed (was pending 24-48h, now done)
+- [x] Build "Connect AliExpress" button in `app/admin/settings/page.tsx`
+- [x] Implement OAuth callback → store `access_token` + `refresh_token` in `platform_config`
+- [x] API client created (`lib/aliexpress/client.ts`) with HMAC-SHA256 signing
+- [x] Both `session` and `access_token` sent on all API calls (compatibility fix)
 
-### Product Discovery
-- [ ] Wire Discovery page to real AliExpress search
-- [ ] Implement filters: category, price range, shipping, rating
-- [ ] Product detail modal with variants, images, shipping info
-- [ ] Price conversion (USD → SAR)
+### Search APIs — All Working
+- [x] `aliexpress.ds.text.search` — keyword search (45,000+ results for "phone")
+- [x] `aliexpress.ds.recommend.feed.get` — feed-based browsing (47 feeds, 500K+ products)
+- [x] `aliexpress.ds.feedname.get` — list all available feeds
+- [x] `aliexpress.ds.product.get` — full product detail with nested DTO parsing
+- [x] `aliexpress.logistics.buyer.freight.calculate` — shipping cost/time estimation
+
+### API Endpoints
+- [x] Product search: `GET /api/suppliers/aliexpress/search`
+- [x] Product detail: `GET /api/suppliers/aliexpress/product/:id`
+
+### Normalizers
+- [x] `normalizeSearchProduct()` — maps text.search camelCase fields (itemId, targetSalePrice, etc.)
+- [x] `normalizeFeedProduct()` — maps feed response fields (product_id, product_title, etc.)
+- [x] `normalizeProductDetail()` — parses nested DTOs (ae_item_base_info_dto, ae_multimedia_info_dto, ae_item_sku_info_dtos)
+- [x] Price conversion to SAR via `target_currency` parameter
+
+### Tested Filters
+- [x] `keyWord` — keyword search (required)
+- [x] `countryCode` — target country (required, e.g. "SA")
+- [x] `sort` — SALE_PRICE_ASC, SALE_PRICE_DESC, LAST_VOLUME_DESC
+- [x] `minPrice` / `maxPrice` — price range filter
+- [x] `shipToCountry` — ensures pricing for target country
+- [x] `categoryId` — category filter (limited support)
+
+---
+
+## 📋 Phase 4B — Product Discovery UI & Filters (NEXT)
+
+> **Goal:** Wire the Discovery page to use all search/filter options and feeds
+
+### Discovery Page Enhancements
+- [ ] Keyword search bar → calls `text.search` with real-time results
+- [ ] Feed category browser → dropdown/tabs showing enabled feeds
+- [ ] Sort dropdown (Cheapest, Most Expensive, Best Selling)
+- [ ] Price range filter (min/max SAR inputs)
+- [ ] Country/region selector (SA default, with other Gulf options)
+- [ ] Pagination (page_no, page_size)
+- [ ] Product card: image, title, sale price, original price, discount %, orders count
+- [ ] Click product → detail modal with variants, images, shipping info
+
+### Admin Feed Management
+- [ ] Admin page to list all 47 available feeds
+- [ ] Toggle enable/disable per feed
+- [ ] Set display name (EN/AR) for merchant-facing labels
+- [ ] Set minimum subscription tier required per feed
+- [ ] Sort order for feed display priority
+- [ ] `platform_feeds` table in Supabase
+
+### Shipping Estimation
+- [ ] Call `freight.calculate` on product detail view
+- [ ] Show estimated delivery time + shipping cost per method
+- [ ] Display fastest vs cheapest shipping options
+- [ ] Highlight local warehouse products (faster delivery)
+
+### Product Detail Modal
+- [ ] Full image gallery (from `ae_multimedia_info_dto`)
+- [ ] Variant selector (color, size from `ae_item_sku_info_dtos`)
+- [ ] Price per variant display
+- [ ] Product properties/specs table
+- [ ] Shipping options with delivery estimates
+- [ ] "Import to Store" button → opens Import Wizard
+
+---
+
+## 📋 Phase 4C — Product Import & My Products
+
+> **Goal:** Import products to merchant stores
 
 ### Import Flow
 - [ ] Import wizard: select variants → set retail price → generate description
+- [ ] Profit margin calculator (retail - cost - commission = profit)
 - [ ] Save product to `products` table in Supabase
 - [ ] Push product to connected Salla store via API (`POST /products`)
 - [ ] Save `store_product_id` after Salla confirms
 
-### AI Content
-- [ ] n8n WF5: Product title + images → GPT/Gemini → bilingual description
+### AI Content (n8n WF5)
+- [ ] Product title + images → GPT/Gemini → bilingual description
 - [ ] Product inbox: AI-generated → pending_review → approved → published
 - [ ] Unit conversion (inch → cm, lb → kg)
 - [ ] SEO tag generation
 
-### My Products
+### My Products Page
 - [ ] List products from `products` table (paginated)
 - [ ] Edit retail price inline
 - [ ] Toggle active/inactive
@@ -277,4 +339,4 @@
 > - `Shipments APIs V2.0.6.postman_collection.json`
 
 > [!NOTE]
-> **AliExpress developer account exists** but API credentials need to be configured for product search + auto-order endpoints.
+> **AliExpress API fully operational.** 47 feeds available with 500K+ products. Text search, feed browse, product detail, and freight calculation all tested and working. See `aliexpress_api_reference.md` for full filter/feed documentation.

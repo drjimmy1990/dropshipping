@@ -4,189 +4,142 @@
 
 ## Executive Summary
 
-**What exists:** A polished frontend shell (Next.js 16 + Tailwind) with 22 routes, plus a fully working backend foundation — Supabase database (19 tables, RLS, triggers, wallet functions), Supabase Auth (email/password signup + protected routes), and a production Salla OAuth integration. Merchants can sign up, connect their Salla store, and see the connection status live. An n8n webhook workflow is partially built (token validation, event routing, app.uninstalled handler).
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (19 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, and a complete AliExpress API integration. Merchants can sign up, connect their Salla store, receive orders via webhooks, and the admin can manage merchants and approve bank transfers. The AliExpress API is fully operational with text search (45K+ results), feed browsing (47 feeds, 500K+ products), product detail fetching, and shipping estimation.
 
-**What's next:** Replace all remaining mock data with live Supabase queries, complete the n8n order processing workflow, integrate AliExpress product search, build the wallet top-up flow, and add i18n.
+**What's next:** Wire the Discovery page UI to use all available AliExpress search filters and feeds, build the product import wizard, and complete the auto-fulfillment engine.
 
 ---
 
 ## What's Done
 
-### ✅ Infrastructure & Database
+### ✅ Phase 1 — Foundation
 
 | Task | Status | Notes |
 |---|---|---|
-| Supabase project created | ✅ | URL + keys in `.env.local` |
-| Database schema (19 tables) | ✅ | `schema.sql` — merchants, wallets, stores, orders, products, fulfillments, etc. |
-| Enums (11 types) | ✅ | order_status, store_platform, supplier_type, etc. |
-| RLS policies (all tables) | ✅ | `is_admin()` helper + per-table self-or-admin policies |
-| Wallet functions (atomic) | ✅ | `wallet_credit()`, `wallet_deduct()` with transaction logging |
-| Auto-create wallet trigger | ✅ | `trg_merchant_wallet` — wallet created on merchant signup |
-| Updated_at triggers | ✅ | Auto-timestamp on 7 tables |
-| Indexes (20+) | ✅ | On all foreign keys + frequently queried columns |
-| Seed data | ✅ | 4 subscription tiers + 11 platform config entries |
-| `salla_merchant_id` column | ✅ | Added to `stores` table for webhook matching |
+| Supabase project + 19-table schema | ✅ | Full RLS, triggers, wallet functions |
+| Supabase Auth (email/password) | ✅ | Signup → merchant + wallet creation |
+| Salla OAuth integration | ✅ | Connect, disconnect, reconnect flow |
+| n8n webhook scaffold | ✅ | Token validation, event routing |
+| Frontend UI shell (22 routes) | ✅ | All pages built |
 
-### ✅ Authentication
+### ✅ Phase 2 — Live Data Migration
 
 | Task | Status | Notes |
 |---|---|---|
-| Supabase Auth (email/password) | ✅ | Working signup + login |
-| Server-side auth client | ✅ | `createClient()` + `createAdminClient()` in `lib/supabase/server.ts` |
-| Client-side auth client | ✅ | `createClient()` in `lib/supabase/client.ts` |
-| Auth middleware | ✅ | `middleware.ts` guards `/dashboard/*` routes |
-| Signup → merchant + wallet creation | ✅ | Uses admin client to bypass RLS during signup |
-| Login flow | ✅ | Redirects to `/dashboard` on success |
+| Dashboard overview → real Supabase data | ✅ | Wallet, orders, products all live |
+| Wallet page → real balance + transactions | ✅ | Bank transfer upload working |
+| Settings page → persist to merchants table | ✅ | Profile + auto-fulfillment settings |
+| Admin pages → real aggregate queries | ✅ | Merchants, transfers, orders |
+| Admin bank transfers → approve/reject | ✅ | Atomic `wallet_credit()` RPC |
 
-### ✅ Salla Integration
-
-| Task | Status | Notes |
-|---|---|---|
-| Salla Partner Portal app | ✅ | `droplinker` private app created |
-| OAuth initiation (`/api/auth/salla`) | ✅ | Redirects to Salla with correct scopes |
-| OAuth callback (`/api/auth/salla/callback`) | ✅ | Token exchange (form-urlencoded) + user info fetch |
-| Store upsert to Supabase | ✅ | Insert or update store with tokens, salla_merchant_id |
-| `app.installed` webhook | ✅ | n8n receives + responds 200 |
-| `app.uninstalled` webhook | ✅ | n8n updates `is_active = false` via Supabase node |
-| Disconnect button (dashboard) | ✅ | API route `/api/stores/[id]/disconnect` + UI button |
-| Reconnect flow | ✅ | "Reconnect" button triggers OAuth again |
-| Integration status display | ✅ | Live query — shows "connected" / "not connected" |
-
-### ✅ n8n Workflow (Partial)
+### ✅ Phase 3 — Order Processing Pipeline
 
 | Task | Status | Notes |
 |---|---|---|
-| Webhook endpoint | ✅ | `POST https://n8n.asra3.com/webhook/salla-webhook` |
-| Token validation | ✅ | Checks `authorization` header against webhook secret |
-| Event router (Switch) | ✅ | Routes: order.created, order.updated, app.installed, app.uninstalled, fallback |
-| `app.installed` handler | ✅ | Responds 200 (logged) |
-| `app.uninstalled` handler | ✅ | Supabase update → `is_active = false` by `salla_merchant_id` |
-| `order.created` handler | ❌ | **DEFERRED** — needs Find Store → Insert Order → Respond |
-| `order.updated` handler | ❌ | **DEFERRED** — needs Find Store → PATCH Order → Respond |
-| Fallback handler | ❌ | Needs: Respond 200 |
+| `order.created` webhook → Insert order | ✅ | With duplicate detection |
+| `order.updated` webhook → Update status | ✅ | Full Salla slug mapping |
+| Store lookup via `salla_merchant_id` | ✅ | Fixed for multi-merchant |
+| HMAC-SHA256 signature verification | ✅ | Security validated |
+| Orders page → live data | ✅ | Status filter tabs working |
 
-### ✅ Frontend UI Shell (All Mock Data)
+### ✅ Phase 4A — AliExpress API Integration
 
-| Task | Status |
-|---|---|
-| Landing page | ✅ |
-| Features page | ✅ |
-| Pricing page | ✅ |
-| Auth pages (Login/Register) | ✅ |
-| Dashboard overview | ✅ |
-| Product Discovery | ✅ |
-| Import Wizard | ✅ |
-| My Products | ✅ |
-| Orders page + pipeline | ✅ |
-| Wallet page | ✅ |
-| Integrations page | ✅ |
-| Settings (5 tabs) | ✅ |
-| Admin Dashboard | ✅ |
-| Admin Merchants | ✅ |
-| Admin Revenue/Commission | ✅ |
-| Admin Bank Transfers | ✅ |
-| Admin Order Monitor | ✅ |
-| Admin Platform Settings | ✅ |
+| Task | Status | Notes |
+|---|---|---|
+| AliExpress OAuth (platform-level) | ✅ | Token stored in `platform_config` |
+| API client with HMAC-SHA256 signing | ✅ | `lib/aliexpress/client.ts` |
+| `ds.text.search` — keyword search | ✅ | 45K+ results for "phone" |
+| `ds.recommend.feed.get` — feed browse | ✅ | 47 feeds, 500K+ products |
+| `ds.feedname.get` — list feeds | ✅ | All 47 feeds enumerated |
+| `ds.product.get` — product detail | ✅ | Nested DTO parsing fixed |
+| `freight.calculate` — shipping estimate | ✅ | Returns methods + delivery time |
+| Search API route | ✅ | `GET /api/suppliers/aliexpress/search` |
+| Detail API route | ✅ | `GET /api/suppliers/aliexpress/product/:id` |
+| Text.search normalizer | ✅ | Maps camelCase → NormalizedProduct |
+| Feed normalizer | ✅ | Maps feed DTO → NormalizedProduct |
+| Detail normalizer | ✅ | Maps nested DTOs → NormalizedProductDetail |
+
+#### Tested & Working Filters
+
+| Filter | Status | Notes |
+|---|---|---|
+| `keyWord` (keyword search) | ✅ | Required for text.search |
+| `countryCode` (target country) | ✅ | Required — "SA" |
+| `sort` (price/volume) | ✅ | ASC, DESC, LAST_VOLUME_DESC |
+| `minPrice` / `maxPrice` | ✅ | Price range in target currency |
+| `shipToCountry` | ✅ | Ensures SA pricing |
+| `searchExtend` | ❌ | Not supported in DS API |
+| `categoryId` | ⚠️ | Limited — most IDs return 0 |
+
+#### Available Feeds (47 — Key Ones)
+
+| Feed | Products | Category |
+|---|---|---|
+| `Bestseller 2024` | 201,065 | All categories |
+| `DS_Sports&Outdoors_bestsellers` | 27,495 | Sports |
+| `DS_DentalEquipment&Supplies` | 25,343 | Dental |
+| `DS_Automobile&Accessories_bestsellers` | 20,340 | Auto |
+| `DS_ConsumerElectronics_bestsellers` | 19,470 | Electronics |
+| `DS_NewArrivals` | 14,010 | New products |
+| `SA_Clothing&Shoes` | 13,050 | Fashion (SA) |
+| `DS_Home&Kitchen_bestsellers` | 12,300 | Home & Kitchen |
 
 ---
 
-## What's NOT Done — Upcoming Phases
+## What's NOT Done — Upcoming
 
-### 🔴 Phase 2: Live Data Migration (Replace Mock Data)
+### 📋 Phase 4B: Discovery UI & Filters (NEXT)
 
-> Priority: **HIGH** — The dashboard currently shows fake data everywhere
-
-| Task | Priority | Depends On |
-|---|---|---|
-| Dashboard stats → real Supabase queries | 🔴 P0 | — |
-| Orders page → live orders from Supabase | 🔴 P0 | n8n order.created |
-| Wallet page → real balance + transactions | 🔴 P0 | — |
-| My Products → CRUD against `products` table | 🟡 P1 | Supplier integration |
-| Settings page → persist to `merchants` table | 🟡 P1 | — |
-| Admin pages → real cross-merchant queries | 🟡 P1 | — |
-
-### 🟡 Phase 3: Order Processing Pipeline
-
-> Priority: **HIGH** — Core business logic
+> Priority: **HIGH** — Wire the UI to use all tested filters
 
 | Task | Priority | Depends On |
 |---|---|---|
-| n8n: `order.created` → Find Store → Insert Order | 🔴 P0 | salla_merchant_id working |
-| n8n: `order.updated` → Find Store → PATCH Order status | 🔴 P0 | order.created done |
-| n8n: Fallback → Respond 200 | 🟢 P3 | — |
-| Order detail view (dashboard) | 🟡 P1 | Orders in DB |
-| Order status pipeline visualization | 🟡 P1 | Orders in DB |
+| Keyword search bar → text.search | 🔴 P0 | — |
+| Feed category browser (tabs/dropdown) | 🔴 P0 | — |
+| Sort dropdown (price, volume) | 🔴 P0 | — |
+| Price range filter (min/max inputs) | 🟡 P1 | — |
+| Pagination controls | 🟡 P1 | — |
+| Product detail modal (images, variants, shipping) | 🔴 P0 | — |
+| Admin feed management page | 🟡 P1 | `platform_feeds` table |
+| Shipping estimation in product detail | 🟡 P1 | freight.calculate |
 
-### 🟡 Phase 4: AliExpress Integration
+### 📋 Phase 4C: Product Import & My Products
 
-> Priority: **MEDIUM** — Product discovery is the merchant's primary action
-
-| Task | Priority | Depends On |
-|---|---|---|
-| AliExpress API setup (developer account exists) | 🔴 P0 | API credentials |
-| Product search endpoint (`/api/suppliers/aliexpress/search`) | 🔴 P0 | API setup |
-| Product detail fetch | 🟡 P1 | Search working |
-| Import wizard → write to Supabase + push to Salla store | 🟡 P1 | Salla API + AE API |
-| AI product descriptions (n8n WF5 → GPT/Gemini) | 🟠 P2 | Import flow working |
-| Product inbox / quality gate | 🟠 P2 | AI descriptions |
-
-### 🟡 Phase 5: Wallet & Payments
-
-> Priority: **MEDIUM** — Required before auto-fulfillment goes live
+> Priority: **HIGH** — Core merchant workflow
 
 | Task | Priority | Depends On |
 |---|---|---|
-| Wallet balance display (real data) | 🔴 P0 | — |
-| Bank transfer upload + admin approval flow | 🟡 P1 | Admin panel wired |
-| Moyasar integration (Mada/Visa top-up) | 🟡 P1 | Moyasar account |
-| Stripe integration (card top-up) | 🟠 P2 | Stripe account |
-| Transaction history (real data) | 🟡 P1 | — |
-| Auto top-up (charge card when balance < threshold) | 🟠 P2 | Stripe/Moyasar |
+| Import wizard (variants, pricing, description) | 🔴 P0 | Discovery working |
+| Save product to `products` table | 🔴 P0 | Import wizard |
+| Push product to Salla store API | 🔴 P0 | Salla API |
+| My Products page (list, edit, delete) | 🟡 P1 | Products in DB |
+| AI description generation (n8n WF5) | 🟠 P2 | Import working |
 
-### 🟠 Phase 6: Auto-Fulfillment Engine
-
-> Priority: **MEDIUM** — The killer feature, depends on Phases 3-5
-
-| Task | Priority | Depends On |
-|---|---|---|
-| n8n WF2: Order received → check wallet → place supplier order | 🔴 P0 | AE API + Wallet |
-| n8n WF3: Tracking sync (poll supplier → push to Salla) | 🟡 P1 | WF2 |
-| n8n WF4: Stock sync (cron every 6h) | 🟡 P1 | AE API |
-| Supplier fallback (AE out of stock → try CJ) | 🟠 P2 | CJ integration |
-| Auto-fulfill toggle in merchant settings | 🟡 P1 | WF2 |
-
-### 🟠 Phase 7: CJDropshipping + Zid
-
-> Priority: **LOW** — Expansion after core is stable
+### 📋 Phase 5: Wallet & Payments
 
 | Task | Priority |
 |---|---|
-| CJ API integration (product search + auto-order) | 🟠 P2 |
-| Zid OAuth + webhook integration | 🟠 P2 |
-| Multi-store support (multiple Salla/Zid stores) | 🟠 P2 |
+| Bank transfer upload + admin approval | 🟡 P1 |
+| Moyasar integration (Mada/Visa) | 🟡 P1 |
+| Stripe integration (card top-up) | 🟠 P2 |
+| Auto top-up (charge on low balance) | 🟠 P2 |
 
-### 🟠 Phase 8: i18n + Polish
-
-> Priority: **LOW** — Important but not blocking
-
-| Task | Priority |
-|---|---|
-| `next-intl` setup (AR/EN dictionaries) | 🟠 P2 |
-| RTL layout system (Tailwind RTL plugin) | 🟠 P2 |
-| Mobile-responsive dashboard optimization | 🟠 P2 |
-| Email/SMS notifications (n8n WF6) | 🟠 P2 |
-| Performance optimization + caching | 🟠 P2 |
-
-### 🟠 Phase 9: Scale & Advanced
-
-> Priority: **FUTURE** — After launch
+### 📋 Phase 6: Auto-Fulfillment Engine
 
 | Task | Priority |
 |---|---|
-| Subscription billing automation (Stripe recurring) | 🟠 |
-| Team member access with roles | 🟠 |
-| Advanced analytics dashboard | 🟠 |
-| Gulf-wide expansion (multi-currency) | 🟠 |
+| n8n WF2: Order → wallet check → AliExpress order → deduct | 🔴 P0 |
+| n8n WF3: Tracking sync (poll → push to Salla) | 🟡 P1 |
+| n8n WF4: Stock sync (cron every 6h) | 🟡 P1 |
+
+### 📋 Phase 7+: Future
+
+- CJDropshipping integration
+- Zid platform integration
+- i18n (Arabic/English)
+- Mobile optimization
+- Subscription billing
+- Team member roles
 
 ---
 
@@ -194,12 +147,11 @@
 
 | Document | Purpose |
 |---|---|
+| `TODO.md` | Development checklist with progress tracking |
 | `implementation_plan2.md` | Full architecture, schema, workflow specs |
-| `PRODUCT.md` | Brand personality, design principles, user profiles |
-| `DESIGN.md` | Design system tokens (colors, typography, spacing) |
+| `dropshipping_full_plan.md` | Business logic: ordering, shipping, curation |
+| `aliexpress_api_reference.md` | All 47 feeds, tested filters, field mappings |
+| `PRODUCT.md` | Brand personality, design principles |
+| `DESIGN.md` | Design system tokens |
+| `deployment_guide.md` | VPS deployment instructions |
 | `supabase/schema.sql` | Complete database schema (19 tables) |
-| `n8n/BUILD_WORKFLOW_GUIDE.md` | Step-by-step n8n workflow construction guide |
-| `SALLA_SETUP_GUIDE.md` | Salla Partner Portal configuration |
-| `Merchant APIs V2.7.6.postman_collection.json` | Salla Merchant API reference |
-| `Store APIs 1.0.postman_collection.json` | Salla Store API reference |
-| `Shipments APIs V2.0.6.postman_collection.json` | Salla Shipments API reference |
