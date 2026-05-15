@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, Button, Badge, Icon } from "@/components/shared";
 import { useProductSearch } from "@/hooks/use-product-search";
 import type { NormalizedProduct, NormalizedProductDetail } from "@/lib/aliexpress/types";
@@ -86,12 +86,16 @@ function SearchFilters({
         <select
           value={sort}
           onChange={(e) => handleSortChange(e.target.value)}
-          className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none"
+          className={`bg-surface text-sm rounded-md px-3 py-2 border outline-none transition-colors ${
+            sort
+              ? "border-accent text-accent font-medium bg-accent/5"
+              : "border-border text-text-secondary"
+          }`}
         >
-          <option value="">Sort: Relevance</option>
-          <option value="SALE_PRICE_ASC">Price: Low to High</option>
-          <option value="SALE_PRICE_DESC">Price: High to Low</option>
-          <option value="LAST_VOLUME_DESC">Best Selling</option>
+          <option value="">Sort: Default</option>
+          <option value="SALE_PRICE_ASC">💰 Price: Low → High</option>
+          <option value="SALE_PRICE_DESC">💰 Price: High → Low</option>
+          <option value="LAST_VOLUME_DESC">🔥 Best Selling</option>
         </select>
         <select
           value={shipTo}
@@ -627,6 +631,30 @@ export default function ProductDiscoveryPage() {
     maxPrice?: number;
     shipTo?: string;
   }>({});
+  const [clientSort, setClientSort] = useState<string>("");
+
+  /**
+   * Client-side sort: guarantees correct sort order regardless of API behavior.
+   * The AliExpress feed API sort param is unreliable — this ensures user always
+   * sees products in their requested order.
+   */
+  const sortedProducts = useMemo(() => {
+    if (!clientSort || search.products.length === 0) return search.products;
+
+    const sorted = [...search.products];
+    switch (clientSort) {
+      case "SALE_PRICE_ASC":
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      case "SALE_PRICE_DESC":
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+      case "LAST_VOLUME_DESC":
+        sorted.sort((a, b) => (b.orders || 0) - (a.orders || 0));
+        break;
+    }
+    return sorted;
+  }, [search.products, clientSort]);
 
   // Fetch available feeds on mount
   useEffect(() => {
@@ -673,6 +701,7 @@ export default function ProductDiscoveryPage() {
         page: 1,
       };
       setCurrentFilters(merged);
+      setClientSort(params.sort || ""); // Track sort for client-side fallback
       searchProducts(merged);
     },
     [searchProducts, activeFeed, feeds]
@@ -777,6 +806,12 @@ export default function ProductDiscoveryPage() {
               </span>
             )}
           </span>
+          {clientSort && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full border border-accent/20">
+              <Icon name="sort" className="text-xs" />
+              Sorted by {clientSort === "SALE_PRICE_ASC" ? "Price ↑" : clientSort === "SALE_PRICE_DESC" ? "Price ↓" : "Best Selling"}
+            </span>
+          )}
         </div>
       )}
 
@@ -789,7 +824,7 @@ export default function ProductDiscoveryPage() {
       )}
 
       <ProductGrid
-        products={search.products}
+        products={sortedProducts}
         loading={search.loading}
         onViewDetail={handleViewDetail}
       />
