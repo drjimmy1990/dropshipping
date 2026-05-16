@@ -204,8 +204,9 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
     sort: index + 1,
   }));
 
-  // Map variants to Salla options (if any)
-  const options = mapVariantsToOptions(product.variants || []);
+  // Map variants to Salla options (if any), capped to 100 combinations (Salla limit)
+  const rawOptions = mapVariantsToOptions(product.variants || []);
+  const options = capVariantCombinations(rawOptions, 100);
 
   // Calculate total stock from variants or use product-level stock
   const quantity = product.stock_quantity || 100;
@@ -279,6 +280,55 @@ function mapVariantsToOptions(variants: Record<string, unknown>[]): Array<{ name
     display_type: "text" as const,
     values,
   }));
+}
+
+/**
+ * Caps variant options so the Cartesian product of all option values stays ≤ maxCombinations.
+ * Salla enforces a 100-combination limit.
+ * Strategy: trim the largest option group first, then repeat until under the limit.
+ */
+function capVariantCombinations(
+  options: Array<{ name: string; display_type: "text"; values: { name: string; price: number; quantity: number }[] }>,
+  maxCombinations: number = 100
+): typeof options {
+  if (options.length === 0) return options;
+
+  // Calculate current total combinations (Cartesian product)
+  let totalCombinations = options.reduce((acc, opt) => acc * opt.values.length, 1);
+
+  if (totalCombinations <= maxCombinations) return options;
+
+  console.warn(`[Salla] Variant combinations (${totalCombinations}) exceed limit (${maxCombinations}). Trimming...`);
+
+  // Clone options so we don't mutate the original
+  const capped = options.map(opt => ({
+    ...opt,
+    values: [...opt.values],
+  }));
+
+  // Iteratively trim the largest group until we're under the limit
+  while (totalCombinations > maxCombinations) {
+    // Find the option group with the most values
+    let largestIdx = 0;
+    for (let i = 1; i < capped.length; i++) {
+      if (capped[i].values.length > capped[largestIdx].values.length) {
+        largestIdx = i;
+      }
+    }
+
+    // If the largest group has only 1 value, we can't trim further
+    if (capped[largestIdx].values.length <= 1) break;
+
+    // Remove the last value from the largest group
+    capped[largestIdx].values.pop();
+
+    // Recalculate total
+    totalCombinations = capped.reduce((acc, opt) => acc * opt.values.length, 1);
+  }
+
+  console.log(`[Salla] Trimmed to ${totalCombinations} combinations: ${capped.map(o => `${o.name}(${o.values.length})`).join(" × ")}`);
+
+  return capped;
 }
 
 // ---------- Public API Functions ----------
