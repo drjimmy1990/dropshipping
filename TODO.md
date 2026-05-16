@@ -330,6 +330,44 @@
 
 ---
 
+## 📋 Phase 4E — Trending Products & Smart Discovery
+
+> **Goal:** Help merchants answer "what should I sell?" with data-driven product recommendations
+
+### Trending Products Page (`/dashboard/products/trending`)
+- [ ] Dedicated page showing hot/viral products from AliExpress + CJ
+- [ ] Cards with: product image, title, price, order volume, trend score, supplier badge
+- [ ] Category tabs (Electronics, Fashion, Home, Beauty, etc.)
+- [ ] Time filter: trending this week / this month
+- [ ] One-click import from trending page (reuses existing import flow)
+- [ ] "Why it's trending" indicator (volume spike, price drop, seasonal)
+
+### Auto-Curated Trending Feed
+- [ ] n8n cron job (daily): query AliExpress `DS_BestSelling` + `DS_HotProduct` feeds
+- [ ] Track order volume changes day-over-day for trend detection
+- [ ] Store curated products in `trend_reports` table with trend metadata
+- [ ] CJDropshipping bestseller integration (when CJ is ready)
+- [ ] Combine data from multiple suppliers for cross-supplier trending
+
+### Trending Badges in Discovery
+- [ ] "🔥 Trending" badge on products in Discovery page that match trending criteria
+- [ ] "📈 Rising" badge for products with accelerating sales velocity
+- [ ] Sort option: "Trending" in Discovery page sort dropdown
+
+### Weekly Trend Reports
+- [ ] n8n cron job (weekly): compile trending categories + products → `trend_reports`
+- [ ] Dashboard widget: "This Week's Top Categories" with trend arrows
+- [ ] Email digest: weekly trending products summary to merchants (opt-in)
+- [ ] Admin view: platform-wide trending analytics
+
+### SA Market Intelligence
+- [ ] Track which products Saudi merchants import most → feed recommendations
+- [ ] Category performance by country (SA focus)
+- [ ] Seasonal trend detection (Ramadan, Eid, Saudi National Day, Back-to-School)
+- [ ] Competitor-aware suggestions (what's selling on other SA Salla stores)
+
+---
+
 ## 📋 Phase 5 — Wallet & Payments
 
 > **Goal:** Real money flow

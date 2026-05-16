@@ -338,6 +338,19 @@ CREATE TABLE stock_sync_logs (
 | "Pending Review" inbox for AI-generated content | 1 day |
 | Unit conversion (inches→cm, lbs→kg) | 0.5 day |
 
+### Phase 4E: Trending Products & Smart Discovery
+
+| Task | Effort |
+|------|--------|
+| Trending Products page (`/dashboard/products/trending`) | 1-2 days |
+| n8n daily cron: query AliExpress bestseller + hot product feeds | 1 day |
+| Trend detection: track order volume changes day-over-day | 1 day |
+| Cross-supplier trending (AliExpress + CJ bestsellers) | 1 day |
+| Trending/Rising badges in Discovery page | 0.5 day |
+| Weekly trend reports → `trend_reports` table + dashboard widget | 1 day |
+| SA Market Intelligence (seasonal trends, category performance) | 1-2 days |
+| One-click import from trending page | 0.5 day |
+
 ### Phase 6: Auto-Fulfillment Engine
 
 | Task | Effort |

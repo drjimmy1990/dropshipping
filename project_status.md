@@ -6,7 +6,7 @@
 
 **What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready Salla push-to-store pipeline**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, and **automatic AliExpress token refresh** when tokens expire. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla, and manage everything including images and pricing**. All prices are enforced in SAR.
 
-**What's next:** AI content generation pipeline (bilingual descriptions via GPT/Gemini), auto-fulfillment engine, and payment gateway integrations.
+**What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, Zid platform integration, CJDropshipping integration, auto-fulfillment engine. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
 
 ---
 
@@ -155,14 +155,27 @@
 | Unit conversion (inch → cm, lb → kg) | 🟠 P2 | AI pipeline |
 | SEO tag generation | 🟠 P2 | AI pipeline |
 
-### 📋 Phase 5: Wallet & Payments
+### 📋 Phase 4E: Trending Products & Smart Discovery
 
-| Task | Priority |
-|---|---|
-| Bank transfer upload + admin approval | 🟡 P1 |
-| Moyasar integration (Mada/Visa) | 🟡 P1 |
-| Stripe integration (card top-up) | 🟠 P2 |
-| Auto top-up (charge on low balance) | 🟠 P2 |
+| Task | Priority | Depends On |
+|---|---|---|
+| Trending Products page (`/dashboard/products/trending`) | 🔴 P0 | Discovery UI ✅ |
+| n8n daily cron: query AliExpress bestseller + hot product feeds | 🔴 P0 | AliExpress API ✅ |
+| Trend detection (order volume day-over-day tracking) | 🟡 P1 | Trending cron |
+| Cross-supplier trending (AliExpress + CJ bestsellers) | 🟠 P2 | CJ integration |
+| Trending/Rising badges in Discovery page | 🟡 P1 | Trending cron |
+| Weekly trend reports → `trend_reports` table + dashboard widget | 🟡 P1 | Trending cron |
+| SA Market Intelligence (seasonal trends, category performance) | 🟠 P2 | Trend data |
+| One-click import from trending page | 🟡 P1 | Import ✅ |
+
+### 📋 Phase 5: Wallet & Payments ⏸️ (Blocked — awaiting gateway access)
+
+| Task | Priority | Status |
+|---|---|---|
+| Bank transfer upload + admin approval | 🟡 P1 | **Can build now** |
+| Moyasar integration (Mada/Visa) | 🟡 P1 | 🔒 Blocked — no API keys |
+| Stripe integration (card top-up) | 🟠 P2 | 🔒 Blocked — no API keys |
+| Auto top-up (charge on low balance) | 🟠 P2 | 🔒 Blocked — needs Stripe |
 
 ### 📋 Phase 6: Auto-Fulfillment Engine
 
@@ -172,11 +185,30 @@
 | n8n WF3: Tracking sync (poll → push to Salla) | 🟡 P1 |
 | n8n WF4: Stock sync (cron every 6h) | 🟡 P1 |
 
-### 📋 Phase 7+: Future
+### 📋 Phase 7A: CJDropshipping Integration
 
-- CJDropshipping integration
-- Zid platform integration
-- i18n (Arabic/English)
+| Task | Priority |
+|---|---|
+| Register CJ API account + get API keys | 🔴 P0 |
+| CJ product search integration | 🔴 P0 |
+| CJ product detail + import flow | 🟡 P1 |
+| CJ auto-order integration | 🟡 P1 |
+| CJ tracking sync | 🟠 P2 |
+| Supplier fallback logic (AliExpress → CJ) | 🟠 P2 |
+
+### 📋 Phase 7B: Zid Platform Integration
+
+| Task | Priority |
+|---|---|
+| Zid OAuth / API key integration | 🔴 P0 |
+| Product push to Zid store | 🔴 P0 |
+| Zid webhook registration (order.created, order.updated) | 🟡 P1 |
+| Tracking push to Zid | 🟡 P1 |
+| Multi-store support (multiple Salla/Zid per merchant) | 🟠 P2 |
+
+### 📋 Phase 8+: Polish & Scale
+
+- i18n (Arabic/English full RTL)
 - Mobile optimization
 - Subscription billing
 - Team member roles

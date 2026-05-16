@@ -598,6 +598,18 @@ sequenceDiagram
 - [x] **AliExpress token auto-refresh** — `refreshAccessToken()` with retry logic in `apiRequest()`
 - [x] **Token refresh persistence** — new tokens auto-saved to `platform_config`
 
+### Phase 4E — Trending Products & Smart Discovery
+> Data-driven product recommendations for merchants
+
+- [ ] **Trending Products page** (`/dashboard/products/trending`) — curated hot/viral products
+- [ ] **Auto-curated trending feed** — n8n cron queries AliExpress bestseller + hot product feeds daily
+- [ ] **Trend detection** — track order volume changes day-over-day, identify rising products
+- [ ] **Cross-supplier trending** — combine AliExpress + CJDropshipping bestsellers
+- [ ] **Trending badges** in Discovery page (🔥 Trending, 📈 Rising)
+- [ ] **Weekly trend reports** — compiled into `trend_reports` table + dashboard widget
+- [ ] **SA Market Intelligence** — seasonal trends (Ramadan, Eid), category performance
+- [ ] **One-click import** from trending page (reuses existing import wizard)
+
 ### Phase 5 — Wallet & Payments
 > Top-up flow + financial operations
 
