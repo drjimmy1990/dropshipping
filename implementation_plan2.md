@@ -632,8 +632,11 @@ sequenceDiagram
 > Second supplier + second platform
 
 - [ ] CJDropshipping integration (search + auto-order)
-- [ ] Zid OAuth + webhook integration
-- [ ] Multi-store support (multiple stores per merchant)
+- [x] Zid OAuth 2.0 flow + dual-header API client ✅ (Session 10)
+- [x] Product push to Zid (bilingual name, images, variants) ✅
+- [x] Import + push routes updated for dual-platform support ✅
+- [ ] Zid webhook integration (blocked: app not selectable in dashboard)
+- [ ] Multi-store selector UI
 - [ ] Supplier fallback logic (AE → CJ)
 
 ### Phase 8 — i18n + Polish

@@ -255,16 +255,21 @@ function IntegrationsContent() {
                     </div>
                     <div>
                       <div className="font-medium text-text text-sm">Zid</div>
-                      <div className="text-xs text-text-secondary">Coming soon</div>
+                      <div className="text-xs text-text-secondary">Not connected</div>
                     </div>
                   </div>
-                  <Badge variant="neutral">soon</Badge>
+                  <Badge variant="neutral">new</Badge>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  Zid integration is coming in a future update.
+                  Connect your Zid store to import and manage products.
                 </p>
-                <Button size="sm" variant="ghost" className="w-full" disabled>
-                  Coming Soon
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="w-full"
+                  onClick={() => window.location.href = "/api/auth/zid"}
+                >
+                  Connect Zid Store
                 </Button>
               </Card>
             )}

@@ -1,8 +1,8 @@
 # DropLinker — Architecture Map
 
 > Auto-generated from GitNexus Knowledge Graph
-> **1416 nodes | 2,165 edges | 11 clusters | 69 execution flows**
-> Last updated: 2026-05-16 (Session 9 — Product Shipping Editor + Token Auto-Refresh)
+> **1572 nodes | 2,460 edges | 11 clusters | 86 execution flows**
+> Last updated: 2026-05-17 (Session 10 — Zid Platform Integration)
 
 ---
 
@@ -93,8 +93,19 @@ graph TB
         SALLA_TYPES["salla/types.ts\n(payload typedefs)"]
     end
 
+    subgraph "Zid SDK"
+        ZID_CLIENT["zid/client.ts\n(Dual-header auth\n+ bilingual mapper)"]
+        ZID_TYPES["zid/types.ts\n(product/order types)"]
+    end
+
+    subgraph "API Routes — Zid"
+        ZID_INIT["/api/auth/zid"]
+        ZID_CB["/api/auth/zid/callback"]
+    end
+
     subgraph "External"
         SALLA["Salla API"]
+        ZID_API["Zid API"]
         AE_API["AliExpress API"]
         N8N["n8n Webhooks"]
         DB[("Supabase DB\n20 tables")]
@@ -167,12 +178,19 @@ graph TB
     DISC_API --> SC
     WH --> N8N
 
-    %% Product CRUD → Salla SDK → External
+    %% Product CRUD → Salla/Zid SDK → External
     PROD_PUSH --> SALLA_CLIENT --> SALLA
+    PROD_PUSH --> ZID_CLIENT --> ZID_API
     PROD_CRUD --> SALLA_CLIENT
     AE_IMPORT --> SALLA_CLIENT
+    AE_IMPORT --> ZID_CLIENT
     PROD_PUSH --> AC
     PROD_CRUD --> AC
+
+    %% Zid OAuth
+    ZID_INIT --> SC
+    ZID_CB --> AC
+    ZID_CB --> ZID_API
 
     %% Supabase → DB
     CC --> DB

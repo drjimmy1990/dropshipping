@@ -421,7 +421,7 @@
 ### Tracking Sync (n8n WF3)
 - [ ] Cron: poll AliExpress for tracking updates every 2h
 - [ ] Update `fulfillments` table with tracking_number + carrier
-- [ ] Push tracking to Salla store via API
+- [ ] Push tracking to Salla/Zid store via API
 - [ ] Update order status → "shipped"
 - [ ] Notify merchant (optional)
 
@@ -444,15 +444,24 @@
 - [ ] Auto-order integration
 - [ ] Tracking sync
 
-### Zid Platform
-- [ ] Zid OAuth / API key integration
-- [ ] Webhook registration (order.created, order.updated)
-- [ ] Product push to Zid store
+### Zid Platform ✅ (Session 10)
+- [x] Zid OAuth 2.0 flow (`/api/auth/zid` + `/api/auth/zid/callback`)
+- [x] Zid API client (`lib/zid/client.ts` — dual-header auth, bilingual product mapper)
+- [x] Zid TypeScript types (`lib/zid/types.ts`)
+- [x] Product push to Zid store (`pushProductToZid` + image upload + variants)
+- [x] Import route updated — platform-aware push (Salla or Zid)
+- [x] Manual push route updated — auto-detects store platform
+- [x] Integrations page — "Connect Zid Store" button activated
+- [x] DB migration: `platform_store_id` + `partner_token` columns
+- [x] `.env.local` — ZID_CLIENT_ID, ZID_CLIENT_SECRET, ZID_OAUTH_URL
+- [ ] Webhook registration (order.created, order.updated) — ⏸️ blocked: app not selectable in Zid partner dashboard
 - [ ] Tracking push to Zid
+- [ ] Zid category sync route
 
 ### Multi-Store
-- [ ] Support multiple Salla/Zid stores per merchant
-- [ ] Store selector in import wizard
+- [x] Import route supports `targetStoreId` / `targetPlatform` params
+- [x] Push route supports `targetStoreId` / `targetPlatform` params
+- [ ] Store selector UI in import wizard
 - [ ] Per-store order filtering
 
 ---

@@ -55,6 +55,7 @@ fallback_supplier supplier_type,
 
 -- Sync preferences
 
+
 price_sync_interval_hours INTEGER NOT NULL DEFAULT 4,
   stock_min_threshold INTEGER NOT NULL DEFAULT 5,
   stock_auto_hide BOOLEAN NOT NULL DEFAULT true,
@@ -175,6 +176,7 @@ shipping_method TEXT,
 estimated_delivery TEXT,
 
 -- Sync timestamps
+
 
 last_price_check TIMESTAMPTZ,
   last_stock_check TIMESTAMPTZ,
@@ -365,6 +367,7 @@ converted_price_sar NUMERIC(10, 2), -- USD→SAR converted
 measurements_converted BOOLEAN NOT NULL DEFAULT false, -- inch→cm done?
 
 -- Review workflow
+
 
 status inbox_status NOT NULL DEFAULT 'draft',
   reviewer_notes TEXT,
@@ -1191,3 +1194,24 @@ COMMENT ON COLUMN products.shipping_cost IS 'AliExpress shipping cost selected d
 COMMENT ON COLUMN products.shipping_method IS 'Selected shipping carrier name (e.g. "AliExpress Standard Shipping")';
 
 COMMENT ON COLUMN products.estimated_delivery IS 'Estimated delivery timeframe (e.g. "15-30 days")';
+
+-- ================================================================
+-- Phase 7B — Zid Platform Integration
+-- Run in Supabase SQL Editor
+-- ================================================================
+
+-- Add a generic platform_store_id column
+-- Zid needs Store-Id header, Salla uses salla_merchant_id
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS platform_store_id TEXT;
+
+-- Backfill existing Salla stores
+UPDATE stores
+SET
+    platform_store_id = salla_merchant_id
+WHERE
+    platform = 'salla'
+    AND salla_merchant_id IS NOT NULL
+    AND platform_store_id IS NULL;
+
+-- Add partner_token column (Zid's partner-level Authorization JWT)
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS partner_token TEXT;

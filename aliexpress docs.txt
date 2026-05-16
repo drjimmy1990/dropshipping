@@ -1,0 +1,4735 @@
+Beginner's Guide For Dropshipping
+1.What Is Dropshipping?
+
+
+Dropshipping definition
+
+
+
+Dropshipping is a business model where the seller doesn't keep the products in stock but instead transfers the customer orders and shipment details to the manufacturer, wholesaler, or another retailer who then ships the product directly to the customer. The dropshipper acts as a reseller, setting the prices and promoting the products, but doesn't handle the inventory or physical shipping of the products. This allows the dropshipper to save on inventory costs and focus on marketing and customer service.
+
+
+
+
+
+Dropshipping makes it easy to start an eCommerce business. No matter what kinds of roles you are playing, once you have the capability to sell products and find a niche, there is a possibility to earn enough money. You just need to calculate how much profit you will keep, no need to prepare the inventory and ship goods by yourself. The dropshipping platform as AliExpress will complete the fulfillment representing you.
+
+
+
+2.Does AliExpress Allow Dropshipping?
+
+
+AliExpress Dropshipping
+
+
+AliExpress supports dropshipping in many aspects：
+
+
+
+1.We have a unique DS center (dropshipping center), specialized in sourcing winning products and qualifying reliable & valuable suppliers on AliExpress in several seconds.
+
+You can dropship all kinds of products to any other eCommerce platform, you can sell them on Amazon or eBay, and in Shopify stores to anywhere you want to ship. Once you have successfully registered the buyer account on AliExpress and signed the user's agreements in DS Center, it means your dropshipping account has been activated.
+
+
+Step 1: 
+
+
+Register a buyer account, not a seller account. The dropshipper is considered to be a buyer for AliExpress.
+
+
+
+
+
+
+Step 2: 
+
+
+Read the relevant policies and rules, and sign AliExpress Dropshipping Program User agreement to activate your dropshipping buyer account in DS Center.
+
+
+
+
+
+
+
+Once you have signed the agreement of DS Center, it means you are authorized to be a dropshipper on AliExpress, you have to obey dropshipping rules and have relevant rights on AliExpress, and you will be highly treated as a super buyer. Authorized dropshippers can obtain many conveniences in the process of AliExpress fulfillment, such as more than coupons、discounts、tax, and professional support. 
+
+
+
+2.We have a mature and complete dropshipping ecosystem, there are hundreds of official plugins and ISVs, that are compatible with AliExpress. It means hundreds of website systems have supported AliExpress when millions of dropshippers select AliExpress as their first choice. No matter what you choose, there is always one solution fitted for you. 
+
+
+
+3.Why Is AliExpress?
+
+
+AliExpress is also well-known as the global dropshipping sourcing platform, helping entrepreneurs quickly sell overseas with AliExpress' goods and logistics capabilities. Why do plenty dropshippers select AliExpress? The reasons are below:
+
+
+
+
+
+
+Reason1: Rich products
+
+
+
+There are hundreds of millions of commodities on AliExpress, meanwhile, hundreds of thousands of new products are launched every day. It is considered to be a great dropshipping shelf to source products.
+
+
+
+Reason2: Good value with low costs
+
+
+
+There are active hundreds of thousands of sellers, who are representatives of factories and manufacturers. Includes cross-border suppliers and local suppliers on AliExpress. It is easy for dropshippers to fulfill orders at a competitive price. 
+
+
+Reason3: Good fulfillment capability all over the world
+
+
+
+AliExpress supports multiple languages online service and shipment to more than 200 countries. There are many kinds of logistics for your reference to meet different needs. 
+
+
+
+4 Start Dropshipping On Steps
+
+
+1.Create your online shops
+
+
+Choosing the right eCommerce platform to build online shops as your dropshipping stores. To confirm what website systems to choose, website systems here include SAAS eCommerce solutions, open-source eCommerce systems, and 3rd party eCommerce platforms. As the famous dropshipping platform, we have cooperated with hundreds of dropshipping ISVs and plugins in different eCommerce systems.
+
+With the rapid development of global eCommerce systems, each eCommerce system has its own plugin ecosystem. You can search for AliExpress dropshipping in the corresponding app store.
+
+Which will be better for dropshipping business? it depends on your business stages with the reality of skills.
+
+
+
+SAAS
+
+
+
+
+
+
+
+Open-source
+
+
+
+
+
+
+
+3rd-Party eCommerce
+
+
+
+
+
+
+
+Stores on other eCommerce platforms
+
+
+
+
+
+
+
+
+
+
+
+2.Process Order Payment
+
+
+
+You can pay the order manualy by login in AE and find your orders in order list and pay them.
+
+We also support you to pay your order by API with your PayPal account, please check the followint document:
+
+Activate you PayPal account to AE
+
+
+
+3.Order fulfillment 
+
+
+
+After you complete ordering on AliExpress, there will generate a tracking number for the logistics. Generally, once the supplier has shipped the parcel and they will submit a tracking number for the logistics. You can find the tracking number in the details of my orders on AliExpress, or you can synchronize the status of awaiting shipment and the tracking number on AliExpress will be synchronized to Plugins/ISVs console.
+
+Click to fulfill orders, the entire fulfillment will be finished after you have fulfilled the tracking number.
+
+End-consumers can check and trace the shipping status in your dropshipping store till the packages are delivered.
+
+
+
+4.Payment 
+
+
+
+Online payment refers to the process of making transactions and payments over the Internet using electronic payment methods such as credit cards, debit cards, e-wallets, or online banking. It allows individuals and businesses to make secure and convenient payments for goods and services from anywhere in the world. Online payment systems typically involve the use of encrypted transactions and authentication methods to ensure the security of personal and financial information. These systems have become increasingly popular due to their ease of use, speed, and convenience, making it easier for businesses to sell their products and services online and for customers to make purchases from the comfort of their homes.
+
+The process of withdrawing money from an online payment system will vary depending on the specific payment platform being used. However, in general, the steps to withdraw money may include:
+
+
+
+
+
+
+
+5.Benchmark
+
+
+
+ROI (Return on Investment) is a financial measure used to evaluate the profitability of an investment relative to its cost. 
+
+
+
+
+
+
+
+ROAS (Return on Ad Spend) is a marketing metric used to evaluate the effectiveness of advertising campaigns. It measures the revenue generated from an advertising campaign relative to the cost of that campaign. 
+
+
+
+
+
+
+
+ROI and ROAS are two important indicators in the operation process of e-commerce. ROI is mainly to measure the sustainability of the project, while ROAS is to measure marketing investment. If dropshippers make clear the indicators and optimize core questions continuously. Dropshipper can quickly get to the break-even point and stay profitable.
+
+
+
+5 Dropshipping Help Center
+
+
+If you have any other questions on the process of AliExpress dropshipping and order processing, pls visit DS Centerto learn more.
+
+
+
+
+
+
+
+
+
+API QPS
+API Queries Per Second
+aliexpress.ds.product.get
+QPS:500
+
+aliexpress.trade.buy.placeorder
+QPS:150
+
+aliexpress.ds.order.create
+QPS:150
+
+aliexpress.trade.ds.order.get
+QPS:1000
+
+aliexpress.ds.freight.query
+QPS:350
+
+aliexpress.ds.image.search
+QPS:15
+
+aliexpress.ds.order.tracking.get
+QPS:100
+
+aliexpress.ds.address.get
+QPS:4
+
+aliexpress.ds.category.get
+QPS:1000
+
+aliexpress.ds.feed.itemids.get
+QPS:3
+
+aliexpress.ds.category.get
+QPS:1000
+
+aliexpress.ds.feedname.get
+QPS:1000
+
+aliexpress.ds.recommend.feed.get
+QPS:1000
+
+aliexpress.ds.product.get
+aliexpress.trade.buy.placeorder
+aliexpress.ds.order.create
+aliexpress.trade.ds.order.get
+aliexpress.ds.freight.query
+aliexpress.ds.image.search
+aliexpress.ds.order.tracking.get
+aliexpress.ds.address.get
+aliexpress.ds.category.get
+aliexpress.ds.feed.itemids.get
+aliexpress.ds.category.get
+aliexpress.ds.feedname.get
+aliexpress.ds.recommend.feed.get
+
+
+
+aliexpress.ds.product.get
+API
+GET/POST:aliexpress.ds.product.get
+
+
+
+Description：This API is used to retrieve product details, such as SKU information, product descriptions, pricing, and inventory stock levels.
+
+The price calculation logic depends on the user’s account data. Authentication via a valid access token is mandatory to ensure price consistency.
+
+
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+ship_to_country
+
+String
+
+Yes
+
+Country
+
+
+
+
+
+
+
+ 
+
+product_id
+
+Number
+
+Yes
+
+Item ID
+
+
+
+
+
+
+
+
+
+target_currency
+
+String
+
+No
+
+Target currency
+
+remove_personal_benefit
+
+Boolean
+
+No
+
+If true, you will not get any crowd-type promotion
+
+target_language
+
+String
+
+No
+
+hi_IN(India)
+
+de_DE(Germany)
+
+en_US(UnitedStates)
+
+zh_CN(China)
+
+es_MX(Mexico)
+
+ru_RU(Russia)
+
+pt_PT(Portugal)
+
+pt_BR(Brazil)
+
+ko_KR(South Korea)
+
+id_ID(Indonesia)
+
+en_GB(United Kingdom)
+
+it_IT(Italy)
+
+fr_FR(France)
+
+es_ES(Spain)
+
+iw_IL(Israel)
+
+ar_SA(Saudi Arabia)
+
+ar_EG(Egypt)
+
+vi_VN(Vietnam)
+
+th_TH(Thailand)
+
+uk_UA(Ukraine)
+
+ja_JP(Japan)
+
+pl_PL(Poland)
+
+he_IL(Israel)
+
+nl_NL(Netherlands)
+
+tr_TR(Turkey)
+
+
+
+
+Response Struct
+
+
+
+
+
+Name
+
+Type
+
+Description
+
+rsp_msg
+
+String
+
+Result message
+
+rsp_code
+
+Number
+
+Result code
+
+◉result
+
+Object
+
+Product search results
+
+◎ae_item_properties
+
+List[Object]
+
+Attribute information
+
+attr_name_id
+
+Number
+
+Attribute ID
+
+attr_value_id
+
+Number
+
+Attribute ID
+
+attr_value_unit
+
+String
+
+Attribute unit
+
+attr_name
+
+String
+
+Attribute name
+
+attr_value_start
+
+String
+
+Interval attribute start value
+
+attr_value_end
+
+String
+
+The end value of the interval attribute
+
+attr_value
+
+String
+
+Attribute value
+
+◎ae_item_sku_info_dtos
+
+List[Object]
+
+SKU information
+
+sku_available_stock
+
+Number
+
+SKU inventory
+
+sku_bulk_order
+
+Number
+
+Minimum number of batches
+
+sku_price
+
+String
+
+Origin SKU price. Value range: 0.01-100000; Unit: USD. Such as: 200.07, which means: 200 US dollars 7 points. Need to be in the correct price range.
+
+offer_sale_price
+
+String
+
+SKU discount price
+
+id
+
+String
+
+SKU attribute unique key(Duplicate with "sku_attr")[Will be offline on (28/02/25)]
+
+ ○ae_sku_property_dtos
+
+List[Object]
+
+SKU attribute object
+
+sku_property_value
+
+String
+
+Attribute value
+
+property_value_id
+
+Number
+
+Custom id
+
+sku_property_name
+
+String
+
+The system will first display the "property_value_definition_name". If this field is empty, the "sku_property_value" will be shown instead
+
+sku_property_id
+
+Number
+
+Attribute ID
+
+property_value_definition_name
+
+String
+
+Custom name
+
+sku_image
+
+String
+
+SKU pictures
+
+ barcode
+
+String
+
+Commodity barcode
+
+ currency_code
+
+String
+
+The currency unit of the product. U.S. Dollar: USD, Ruble: RUB
+
+ sku_code
+
+String
+
+Ready to offline
+
+ sku_id
+
+String
+
+SKU id (Can be used in aliexpress.ds.freight.query API.)
+
+ sku_attr
+
+String
+
+SKU attribute unique key in new field name.(Can be used in aliexpress.ds.freight.query API.)
+
+ ean_code
+
+String
+
+EAN Code(European Article Number)
+
+ price_include_tax
+
+Boolean
+
+If the price includes tax
+
+◎wholesale_price_tiers
+
+List[Object]
+
+Display when the item has wholesale price
+
+min_quantity
+
+String
+
+Threshold quantity for wholesale
+
+discount
+
+String
+
+Discount rate
+
+wholesale_price
+
+String
+
+Whole price
+
+tax_currency_code
+
+String
+
+Currency code of tax
+
+ buy_amount_limit_set_by_promotion
+
+String
+
+Promotion buy limit
+
+estimated_import_charges
+
+String
+
+Products from the People's Republic of China (which include products from Hong Kong) entering the U.S. for consumption will be subject to all applicable import charges (duties, taxes, fees, exactions, etc.) according to the currently effective regulatory requirements in the U.S. To ensure compliance with such requriements, these applicable import charges may be remitted to U.S. regulatory authorities on your behalf.
+
+ limit_strategy
+
+String
+
+The limit strategy after you reach the promotion limit
+
+◎ae_multimedia_info_dto
+
+List[Object]
+
+Multimedia information
+
+○ae_video_dtos
+
+List[Object]
+
+Video information
+
+poster_url
+
+String
+
+The URL of the video cover image
+
+media_status
+
+String
+
+Video status
+
+ali_member_id
+
+Number
+
+Seller's master account ID
+
+media_type
+
+String
+
+Type of video
+
+media_id
+
+Number
+
+Video ID
+
+ media_url
+
+String
+
+Media URL
+
+image_urls
+
+String
+
+List of main images of the product
+
+◎package_info_dto
+
+List[Object]
+
+Package information
+
+base_unit
+
+Number
+
+Number of basic products for custom weighing
+
+package_height
+
+Number
+
+Product height
+
+gross_weight
+
+String
+
+The gross weight of the product
+
+package_length
+
+Number
+
+The length of the product
+
+package_width
+
+Number
+
+Product width
+
+product_unit
+
+Number
+
+Unit of commodity
+
+package_type
+
+Boolean
+
+Type of packaging(Set by the seller, this is the package type.)
+
+◎ae_store_info
+
+List[Object]
+
+Store Information
+
+item_as_described_rating
+
+String
+
+Product Description, 1-5 stars
+
+communication_rating
+
+String
+
+Seller Service, 1-5 stars
+
+shipping_speed_rating
+
+String
+
+Logistics, 1-5 stars
+
+store_name
+
+String
+
+Shop name
+
+store_id
+
+Number
+
+Store ID
+
+store_country_code
+
+String
+
+Store country code, can be used as 'ship from' country of the sku
+
+◎product_id_converter_result
+
+List[Object]
+
+product id converter result
+
+ main_product_id
+
+Number
+
+Main productId
+
+sub_product_id
+
+Object
+
+Sub productId
+
+has_whole_sale
+
+Boolean
+
+Has wholesale price
+
+ ◎logistics_info_dto
+
+List[Object]
+
+Logistics information
+
+ship_to_country
+
+String
+
+Country
+
+delivery_time
+
+Number
+
+Goods lead time
+
+ ◎ae_item_base_info_dto
+
+List[Object]
+
+Basic commodity information
+
+product_status_type
+
+String
+
+Product status
+
+mobile_detail
+
+String
+
+Mobile detailed description(Product details)
+
+avg_evaluation_rating
+
+String
+
+Average rating stars, 1-5 stars
+
+evaluation_count
+
+String
+
+Evaluation number(Customer Reviews )
+
+detail
+
+String
+
+Commodity detailed description(Product details)
+
+currency_code
+
+String
+
+The currency unit of the commodity. U.S. Dollar: USD, Ruble: RUB
+
+category_id
+
+Number
+
+ID of the category of the product
+
+sales_count
+
+String
+
+Sales volume of product("1000+"/ "13")
+
+category_sequence
+
+String
+
+Category sequence
+
+product_id
+
+Number
+
+Item ID
+
+subject
+
+String
+
+The title of the product
+
+
+Response in JSON
+
+
+{
+  "result": {
+    "ae_item_sku_info_dtos": [
+      {
+        "sku_attr": "73:175#Black Green;71:193#Polarized",
+        "offer_sale_price": "3.94",
+        "sku_id": "12000027158136202",
+        "wholesale_price_tiers": [
+          {
+            "min_quantity": "1",
+            "wholesale_price": "\"5.78\"",
+            "discount": "0.52"
+          }
+        ],
+        "ean_code": "eanCode",
+        "limit_strategy": "create_order_fail",
+        "price_include_tax": "true",
+        "currency_code": "USD",
+        "sku_price": "3.94",
+        "buy_amount_limit_set_by_promotion": "3",
+        "sku_available_stock": "57",
+        "id": "73:175#Black Green;71:193#Polarized",
+        "sku_bulk_order": "10",
+        "barcode": "320325455",
+        "sku_code": "S96470",
+        "ae_sku_property_dtos": [
+          {
+            "sku_property_value": "green",
+            "sku_image": "https://ae04.alicdn.com/kf/Hba46f8222fdf4440a271134f8ce2ca2aB.jpg",
+            "sku_property_name": "Lenses Color",
+            "property_value_definition_name": "Black Green",
+            "property_value_id": "175",
+            "sku_property_id": "73"
+          }
+        ]
+      }
+    ],
+    "ae_multimedia_info_dto": {
+      "ae_video_dtos": [
+        {
+          "media_status": "approved",
+          "media_type": "MAIN_IMAGE_VIDEO",
+          "poster_url": "https://img.alicdn.com/imgextra/i4/6000000004252/O1CN01R1TCD21hHSjEOLpKT_!!6000000004252-0-tbvideo.jpg",
+          "ali_member_id": "227887939",
+          "media_id": "296195919792",
+          "media_url": "media url"
+        }
+      ],
+      "image_urls": "https://ae04.alicdn.com/kf/H551494696f2342edbeee5d2f288f4d1cv.jpg;https://ae04.alicdn.com/kf/H847c9c1b04614adfa20f042cc4490df6S.jpg;https://ae04.alicdn.com/kf/H1936d341e4bf4773ace153b527070a07C.jpg;https://ae04.alicdn.com/kf/Hf0cc14d4cc5741dc91b6dcf90bf5553cu.jpg;https://ae04.alicdn.com/kf/H80cb5bc712984795a850e9fc3a156d9fV.jpg;https://ae04.alicdn.com/kf/H71d81f9898af4d72b3bd18f7fffeb557j.jpg"
+    },
+    "package_info_dto": {
+      "package_width": "8",
+      "package_height": "6",
+      "package_length": "18",
+      "gross_weight": "0.050",
+      "package_type": "false",
+      "product_unit": "100000015",
+      "base_unit": "2"
+    },
+    "product_id_converter_result": {
+      "main_product_id": "32982857990",
+      "sub_product_id": {
+        "US": 2251832796543238
+      }
+    },
+    "logistics_info_dto": {
+      "delivery_time": "5",
+      "ship_to_country": "CA"
+    },
+    "ae_item_base_info_dto": {
+      "gmt_create": "0",
+      "mobile_detail": "\u003cdiv\u003eThis is a product\u003c/div\u003e",
+      "category_sequence": "(Beta Release) Only open to whitelist appkey",
+      "subject": "FUQIAN 2022 Fashion Square Polarized Sunglasses Men Vintage Plastic Male Sun Glasses Women Stylish Black Sport Shades UV400",
+      "evaluation_count": "1004",
+      "ws_display": "expire_offline",
+      "sales_count": "1000+",
+      "product_status_type": "onSelling",
+      "avg_evaluation_rating": "4.8",
+      "gmt_modified": "0",
+      "currency_code": "CNY",
+      "owner_member_seq_long": "227887939",
+      "category_id": "33902",
+      "product_id": "4000903675543",
+      "detail": "\u003cdiv\u003eThis is a product\u003c/div\u003e",
+      "ws_offline_date": "0"
+    },
+    "has_whole_sale": "true",
+    "ae_item_properties": [
+      {
+        "attr_name_id": "2",
+        "attr_value_id": "110567917",
+        "attr_value_unit": "piece",
+        "attr_name": "Brand Name",
+        "attr_value_start": "1",
+        "attr_value_end": "10",
+        "attr_value": "FUQIAN"
+      }
+    ],
+    "ae_store_info": {
+      "store_id": "4874072",
+      "shipping_speed_rating": "4.7",
+      "communication_rating": "4.7",
+      "store_name": "FUQIAN Eyewear Store",
+      "store_country_code": "CN",
+      "item_as_described_rating": "4.7"
+    }
+  },
+  "code": "0",
+  "rsp_code": "200",
+  "rsp_msg": "Call succeeds",
+  "request_id": "0ba2887315178178017221014"
+}
+
+
+
+ERROR CODE
+Error_code
+
+Error Message
+
+explanation
+
+602
+
+Item is not allowed to this country
+
+Not available for sale for legal reasons;(Not available for sale. Use aliexpress.ds.image.searchV2 or aliexpress.ds.text.search to find similar products.)
+
+605
+
+ITEM_ID_NOT_FOUND
+
+Product does not exist (Maybe the merchant has removed the product from the shelves)
+
+404
+
+System Error
+
+System error. Please connect tech support.
+
+
+Common Issues
+
+
+Q: Api access frequency exceeds the limit. this ban will last 1 seconds ?
+A: The overall API QPS for this connection is 500. The overall current limiting error rate is 1-2%. It is recommended to sleep for 1-2 seconds and request again.
+
+Q: Which one should I use, "main_product_id" or "sub_product_id"?
+A: According to privacy data compliance requirements, if your target is the US market, you need to use "sub_product_id".
+
+Q: Why the "sku_attr" I got is empty ?
+A: When there is only one sku under the product, this parameter may be empty.（For this case, please pass "" when placing an order）
+
+Q: The obtained sku price is inconsistent with the web price?
+A: First, please confirm that the account you logged in to the web is consistent with the token account. If the price is still different, please check whether there is a page discount (according to AE's policy, page discounts cannot take effect in the API).
+
+Q: When a product has a tiered price, which one should I refer to?
+Please refer to the return parameters below.
+
+{
+  "wholesale_price_tiers": [
+    {
+      "min_quantity": "1",
+      "wholesale_price": "\"5.78\"",
+      "discount": "0.52"
+    }
+  ]
+}
+
+
+Demo code
+
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+
+IopClient client = new IopClient(url, appkey, appSecret);
+IopRequest request = new IopRequest();
+request.setApiName("aliexpress.ds.product.get");
+request.addApiParameter("ship_to_country", "US");
+request.addApiParameter("product_id", "1005003784285827");
+request.addApiParameter("target_currency", "USD");
+request.addApiParameter("target_language", "en");
+request.addApiParameter("remove_personal_benefit", "false");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.product.get');
+$request->addApiParam('ship_to_country','US');
+$request->addApiParam('product_id','1005003784285827');
+$request->addApiParam('target_currency','USD');
+$request->addApiParam('target_language','en');
+$request->addApiParam('remove_personal_benefit','false');
+var_dump($c->execute($request, $accessToken))
+
+ChangeLog
+
+
+
+aliexpress.ds.member.benefit.get
+API
+GET/POST:aliexpress.ds.member.benegit.get
+
+Description：The API for querying member benefit detail.
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+Response Struct
+Name
+
+Type
+
+Description
+
+rsp_msg
+
+String
+
+Rsp_msg
+
+rsp_code
+
+String
+
+Rsp_code
+
+◉result
+
+Object[]
+
+Result
+
+code
+
+String
+
+Benefit code
+
+title
+
+String
+
+Benefit title
+
+canApply
+
+String
+
+Flag if can apply the benefit
+
+canBenefit
+
+String
+
+Flag if already own the benefit
+
+Response
+Successful response
+{
+  "aliexpress_ds_member_benefit_get": {
+  "result": [
+    {
+      "canApply": "true",
+      "code": "auto-pay",
+      "title": "auto-pay",
+      "canBenefit": "true"
+    }
+  ],
+  "code": "0",
+  "rsp_code": "rsp_code",
+  "rsp_msg": "rsp_msg",
+  "request_id": "0ba2887315178178017221014"
+}
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.member.benefit.get");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.member.benefit.get');
+var_dump($c->execute($request, $accessToken));
+
+
+
+
+ChangeLog
+
+aliexpress.ds.freight.query
+API
+GET/POST:aliexpress.ds.freight.query
+
+Description: Enter the destination, product, SKU, and currency information, and return available delivery options and delivery fees for each shipping option.
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+◉queryDeliveryReq
+
+Object
+
+Yes
+
+Delivery query request
+
+quantity
+
+Number
+
+Yes
+
+Quantity for your request
+
+shipToCountry
+
+String
+
+Yes
+
+Country that ships to
+
+productId
+
+String
+
+Yes
+
+Product_id(From aliexpres.product.get)
+
+provinceCode
+
+String
+
+No
+
+Provice
+
+cityCode
+
+String
+
+No
+
+City
+
+language
+
+String
+
+Yes
+
+Language
+
+locale
+
+String
+
+Yes
+
+Locale
+
+selectedSkuId
+
+String
+
+Yes
+
+Selected sku(From aliexpres.product.get)
+
+currency
+
+String
+
+Yes
+
+Currency for calculate the freight fee
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+Result
+
+msg
+
+String
+
+Error msg
+
+◎delivery_options
+
+List[Object]
+
+List of deliveryOptions
+
+shipping_fee_format
+
+String
+
+Format String shipping fee to make it understandable
+
+delivery_date_desc
+
+String
+
+Format delivery date estimation
+
+code
+
+String
+
+Delivery service code, which is used for place order
+
+free_shipping
+
+Boolean
+
+True means free, false means not free
+
+max_delivery_days
+
+Number
+
+Estimated delivery days, max days
+
+estimated_delivery_time
+
+String
+
+Delivery estimation
+
+min_delivery_days
+
+Number
+
+Estimated delivery days, main days
+
+shipping_fee_currency
+
+String
+
+Shipping fee currency
+
+ship_from_country
+
+String
+
+Where your sku will ship from
+
+company
+
+String
+
+Shipping service company name which you can use to display
+
+shipping_fee_cent
+
+String
+
+Shipping fee amount in cent
+
+tracking
+
+Boolean
+
+Is this shipping option can be tracking
+
+mayHavePFS
+
+Boolean
+
+If it can be platFormFreeShipping
+
+available_stock
+
+String
+
+Available stock for sku
+
+guaranteed_delivery_days
+
+String
+
+It is a guaranteed days
+
+ddpIncludeVATTax
+
+String
+
+If price include ddp vat tax
+
+free_shipping_threshold
+
+String
+
+Dree shipping threshold
+
+code
+
+Number
+
+Status of this request: 200 means success
+
+success
+
+Boolean
+
+True means it is success
+
+Response
+Successful response
+{
+  "aliexpress_ds_freight_query_response": {
+    "result": {
+      "msg": "Call succeeds",
+      "code": 200,
+      "success": true,
+      "delivery_options": {
+        "delivery_option_d_t_o": [
+          {
+            "code": "CAINIAO_STANDARD",
+            "shipping_fee_currency": "USD",
+            "free_shipping": false,
+            "mayHavePFS": false,
+            "guaranteed_delivery_days": "75",
+            "max_delivery_days": 34,
+            "tracking": true,
+            "shipping_fee_format": "US $172.71",
+            "delivery_date_desc": "Mar 08 - 25",
+            "company": "AliExpress standard shipping",
+            "ship_from_country": "CN",
+            "min_delivery_days": 17,
+            "available_stock": "182",
+            "ddpIncludeVATTax": "true",
+            "shipping_fee_cent": "172.71"
+          }
+        ]
+      }
+    },
+    "request_id": "2140d58917400193503907772"
+  }
+}
+Faild response
+{
+  "aliexpress_ds_freight_query_response": {
+    "result": {
+      "msg": "DELIVERY_NOT_AVAILABLE_TO_YOUR_ADDRESS",
+      "code": 505,
+      "success": false
+    },
+    "request_id": "2101243217409851599735016"
+  }
+}
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+IopClient client = new IopClient(url, appkey, appSecret);
+IopRequest request = new IopRequest();
+request.setApiName("aliexpress.ds.freight.query");
+request.addApiParameter("queryDeliveryReq", "{\"quantity\":\"1\",\"shipToCountry\":\"US\",\"productId\":\"3256802900954148\",\"provinceCode\":\"California\",\"cityCode\":\"Mill Valley\",\"selectedSkuId\":\"12000023999200390\",\"language\":\"en_US\",\"currency\":\"USD\",\"locale\":\"zh_CN\"}");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.freight.query');
+$request->addApiParam('queryDeliveryReq','{\"quantity\":\"1\",\"shipToCountry\":\"US\",\"productId\":\"3256802900954148\",\"provinceCode\":\"California\",\"cityCode\":\"Mill Valley\",\"selectedSkuId\":\"12000023999200390\",\"language\":\"en_US\",\"currency\":\"USD\",\"locale\":\"zh_CN\"}');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+Q:How to determine whether the product is free shipping
+A:If 'free_shipping' is 'true', shipping is free. If 'free_shipping' is 'false', check 'mayHavePFS'. If 'mayHavePFS' is 'true' and 'free_shipping_threshold' is 0, shipping is free. If 'mayHavePFS' is 'true' and 'free_shipping_threshold' is not 0, shipping is free when the order total meets or exceeds 'free_shipping_threshold'. Otherwise, shipping is not free.
+
+
+
+ChangeLogaliexpress.ds.address.get
+API
+GET/POST:aliexpress.ds.address.get
+
+Description：Get restrict names which are same to names in web page form.
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+language
+
+String
+
+No
+
+Language
+
+countryCode
+
+String
+
+Yes
+
+CountryCode
+
+isMultiLanguage
+
+String
+
+No
+
+Support multi language
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+result
+
+ret
+
+Boolean
+
+is response successful 
+
+code
+
+String
+
+error code
+
+◎data
+
+List[Object]
+
+address data
+
+country
+
+String
+
+country code
+
+type
+
+String
+
+address type
+
+children
+
+String
+
+json format children address data
+
+msg
+
+String
+
+error message
+
+Response
+Successful response
+{
+  "aliexpress_ds_address_get_response": {
+  "result": {
+    "ret": "true",
+    "msg": "error message",
+    "code": "code",
+    "data": {
+      "country": "US",
+      "children": "childrenStr",
+      "type": "country"
+    }
+  },
+  "code": "0",
+  "request_id": "0ba2887315178178017221014"
+}
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.address.get");
+request.addApiParameter("language", "JA");
+request.addApiParameter("countryCode", "JP");
+request.addApiParameter("isMultiLanguage", "true");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.address.get');
+$request->addApiParam('language','JA');
+$request->addApiParam('countryCode','JP');
+$request->addApiParam('isMultiLanguage','true');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+
+
+ChangeLogaliexpress.ds.address.get
+API
+GET/POST:aliexpress.ds.address.get
+
+Description：Get restrict names which are same to names in web page form.
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+language
+
+String
+
+No
+
+Language
+
+countryCode
+
+String
+
+Yes
+
+CountryCode
+
+isMultiLanguage
+
+String
+
+No
+
+Support multi language
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+result
+
+ret
+
+Boolean
+
+is response successful 
+
+code
+
+String
+
+error code
+
+◎data
+
+List[Object]
+
+address data
+
+country
+
+String
+
+country code
+
+type
+
+String
+
+address type
+
+children
+
+String
+
+json format children address data
+
+msg
+
+String
+
+error message
+
+Response
+Successful response
+{
+  "aliexpress_ds_address_get_response": {
+  "result": {
+    "ret": "true",
+    "msg": "error message",
+    "code": "code",
+    "data": {
+      "country": "US",
+      "children": "childrenStr",
+      "type": "country"
+    }
+  },
+  "code": "0",
+  "request_id": "0ba2887315178178017221014"
+}
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.address.get");
+request.addApiParameter("language", "JA");
+request.addApiParameter("countryCode", "JP");
+request.addApiParameter("isMultiLanguage", "true");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.address.get');
+$request->addApiParam('language','JA');
+$request->addApiParam('countryCode','JP');
+$request->addApiParam('isMultiLanguage','true');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+
+
+ChangeLog
+
+aliexpress.ds.order.tracking.get
+API
+GET/POST:aliexpress.ds.order.tracking.get
+
+Description：Get DropShip Order Tracking info.
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+ae_order_id
+
+String
+
+Yes
+
+Order ID which you get from aliexpress.ds.order.create
+
+language
+
+String
+
+Yes
+
+Language
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+result
+
+ret
+
+Boolean
+
+true for success
+
+code
+
+String
+
+error code
+
+◎data
+
+Object
+
+tracking list dto
+
+○tracking_detail_line_list
+
+Object[]
+
+tracking list
+
+mail_no
+
+String
+
+mail number
+
+◎detail_node_list
+
+Object[]
+
+tracking node
+
+tracking_name
+
+String
+
+tracking node description
+
+time_stamp
+
+Number
+
+timestamp
+
+tracking_detail_desc
+
+String
+
+tracking node description
+
+carrier_name
+
+String
+
+carrier name
+
+eta_time_stamps
+
+Number
+
+timestamp
+
+◎package_item_list
+
+Object[]
+
+package item
+
+item_id
+
+Number
+
+item id
+
+quantity
+
+Number
+
+count
+
+item_title
+
+String
+
+item title
+
+sku_desc
+
+String
+
+sku desc
+
+msg
+
+String
+
+error message
+
+Response
+Successful response
+{
+  "aliexpress_ds_order_tracking_get_response": {
+    "result": {
+      "ret": true,
+      "msg": "",
+      "code": "",
+      "data": {
+        "tracking_detail_line_list": {
+          "tracking_detail": [
+            {
+              "detail_node_list": {
+                "detail_node": [
+                  {
+                    "time_stamp": 1739928180000,
+                    "tracking_detail_desc": "Your package arrived at local Facility.",
+                    "tracking_name": "Delivery update"
+                  }
+                ]
+              },
+              "package_item_list": {
+                "package_item": [
+                  {
+                    "sku_desc": "Color:Silvery; Size:M",
+                    "quantity": 1,
+                    "item_id": 1005008453688391,
+                    "item_title": "Elegant Flounce Mini Skirts Suits Women..."
+                  }
+                ]
+              },
+              "carrier_name": "AliExpress standard shipping",
+              "mail_no": "4209795192144903600008220012159992",
+              "eta_time_stamps": 1740273780000
+            }
+          ]
+        }
+      }
+    },
+    "request_id": "21411e5617409909645296164"
+  }
+}
+Faild response
+{
+  "aliexpress_ds_order_tracking_get_response": {
+    "result": {
+      "ret": false,
+      "msg": "TRACKING DATA NOT FOUND",
+      "code": "1001"
+    },
+    "request_id": "2101243217409925448971244"
+  }
+}
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.order.tracking.get");
+request.addApiParameter("ae_order_id", "12345");
+request.addApiParameter("language", "en_US");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient(url,appkey,appSecret);
+$request = new IopRequest('aliexpress.ds.order.tracking.get');
+$request->addApiParam('ae_order_id','12345');
+$request->addApiParam('language','en_US');
+var_dump($c->execute($request, $accessToken));
+
+
+
+
+ChangeLog
+
+
+API
+Successful response
+Faild response
+Java demo
+PHP demo
+
+
+aliexpress.trade.ds.order.get
+API
+GET/POST：aliexpress.trade.ds.order.get
+
+Description: Used to query AliExpress orders under the corresponding account.
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+◉single_order_query
+
+Object[]
+
+Yes
+
+Order query conditions
+
+order_id
+
+Number
+
+Yes
+
+Your AliExpress order id.()
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+order information
+
+◎user_order_amount
+
+List[Object]
+
+Order amount in user's pay currency
+
+pay_timeout_second
+
+String
+
+Seconds for pay expiration, from order created
+
+order_paidtime_string
+
+String
+
+Order paid time
+
+gmt_create
+
+String
+
+Order creation time
+
+order_status
+
+String
+
+Order status
+
+logistics_status
+
+String
+
+Logistics status
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+◎order_amount
+
+List[Object]
+
+Order amount
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency code
+
+◎child_order_list
+
+List[Object]
+
+Child order list
+
+○actual_tax_fee
+
+List[Object]
+
+TAX amount in user's pay currency
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+○actual_shipping_fee
+
+List[Object]
+
+Actual shipping fee = shippingfee - shippingdiscount
+
+amount
+
+String
+
+Fee amount 
+
+currency_code
+
+String
+
+Currency
+
+already_include_tax
+
+String
+
+Does the product fee already include tax
+
+○shipping_fee
+
+List[Object]
+
+Shipping fee 
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+○sale_discount_fee
+
+List[Object]
+
+Sale discount 
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+○sale_fee
+
+List[Object]
+
+sale fee 
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+○actual_fee
+
+List[Object]
+
+Actual fee = sale fee - sale discount + actual shipping
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+○shipping_discount_fee
+
+List[Object]
+
+Shipping discount
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency
+
+end_reason
+
+String
+
+Order's end reason CANCELED
+
+sku_id
+
+String
+
+SKU id
+
+product_id
+
+Number
+
+Product id
+
+○product_price
+
+List[Object]
+
+Product price
+
+amount
+
+String
+
+Amount
+
+currency_code
+
+String
+
+Currency code
+
+product_name
+
+String
+
+Product name
+
+product_count
+
+Number
+
+Number of products
+
+◎logistics_info_list
+
+List[Object]
+
+Order logistics information list
+
+logistics_no
+
+String
+
+Logistics tracking number(No more maintenance, expected to be offline.You can query the order logistics track through aliexpress.ds.order.tracking.get API.)
+
+logistics_service
+
+String
+
+Logistics service name(No more maintenance, expected to be offline.You can query the order logistics track through aliexpress.ds.order.tracking.get API.)
+
+◎store_info
+
+List[Object]
+
+store Information
+
+store_id
+
+Number
+
+Store id
+
+store_name
+
+String
+
+Store name
+
+store_url
+
+String
+
+Store URL
+
+
+Response
+Successful response
+{
+  "aliexpress_trade_ds_order_get_response": {
+    "result": {
+      "gmt_create": "2024-09-09 21:00:03",
+      "order_status": "FINISH",
+      "logistics_info_list": {
+        "aeop_order_logistics_info": [
+          {
+            "logistics_service": "CAINIAO_FULFILLMENT_STD",
+            "logistics_no": "LP00675700340000"
+          }
+        ]
+      },
+      "store_info": {
+        "store_id": 1103800006,
+        "store_name": "Kedi Bottles Store"
+      },
+      "user_order_amount": {
+        "amount": "8.34",
+        "currency_code": "USD"
+      },
+      "child_order_list": {
+        "aeop_child_order_info": [
+          {
+            "product_count": 1,
+            "sku_id": "1200003702000037",
+            "product_name": "500ML Insulated Water Bottle",
+            "shipping_fee": {
+              "amount": "0.93",
+              "currency_code": "USD"
+            },
+            "actual_fee": {
+              "amount": "8.12",
+              "currency_code": "USD"
+            }
+          }
+        ]
+      },
+      "logistics_status": "BUYER_ACCEPT_GOODS"
+    },
+    "request_id": "2102e76417290680900002444"
+  }
+}
+Faild response
+{
+  "error_response": {
+    "code": "15",
+    "type": "ISP",
+    "sub_code": "isv.insufficient-permission",
+    "sub_msg": "Insufficient permission.",
+    "msg": "Remote service error",
+    "request_id": "210126da17406391015547789"
+  }
+}
+
+
+
+ERROR CODE
+
+
+Common Issues
+Q:Why did I query immediately after the order was created and the result was failed?
+A:After the order is created, it needs to be synchronized to the server in the region, so it usually takes a few seconds. You can query it 10 seconds after creating the order.
+
+
+
+Status
+"order_status" enumeration
+
+
+Sstus
+
+CODE
+
+Order placed successfully
+
+PLACE_ORDER_SUCCESS
+
+Payment processing
+
+PAYMENT_PROCESSING
+
+Waiting for seller to confirm amount
+
+WAIT_SELLER_EXAMINE_MONEY
+
+Risk control in progress
+
+RISK_CONTROL
+
+Ongoing risk control
+
+RISK_CONTROL_HOLD
+
+Waiting for seller to ship
+
+WAIT_SELLER_SEND_GOODS
+
+Partial shipment
+
+SELLER_PART_SEND_GOODS
+
+Waiting for buyer to receive goods
+
+WAIT_BUYER_ACCEPT_GOODS
+
+Order completed (confirm receipt/close order)
+
+FINISH
+
+Cancel order
+
+IN_CANCEL
+
+Waiting for group formation
+
+WAIT_GROUP
+
+Waiting to supplement shipping address
+
+WAIT_COMPLETE_ADDRESS
+
+"logistics_status" enumeration
+DEFAULT,
+WAIT_SELLER_SEND_GOODS,
+SELLER_SEND_PART_GOODS,
+SELLER_SEND_GOODS,
+BUYER_ACCEPT_GOODS,
+NO_LOGISTICS;
+
+
+Demo code
+Java Demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+IopClient client = new IopClient(url, appkey, appSecret);
+IopRequest request = new IopRequest();
+
+request.setApiName("aliexpress.trade.ds.order.get");
+request.addApiParameter("single_order_query", "{\"order_id\":\"10000001\"}");
+
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+
+System.out.println(response.getBody());
+PHP Demo
+<?php
+
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient($url, $appkey, $appSecret);
+
+$request = new IopRequest('aliexpress.trade.ds.order.get');
+$request->addApiParam('single_order_query','{\"order_id\":\"10000001\"}');
+
+var_dump($c->execute($request, $accessToken));
+
+ChangeLog
+
+Successful response
+Faild response
+Q:Why did I query immediately after the order was created and the result was failed?
+"order_status" enumeration
+"logistics_status" enumeration
+Java Demo
+PHP Demo
+
+
+
+aliexpress.ds.order.create
+API
+GET/POST：aliexpress.ds.order.create
+
+Description: Used to create AliExpress orders (support automatic payment) 
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+◉ds_extend_request
+
+Object
+
+No
+
+DS ExtendParam
+
+◎promotion
+
+List[Object]
+
+No
+
+PromotionCode
+
+promotion_code
+
+String
+
+No
+
+PromotionCode
+
+promotion_channel_info
+
+String
+
+Yes
+
+PromotionChannelInfo
+
+◎payment
+
+List[Object]
+
+No
+
+payment
+
+pay_currency
+
+String
+
+No
+
+Used to pass in the specified currency.{"pay_currency":"XXX"}
+
+try_to_pay
+
+String
+
+No
+
+Please auth your account as DS Before set it true (true or false) 
+
+◎trade_extra_param
+
+List[Object]
+
+No
+
+Whether it is wholesale
+
+business_model
+
+String
+
+No
+
+Chose to place the order in wholesale or retail model
+
+◉param_place_order_request4_open_api_d_t_o
+
+Object
+
+Yes
+
+Specific order parameters
+
+out_order_id
+
+String
+
+No
+
+This field is recommended to be marked as a required field; it is used to input the order number from your system. The system uses `out_order_id` as an idempotent ID to prevent duplicate orders. The validity period of this idempotent ID is 24 hours.
+
+◎logistics_address
+
+List[Object]
+
+Yes
+
+Logistic address information
+
+address
+
+String
+
+Yes
+
+Address information
+
+address2
+
+String
+
+No
+
+Address extension information
+
+city
+
+String
+
+Yes
+
+City
+
+contact_person
+
+String
+
+No
+
+Contact person（The CPF validation for Brazil requires this parameter to be passed in as a name check.）
+
+country
+
+String
+
+Yes
+
+Receiver country (It should be a two-letter code)
+
+cpf
+
+String
+
+No
+
+Taxpayer identification number (If the country is BR, then this parameter needs to be passed.）
+
+full_name
+
+String
+
+No
+
+Receiver full name
+
+locale
+
+String
+
+No
+
+Internationalization locale
+
+mobile_no
+
+String
+
+No
+
+Mobile phone number
+
+passport_no
+
+String
+
+No
+
+Passport number(MX needs to fill in)
+
+passport_no_date
+
+String
+
+No
+
+passport expiry date
+
+passport_organization
+
+String
+
+No
+
+Passport issuing agency
+
+phone_country
+
+String
+
+No
+
+Country code of the phone
+
+province
+
+String
+
+Yes
+
+Province
+
+tax_number
+
+String
+
+No
+
+TAX number
+
+zip
+
+String
+
+No
+
+ZIP code
+
+rut_no
+
+String
+
+No
+
+Chile tax number (not used)
+
+foreigner_passport_no
+
+String
+
+No
+
+Foreign tax number (registration card number or passport number is required for Korean foreigners)
+
+is_foreigner
+
+String
+
+No
+
+Whether it is a foreigner
+
+vat_no
+
+String
+
+No
+
+VAT tax number
+
+tax_company
+
+String
+
+No
+
+Company name
+
+location_tree_address_id
+
+String
+
+No
+
+Location tree address id
+
+ ◎product_items
+
+List[Object]
+
+Yes
+
+product attributes
+
+product_count
+
+Number
+
+Yes
+
+Product count
+
+product_id
+
+Number
+
+Yes
+
+Product id
+
+sku_attr
+
+String
+
+No
+
+Product sku(From aliexpress.ds.product.get;If only one sku exists, it will be "")
+
+logistics_service_name
+
+String
+
+No
+
+Logistics service name(From aliexpress.ds.freight.query)
+
+order_memo
+
+String
+
+No
+
+User Comments
+
+
+
+If you want create AutoPayment order, Please refer to the autopay document HERE.
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+result
+
+error_code
+
+String
+
+errorCode
+
+error_msg
+
+String
+
+errorMsg
+
+order_list
+
+Number[]
+
+orderList
+
+is_success
+
+Boolean
+
+success
+
+Response
+Successful Response
+{
+  "aliexpress_ds_order_create_response": {
+    "result": {
+      "is_success": true,
+      "order_list": {
+        "number": [
+          8198352049851315
+        ]
+      }
+    },
+    "request_id": "212a790f17395203524904964"
+  }
+}
+Failed Response
+{
+  "aliexpress_ds_order_create_response": {
+    "result": {
+      "error_msg": "Please enter a city",
+      "error_code": "B_DROPSHIPPER_DELIVERY_ADDRESS_VALIDATE_FAIL",
+      "is_success": false
+    },
+    "request_id": "2140eeb817405385212422871"
+  }
+}
+
+
+ERROR CODE
+Error code
+
+Error message
+
+Explanation
+
+B_DROPSHIPPER_DELIVERY_ADDRESS_VALIDATE_FAIL
+
+(Resolve document)
+
+
+
+
+
+address does not match the rules
+
+Modify buyer address.
+
+Please enter a City
+
+The address does not meet the requirements.Please check your City
+
+Please enter the country code and phone number without any spaces or special characters
+
+The address does not meet the requirements.Please check your country_code & phone number.
+
+Please select a State/Province/County
+
+The address does not meet the requirements.Check your State & Province & Country.
+
+Please enter between 2 - 32 characters
+
+Check"contact_person"
+
+B_DROPSHIPPER_DELIVERY_ADDRESS_CPF_CN_INVALID
+
+
+
+
+
+
+
+
+
+CPF invalid or wrong;"contact_person" does not match CPF.
+
+
+
+B_DROPSHIPPER_DELIVERY_ADDRESS_CPF_NOT_MATCH
+
+BLACKLIST_BUYER_IN_LIST
+
+Blacklist buyers
+
+This user is temporarily unable to place an order.
+
+USER_ACCOUNT_DISABLED
+
+Buyer account has been disabled
+
+Contact customer service for further information.
+
+PRICE_PAY_CURRENCY_ERROR
+
+Products in the place order request should not be declared in different currencies
+
+Products should declare as same currency.
+
+DELIVERY_METHOD_NOT_EXIST
+
+Delivery method is not exist
+
+Please fill valid delivery method (You can use se aliexpress.freight.query check it)
+
+INVENTORY_HOLD_ERROR
+
+Hold inventory error
+
+Maybe inventory is insufficient or system error occured.
+
+REPEATED_ORDER_ERROR
+
+Repeated placed order
+
+Please check buyer order list, request already been handled successfully.
+
+ERROR_WHEN_BUILD_FOR_PLACE_ORDER
+
+System error.
+
+System error,Please connect tech support.
+
+A001_ORDER_CANNOT_BE_PLACED
+
+A001_ORDER_CANNOT_BE_PLACED
+
+A001_ORDER_CANNOT_BE_PLACED
+
+A002_INVALID_ZONE
+
+A002_INVALID_ZONE
+
+A002_INVALID_ZONE
+
+A003_SUSPICIOUS_BUYER
+
+A003_SUSPICIOUS_BUYER
+
+A003_SUSPICIOUS_BUYER
+
+A004_CANNOT_USER_COUPON
+
+A004_CANNOT_USER_COUPON
+
+A004_CANNOT_USER_COUPON
+
+A005_INVALID_COUNTRIES
+
+A005_INVALID_COUNTRIES
+
+A005_INVALID_COUNTRIES
+
+A006_INVALID_ACCOUNT_INFO
+
+A006_INVALID_ACCOUNT_INFO
+
+A006_INVALID_ACCOUNT_INFO
+
+Common Issues
+Q: How to place an order for multiple products at once.
+A: You can refer the JSON.
+
+{
+  "logistics_address": {
+    "address": "Enter_your_address",
+    "city": "Vineland",
+    "contact_person": "Malik Jack",
+    "country": "US",
+    "mobile_no": "23450000",
+    "phone_country": "+",
+    "phone_number": "5593600000",
+    "province": "New Jersey",
+    "zip": "08360"
+  },
+  "product_items": [
+    {
+      "product_id": 1005004638293060,
+      "product_count": 1,
+      "sku_attr": "14:365458#Brown",
+      "logistics_service_name": "",
+      "order_memo": " "
+    },
+    {
+      "product_id": 1005004638293060,
+      "product_count": 1,
+      "sku_attr": "14:365458#Brown",
+      "logistics_service_name": "",
+      "order_memo": " "
+    }
+  ]
+}
+Q: "B_DROPSHIPPER_DELIVERY_ADDRESS_VALIDATE_FAIL"
+A:You can use the address filling form on the AliExpress order page to verify whether your address is correct. If you can confirm, it means your address is available and can be used as an input parameter. Link 
+
+Select your country
+
+Enter your address or zipcode.
+Compare the correct address of the page automatically loaded
+Finish your parameter
+"country": "US",
+"zip": "08360",
+"province": "New Jersey",
+"city": "Vineland",
+Develop
+
+You can also use browser tools to capture elements on the page to ensure the accuracy of the province & city results you input. Please refer to the image below.
+
+
+
+Q: "DELIVERY_METHOD_NOT_EXIST"
+A:Use aliexpress.ds.freight.query to check whether the logistics can be delivered.
+
+If the following error occurs, the product cannot be delivered.
+
+{
+  "aliexpress_ds_freight_query_response": {
+    "result": {
+      "msg": "DELIVERY_NOT_AVAILABLE_TO_YOUR_ADDRESS",
+      "code": 505,
+      "success": false
+    },
+    "request_id": "21015f2417397598951022443"
+  }
+}
+Q: The created Order was cancelled. How can I know the reason for the failure?
+A:Due to relevant requirements, we cannot disclose the failure reason to you. You can use the webhook function to track the order status to determine the failure step.
+
+Q: How to cancel an already created order?
+A:You need to log in to the AliExpress website with the account corresponding to the order token you created, click View Order Page and cancel.
+
+Q: US create order fail Err_Msg:Please enter between 2 - 32 characters.
+A:US address validation rules.
+
+"contact_person" will be automatically intercepted by the system according to the spaces. There must be 2-32 characters before and after the spaces.
+
+Demo code
+Java Demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+IopClient client = new IopClient(url, appkey, appSecret);
+IopRequest request = new IopRequest();
+
+request.setApiName("aliexpress.ds.order.create");
+request.addApiParameter('ds_extend_request','{"payment":{"pay_currency":"USD"},"promotion":{"promotion_code":""}}');
+request.addApiParameter(
+    'param_place_order_request4_open_api_d_t_o','
+{
+    "out_order_id": "",
+    "logistics_address": {
+        "address": "WWEPerformance Center,",
+        "address2": "STE 100",
+        "birthday": "",
+        "city": "Orlando",
+        "contact_person": "person name",
+        "country": "US",
+        "cpf": "",
+        "fax_area": "",
+        "fax_country": "",
+        "fax_number": "",
+        "full_name": "full_name",
+        "locale": "local",
+        "mobile_no": "11231231231",
+        "passport_no": "",
+        "passport_no_date": "",
+        "passport_organization": "",
+        "phone_area": "",
+        "phone_country": "+",
+        "phone_number": "11231231231",
+        "province": "Florida",
+        "tax_number": "",
+        "zip": "32807",
+        "rut_no": "",
+        "foreigner_passport_no": "",
+        "is_foreigner": false,
+        "vat_no": "",
+        "tax_company": "",
+        "location_tree_address_id": ""
+    },
+    "product_items": [
+        {
+            "product_id": 1005002704149141,
+            "product_count": 1,
+            "sku_attr": "14:175;5:200003528#Length -26cm",
+            "logistics_service_name": "CAINIAO_FULFILLMENT_STD"
+        }
+    ]
+}
+);
+
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+
+System.out.println(response.getBody());
+PHP Demo
+<?php
+
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$c = new IopClient($url, $appkey, $appSecret);
+
+$request = new IopRequest('aliexpress.ds.order.create');
+
+$request->addApiParam('ds_extend_request','{"payment":{"pay_currency":"USD"},"promotion":{"promotion_code":""}}');
+
+$request->addApiParam(
+  'param_place_order_request4_open_api_d_t_o','
+{
+    "out_order_id": "",
+    "logistics_address": {
+        "address": "WWEPerformance Center,",
+        "address2": "STE 100",
+        "birthday": "",
+        "city": "Orlando",
+        "contact_person": "person name",
+        "country": "US",
+        "cpf": "",
+        "fax_area": "",
+        "fax_country": "",
+        "fax_number": "",
+        "full_name": "full_name",
+        "locale": "local",
+        "mobile_no": "11231231231",
+        "passport_no": "",
+        "passport_no_date": "",
+        "passport_organization": "",
+        "phone_area": "",
+        "phone_country": "+",
+        "phone_number": "11231231231",
+        "province": "Florida",
+        "tax_number": "",
+        "zip": "32807",
+        "rut_no": "",
+        "foreigner_passport_no": "",
+        "is_foreigner": false,
+        "vat_no": "",
+        "tax_company": "",
+        "location_tree_address_id": ""
+    },
+    "product_items": [
+        {
+            "product_id": 1005002704149141,
+            "product_count": 1,
+            "sku_attr": "14:175;5:200003528#Length -26cm",
+            "logistics_service_name": "CAINIAO_FULFILLMENT_STD"
+        }
+    ]
+}
+);
+
+var_dump($c->execute($request, $accessToken));
+
+ChangeLog
+
+
+
+
+Latest update:
+2025-03-24 17:26:53
+3462
+aliexpress.ds.image.searchV2
+API
+GET/POST:aliexpress.ds.image.searchV2
+
+Description：The API for querying member benefit detail.
+
+
+
+Request Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+◉param0
+
+Object
+
+No
+
+param0
+
+search_type
+
+String
+
+No
+
+image search type(same/similar)
+
+image_base64
+
+String
+
+No
+
+image encoded using base64
+
+currency
+
+String
+
+No
+
+currency
+
+lang
+
+String
+
+No
+
+language
+
+sort_type
+
+String
+
+No
+
+sort type(price/orders/best)
+
+sort_order
+
+String
+
+No
+
+sort order(asc/desc)
+
+ship_to
+
+String
+
+No
+
+ship to country
+
+Response Struct
+Name
+
+Type
+
+Description
+
+◉result
+
+Object
+
+Result
+
+ret
+
+Boolean
+
+Ret
+
+code
+
+String
+
+Code
+
+◎data
+
+List[Object]
+
+Data
+
+first_level_category_id
+
+String
+
+First level category id
+
+product_id
+
+String
+
+product_id
+
+target_sale_price_currency
+
+String
+
+Sale price target currency
+
+discount
+
+String
+
+Discount rate
+
+second_level_category_id
+
+String
+
+Second level category id
+
+latest_volume
+
+String
+
+Recent sale volume
+
+product_title
+
+String
+
+Product title
+
+product_detail_url
+
+String
+
+Product detail page url
+
+first_level_category_title
+
+String
+
+First level category name
+
+target_sale_price
+
+String
+
+Sale price amount using target currency
+
+product_main_image_url
+
+String
+
+Product main image URL
+
+target_original_price_currency
+
+String
+
+Original price target currency
+
+evaluate_rate
+
+String
+
+Evaluate rate
+
+target_original_price
+
+String
+
+Target original price
+
+shop_id
+
+Number
+
+ShopID
+
+second_level_category_title
+
+String
+
+Second level category name
+
+similarity_score
+
+String
+
+Similarity  score
+
+ship_from
+
+String
+
+Ship country code
+
+messages
+
+String
+
+Message
+
+empty
+
+Boolean
+
+Empty
+
+Response
+Successful response
+{
+  "aliexpress_ds_image_searchV2_response": {
+    "result": {
+      "ret": true,
+      "next_start_row_key": "522ee3d0-7a55-424d-a3ab-a347039921fe",
+      "data": {
+        "products": [
+          {
+            "volume": "700+",
+            "category": {
+              "first_level": {
+                "name": "Home & Garden",
+                "id": "15"
+              },
+              "second_level": {
+                "name": "Pet Products",
+                "id": "100006664"
+              }
+            },
+            "product_detail_url": "https://www.aliexpress.com/item/1005007857219128.html?skuId=12000042560576073&pdp_ext_f=%7B%22sku_id%22%3A%2212000042560576073%22%7D",
+            "price": {
+              "sale": {
+                "value": "99",
+                "currency": "USD"
+              },
+              "original": {
+                "value": "795",
+                "currency": "USD"
+              }
+            },
+            "discount": "87",
+            "image_url": "https://ae-pic-a1.aliexpress-media.com/kf/Sd012ee6a192442ccb2d324a6de1cc9d5p/Scratcher-Sisal-Hemp-Board-Wall-Pad-Furniture-Protective-Scratching-Post-For-Cat-Paw-Training.jpg_350x350xz.jpg",
+            "evaluate_rate": "4.9",
+            "title": "Scratcher Sisal Hemp Board Wall Pad Furniture Protective Scratching Post For Cat Paw Training",
+            "shop_id": 1103576287,
+            "product_id": "1005007857219128",
+            "similarity_score": "0.967"
+          },
+          {
+            "volume": "6",
+            "category": {
+              "first_level": {
+                "name": "Home & Garden",
+                "id": "15"
+              },
+              "second_level": {
+                "name": "Pet Products",
+                "id": "100006664"
+              }
+            },
+            "product_detail_url": "https://www.aliexpress.com/item/1005007889439386.html?skuId=12000042734519538&pdp_ext_f=%7B%22sku_id%22%3A%2212000042734519538%22%7D",
+            "price": {
+              "sale": {
+                "value": "111",
+                "currency": "USD"
+              },
+              "original": {
+                "value": "1148",
+                "currency": "USD"
+              }
+            },
+            "discount": "90",
+            "image_url": "https://ae-pic-a1.aliexpress-media.com/kf/Sd012ee6a192442ccb2d324a6de1cc9d5p/Scratcher-Sisal-Hemp-Board-Wall-Pad-Furniture-Protective-Scratching-Post-For-Cat-Paw-Training.jpg_350x350xz.jpg",
+            "evaluate_rate": "",
+            "title": "Scratcher Sisal Hemp Board Wall Pad Furniture Protective Scratching Post For Cat Paw Training",
+            "shop_id": 1103847117,
+            "product_id": "1005007889439386",
+            "similarity_score": "0.967"
+          },
+          {
+            "volume": "1500+",
+            "category": {
+              "first_level": {
+                "name": "Home & Garden",
+                "id": "15"
+              },
+              "second_level": {
+                "name": "Pet Products",
+                "id": "100006664"
+              }
+            },
+            "product_detail_url": "https://www.aliexpress.com/item/1005007386625802.html?skuId=12000040667060586&pdp_ext_f=%7B%22sku_id%22%3A%2212000040667060586%22%7D",
+            "price": {
+              "sale": {
+                "value": "148",
+                "currency": "USD"
+              },
+              "original": {
+                "value": "1303",
+                "currency": "USD"
+              }
+            },
+            "discount": "88",
+            "image_url": "https://ae-pic-a1.aliexpress-media.com/kf/S6ebadd4fa7464ffb86fbc13742ed053ez/Natural-Sisal-Cat-Scratcher-Mat-Cat-Scratch-Mats-Horizontal-Cat-Floor-Scratching-Pad-Rug-Protect-Couch.jpg_350x350xz.jpg",
+            "evaluate_rate": "4.4",
+            "title": "Natural Sisal Cat Scratcher Mat Cat Scratch Mats Horizontal Cat Floor Scratching Pad Rug Protect Couch and Carpets",
+            "shop_id": 1102524801,
+            "product_id": "1005007386625802",
+            "similarity_score": "0.967"
+          }
+        ]
+      },
+      "total_count": 89,
+      "pagination": {
+        "has_next": true,
+        "page_no": 1,
+        "page_count": 9,
+        "page_size": 10
+      },
+      "empty": false
+    },
+    "request_id": "2102e72c17333673131128897"
+  }
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.image.searchV2");
+request.addApiParameter("param0", "{\"sort_type\":\"price\",\"image_base64\":\"imageBase64\",\"currency\":\"USD\",\"lang\":\"en\",\"sort_order\":\"asc\",\"ship_to\":\"US\"}");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$request = new IopRequest('aliexpress.ds.image.searchV2');
+$request->addApiParam('param0','{\"sort_type\":\"price\",\"image_base64\":\"imageBase64\",\"currency\":\"USD\",\"lang\":\"en\",\"sort_order\":\"asc\",\"ship_to\":\"US\"}');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+
+
+ChangeLog
+
+
+
+aliexpress.ds.text.search
+API
+GET/POST:aliexpress.ds.text.search
+
+Description：Search products by keyword.
+
+
+
+Request Parameter
+Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+keyWord
+
+String
+
+Yes
+
+Search keywords you need
+
+local
+
+String
+
+Yes
+
+Local (en_US/zh_CN...)
+
+countryCode
+
+String
+
+Yes
+
+Ship to country
+
+categoryId
+
+Number
+
+No
+
+CategoryId
+
+sortBy
+
+String
+
+No
+
+SortBy(min_price/orders/comments,desc/asc)
+
+pageSize
+
+Number
+
+No
+
+Pagesize
+
+pageIndex
+
+Number
+
+No
+
+Page index
+
+currency
+
+String
+
+Yes
+
+Currency(USD / BRL...)
+
+◉searchExtend
+
+List[Object]
+
+No
+
+searchExtend
+
+searchKey
+
+String
+
+No
+
+SearchKey
+
+searchValue
+
+String
+
+No
+
+SearchValue
+
+max
+
+String
+
+No
+
+Max
+
+min
+
+String
+
+No
+
+Min
+
+selectionName
+
+String
+
+No
+
+Text search within specific selection
+
+Response Struct
+
+
+Name
+
+Type
+
+Description
+
+code
+
+String
+
+Code
+
+msg
+
+String
+
+Message
+
+◉data
+
+Object
+
+data
+
+totalCount
+
+Number
+
+Result total count
+
+pageIndex
+
+Number
+
+Result page index
+
+pageSize
+
+Number
+
+Result page size
+
+◎products
+
+List[Object]
+
+products
+
+salePriceFormat
+
+String
+
+Formatted sale price
+
+itemUrl
+
+String
+
+Product detail page URL
+
+orders
+
+String
+
+Recent order amount
+
+score
+
+String
+
+Average customer evaluation score(5 point scale)
+
+title
+
+String
+
+Product title
+
+itemMainPic
+
+String
+
+Product main picture
+
+cateId
+
+String
+
+Category ID
+
+originalPriceFormat
+
+String
+
+Formatted original price
+
+originMinPrice
+
+String
+
+Origin min price
+
+itemId
+
+String
+
+ItemID/Product_ID
+
+originalPrice
+
+String
+
+Original price
+
+originalPriceCurrency
+
+String
+
+Original price currency
+
+salePrice
+
+String
+
+Sale price
+
+salePriceCurrency
+
+String
+
+Sale price currency
+
+targetOriginalPrice
+
+String
+
+Original price using target disignated currency
+
+targetOriginalPriceCurrency
+
+String
+
+Target disignated currency
+
+targetSalePrice
+
+String
+
+Sale price using target disignated currency
+
+discount
+
+String
+
+Discount rate
+
+productVideoUrl
+
+String
+
+Product video URL
+
+evaluateRate
+
+String
+
+Average customer evaluation score(100 point scale)
+
+Response
+Successful response
+{
+  "aliexpress_ds_text_search":{
+  "msg": "message",
+  "code": "0",
+  "data": {
+    "pageIndex": "pageIndex",
+    "pageSize": "pageSize",
+    "totalCount": "totalCount",
+    "products": [
+      {
+        "productVideoUrl": "productVideoUrl",
+        "originalPrice": "12.73",
+        "originalPriceCurrency": "USD",
+        "salePrice": "6.62",
+        "discount": "48%",
+        "itemMainPic": "itemMainPic",
+        "title": "title",
+        "originalPriceFormat": "originalPriceFormat",
+        "score": "score",
+        "itemId": "itemId",
+        "targetSalePrice": "6.62",
+        "cateId": "cateId",
+        "targetOriginalPriceCurrency": "USD",
+        "originMinPrice": "originMinPrice",
+        "evaluateRate": "97.8%",
+        "salePriceFormat": "salePriceFormat",
+        "orders": "orders",
+        "targetOriginalPrice": "12.73",
+        "itemUrl": "itemUrl",
+        "salePriceCurrency": "USD"
+      }
+    ]
+  },
+  "request_id": "0ba2887315178178017221014"
+}
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.text.search");
+request.addApiParameter("keyWord", "\u88D9\u5B50");
+request.addApiParameter("local", "zh_CN");
+request.addApiParameter("countryCode", "US");
+request.addApiParameter("categoryId", "349");
+request.addApiParameter("sortBy", "min_price,asc");
+request.addApiParameter("pageSize", "20");
+request.addApiParameter("pageIndex", "1");
+request.addApiParameter("currency", "USD");
+request.addApiParameter("searchExtend", "[{\"min\":\"min\",\"max\":\"max\",\"searchKey\":\"searchKey\",\"searchValue\":\"searchValue\"}]");
+request.addApiParameter("selectionName", "selection name");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$request = new IopRequest('aliexpress.ds.text.search');
+$request->addApiParam('keyWord','\u88D9\u5B50');
+$request->addApiParam('local','zh_CN');
+$request->addApiParam('countryCode','US');
+$request->addApiParam('categoryId','349');
+$request->addApiParam('sortBy','min_price,asc');
+$request->addApiParam('pageSize','20');
+$request->addApiParam('pageIndex','1');
+$request->addApiParam('currency','USD');
+$request->addApiParam('searchExtend','[{\"min\":\"min\",\"max\":\"max\",\"searchKey\":\"searchKey\",\"searchValue\":\"searchValue\"}]');
+$request->addApiParam('selectionName','selection name');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+Q:User Case Example
+A: You can bring these two selection name in text search to search within your specific selected product collection.
+
+
+
+As shown above, you can for example search "eye lashes" within your target selection "Evernet_B_NG_Selection".
+
+
+
+What's more, you can use searchExtend param to add more search filter to better satisfying your particular search need. For example, you can bring searchExtend like follow, which means you want to search product whose seller is online within latest 48 hour.
+
+[
+  {
+    "min": "",
+    "max": "",
+    "searchKey": "seller_online",
+    "class": "com.aidc.supersupplier.model.SearchExtend",
+    "searchValue": "48"
+  }
+]
+following is the search extend key we now support:
+
+Name
+
+SearchKey
+
+SearchValue
+
+free shiping
+
+free_ship_to
+
+country code
+
+choice product
+
+item_tag
+
+choice
+
+seller type
+
+seller_level
+
+GOLD
+
+SILVER
+
+ship from
+
+ship_from
+
+country code
+
+seller online within the latest 72 hour
+
+seller_online
+
+48
+
+72
+
+product hot area
+
+hot_area
+
+BR
+
+US
+
+UK/GB
+
+FR
+
+AU
+
+ChangeLog
+
+
+API
+Parameter
+Successful response
+Faild response
+Java demo
+PHP demo
+Q:User Case Example
+
+
+
+
+Latest update:
+2025-03-24 17:01:22
+7062
+aliexpress.ds.text.search
+API
+GET/POST:aliexpress.ds.text.search
+
+Description：Search products by keyword.
+
+
+
+Request Parameter
+Parameter
+Name
+
+Type
+
+Required or not
+
+Description
+
+keyWord
+
+String
+
+Yes
+
+Search keywords you need
+
+local
+
+String
+
+Yes
+
+Local (en_US/zh_CN...)
+
+countryCode
+
+String
+
+Yes
+
+Ship to country
+
+categoryId
+
+Number
+
+No
+
+CategoryId
+
+sortBy
+
+String
+
+No
+
+SortBy(min_price/orders/comments,desc/asc)
+
+pageSize
+
+Number
+
+No
+
+Pagesize
+
+pageIndex
+
+Number
+
+No
+
+Page index
+
+currency
+
+String
+
+Yes
+
+Currency(USD / BRL...)
+
+◉searchExtend
+
+List[Object]
+
+No
+
+searchExtend
+
+searchKey
+
+String
+
+No
+
+SearchKey
+
+searchValue
+
+String
+
+No
+
+SearchValue
+
+max
+
+String
+
+No
+
+Max
+
+min
+
+String
+
+No
+
+Min
+
+selectionName
+
+String
+
+No
+
+Text search within specific selection
+
+Response Struct
+
+
+Name
+
+Type
+
+Description
+
+code
+
+String
+
+Code
+
+msg
+
+String
+
+Message
+
+◉data
+
+Object
+
+data
+
+totalCount
+
+Number
+
+Result total count
+
+pageIndex
+
+Number
+
+Result page index
+
+pageSize
+
+Number
+
+Result page size
+
+◎products
+
+List[Object]
+
+products
+
+salePriceFormat
+
+String
+
+Formatted sale price
+
+itemUrl
+
+String
+
+Product detail page URL
+
+orders
+
+String
+
+Recent order amount
+
+score
+
+String
+
+Average customer evaluation score(5 point scale)
+
+title
+
+String
+
+Product title
+
+itemMainPic
+
+String
+
+Product main picture
+
+cateId
+
+String
+
+Category ID
+
+originalPriceFormat
+
+String
+
+Formatted original price
+
+originMinPrice
+
+String
+
+Origin min price
+
+itemId
+
+String
+
+ItemID/Product_ID
+
+originalPrice
+
+String
+
+Original price
+
+originalPriceCurrency
+
+String
+
+Original price currency
+
+salePrice
+
+String
+
+Sale price
+
+salePriceCurrency
+
+String
+
+Sale price currency
+
+targetOriginalPrice
+
+String
+
+Original price using target disignated currency
+
+targetOriginalPriceCurrency
+
+String
+
+Target disignated currency
+
+targetSalePrice
+
+String
+
+Sale price using target disignated currency
+
+discount
+
+String
+
+Discount rate
+
+productVideoUrl
+
+String
+
+Product video URL
+
+evaluateRate
+
+String
+
+Average customer evaluation score(100 point scale)
+
+Response
+Successful response
+{
+  "aliexpress_ds_text_search":{
+  "msg": "message",
+  "code": "0",
+  "data": {
+    "pageIndex": "pageIndex",
+    "pageSize": "pageSize",
+    "totalCount": "totalCount",
+    "products": [
+      {
+        "productVideoUrl": "productVideoUrl",
+        "originalPrice": "12.73",
+        "originalPriceCurrency": "USD",
+        "salePrice": "6.62",
+        "discount": "48%",
+        "itemMainPic": "itemMainPic",
+        "title": "title",
+        "originalPriceFormat": "originalPriceFormat",
+        "score": "score",
+        "itemId": "itemId",
+        "targetSalePrice": "6.62",
+        "cateId": "cateId",
+        "targetOriginalPriceCurrency": "USD",
+        "originMinPrice": "originMinPrice",
+        "evaluateRate": "97.8%",
+        "salePriceFormat": "salePriceFormat",
+        "orders": "orders",
+        "targetOriginalPrice": "12.73",
+        "itemUrl": "itemUrl",
+        "salePriceCurrency": "USD"
+      }
+    ]
+  },
+  "request_id": "0ba2887315178178017221014"
+}
+}
+Faild response
+Demo code
+Java demo
+String url = "https://api-sg.aliexpress.com";
+String appkey = "your_appkey";
+String appSecret = "your_appSecret";
+
+request.setApiName("aliexpress.ds.text.search");
+request.addApiParameter("keyWord", "\u88D9\u5B50");
+request.addApiParameter("local", "zh_CN");
+request.addApiParameter("countryCode", "US");
+request.addApiParameter("categoryId", "349");
+request.addApiParameter("sortBy", "min_price,asc");
+request.addApiParameter("pageSize", "20");
+request.addApiParameter("pageIndex", "1");
+request.addApiParameter("currency", "USD");
+request.addApiParameter("searchExtend", "[{\"min\":\"min\",\"max\":\"max\",\"searchKey\":\"searchKey\",\"searchValue\":\"searchValue\"}]");
+request.addApiParameter("selectionName", "selection name");
+IopResponse response = client.execute(request, accessToken, Protocol.TOP);
+System.out.println(response.getBody());
+PHP demo
+<?php
+$url = "https://api-sg.aliexpress.com/sync";
+//The request address for system-level APIs (such as php) is different, and you need to use the URL below.
+$appkey = "Your-appkey";
+$appSecret = "Your-appSecret";
+$accessToken = "Your-accessToken";
+
+$request = new IopRequest('aliexpress.ds.text.search');
+$request->addApiParam('keyWord','\u88D9\u5B50');
+$request->addApiParam('local','zh_CN');
+$request->addApiParam('countryCode','US');
+$request->addApiParam('categoryId','349');
+$request->addApiParam('sortBy','min_price,asc');
+$request->addApiParam('pageSize','20');
+$request->addApiParam('pageIndex','1');
+$request->addApiParam('currency','USD');
+$request->addApiParam('searchExtend','[{\"min\":\"min\",\"max\":\"max\",\"searchKey\":\"searchKey\",\"searchValue\":\"searchValue\"}]');
+$request->addApiParam('selectionName','selection name');
+var_dump($c->execute($request, $accessToken));
+
+
+ERROR CODE
+
+
+Common errors
+Q:User Case Example
+A: You can bring these two selection name in text search to search within your specific selected product collection.
+
+
+
+As shown above, you can for example search "eye lashes" within your target selection "Evernet_B_NG_Selection".
+
+
+
+What's more, you can use searchExtend param to add more search filter to better satisfying your particular search need. For example, you can bring searchExtend like follow, which means you want to search product whose seller is online within latest 48 hour.
+
+[
+  {
+    "min": "",
+    "max": "",
+    "searchKey": "seller_online",
+    "class": "com.aidc.supersupplier.model.SearchExtend",
+    "searchValue": "48"
+  }
+]
+following is the search extend key we now support:
+
+Name
+
+SearchKey
+
+SearchValue
+
+free shiping
+
+free_ship_to
+
+country code
+
+choice product
+
+item_tag
+
+choice
+
+seller type
+
+seller_level
+
+GOLD
+
+SILVER
+
+ship from
+
+ship_from
+
+country code
+
+seller online within the latest 72 hour
+
+seller_online
+
+48
+
+72
+
+product hot area
+
+hot_area
+
+BR
+
+US
+
+UK/GB
+
+FR
+
+AU
+
+ChangeLog
+
+
+How to use Webhook
+STEP1. webhook setting
+
+Go to the appKey manage page, and switch to the notification tab.
+
+﻿﻿﻿﻿﻿﻿﻿﻿
+
+
+
+In the notification setting page, you should input your callBack url and check the DROPSHIPPER_ORDER_STATUS_UPDATE box to subscribe this topic.
+
+﻿﻿﻿
+
+
+
+STEP2. testing
+
+Once above setting steps done, you can test the webhook process by creating an order, pushing the order to go through whole live status, and reviewing if your callback api can receive all the related message.
+
+
+
+Return message body
+
+{
+	"data": {
+		"buyerId": 1861703697,
+		"orderId": 1105933950463697,
+		"orderStatus": "paymentFailedEvent"
+	},
+	"message_type": 53,
+	"seller_id": "1234",
+	"site": "ae_global",
+	"timestamp": 1719389200
+}
+"orderStatus" enumerate
+
+"paymentFailedEvent"
+"OrderCreated"
+"OrderClosed"
+"PaymentAuthorized"
+"OrderShipped"
+"OrderConfirmed"
+
+
+Please note! The above "message_type" is "53". If there are any updates in the future, the return value of "message_type" may be different.
+
+
+
+
+
+You can switch to the API Push Log tab, and select the topic you have subscribed, filter by the time range and check if you can receive webhook message as you expect. 
+
+
+
+
+
+
+
+
+
+
+
+AI Assistant
+Copyright @ AliExpre
+

@@ -1,12 +1,12 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-16 (Session 9 — Product Shipping Editor + AliExpress Token Auto-Refresh)
+> **Last Updated:** 2026-05-17 (Session 10 — Zid Platform Integration)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready Salla push-to-store pipeline**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, and **automatic AliExpress token refresh** when tokens expire. Merchants can sign up, connect their Salla store, receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla, and manage everything including images and pricing**. All prices are enforced in SAR.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, and **automatic AliExpress token refresh** when tokens expire. Merchants can sign up, connect their Salla or Zid store, receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla or Zid, and manage everything including images and pricing**. All prices are enforced in SAR.
 
-**What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, Zid platform integration, CJDropshipping integration, auto-fulfillment engine. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
+**What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, CJDropshipping integration, Zid webhooks, auto-fulfillment engine. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
 
 ---
 
@@ -196,17 +196,25 @@
 | CJ tracking sync | 🟠 P2 |
 | Supplier fallback logic (AliExpress → CJ) | 🟠 P2 |
 
-### 📋 Phase 7B: Zid Platform Integration
+### ✅ Phase 7B: Zid Platform Integration (Session 10)
 
-| Task | Priority |
-|---|---|
-| Zid OAuth / API key integration | 🔴 P0 |
-| Product push to Zid store | 🔴 P0 |
-| Zid webhook registration (order.created, order.updated) | 🟡 P1 |
-| Tracking push to Zid | 🟡 P1 |
-| Multi-store support (multiple Salla/Zid per merchant) | 🟠 P2 |
+| Task | Status | Notes |
+|---|---|---|
+| Zid OAuth 2.0 flow | ✅ | `/api/auth/zid` + `/api/auth/zid/callback` |
+| Zid API client (`lib/zid/client.ts`) | ✅ | Dual-header auth, auto-refresh, bilingual mapper |
+| Zid TypeScript types | ✅ | `lib/zid/types.ts` — products, categories, orders |
+| Product push to Zid store | ✅ | 3-step: create → images → variants |
+| Import route — dual-platform push | ✅ | Auto-detects store platform (Salla/Zid) |
+| Manual push route — dual-platform | ✅ | `targetStoreId` / `targetPlatform` params |
+| Integrations page — Zid button | ✅ | "Connect Zid Store" replaces "Coming Soon" |
+| DB migration | ✅ | `platform_store_id` + `partner_token` columns |
+| `.env.local` config | ✅ | ZID_CLIENT_ID, ZID_CLIENT_SECRET, ZID_OAUTH_URL |
+| Zid webhooks | ⏸️ | Blocked: app not selectable in Zid partner dashboard |
+| Tracking push to Zid | ⏸️ | Pending webhook setup |
 
-### 📋 Phase 8+: Polish & Scale
+---
+
+## What's NOT Done — Upcoming
 
 - i18n (Arabic/English full RTL)
 - Mobile optimization
@@ -224,13 +232,15 @@
 | `POST` | `/api/suppliers/aliexpress/feeds/sync` | Admin | Syncs live feeds from AliExpress API |
 | `GET` | `/api/suppliers/aliexpress/search` | Auth | Keyword + feed search |
 | `GET` | `/api/suppliers/aliexpress/product/:id` | Auth | Product detail with nested DTOs |
-| `POST` | `/api/suppliers/aliexpress/import` | Auth | Import product + auto-push to Salla |
+| `POST` | `/api/suppliers/aliexpress/import` | Auth | Import product + auto-push to Salla/Zid |
 | `PATCH` | `/api/products/:id` | Auth | Inline edit (price, status, titles, shipping) |
 | `DELETE` | `/api/products/:id` | Auth | Delete product + cleanup from Salla |
-| `POST` | `/api/products/:id/push` | Auth | Manual push to Salla store |
+| `POST` | `/api/products/:id/push` | Auth | Manual push to Salla or Zid store |
 | `GET` | `/api/products/:id/shipping` | Auth | Fetch live AliExpress shipping options |
 | `GET` | `/api/auth/salla` | Auth | Initiate Salla OAuth |
 | `GET` | `/api/auth/salla/callback` | Public | Salla OAuth callback |
+| `GET` | `/api/auth/zid` | Auth | Initiate Zid OAuth |
+| `GET` | `/api/auth/zid/callback` | Public | Zid OAuth callback |
 | `GET` | `/api/auth/aliexpress/callback` | Public | AliExpress OAuth callback |
 | `POST` | `/api/webhooks/salla` | HMAC | Salla order webhooks |
 | `DELETE` | `/api/stores/:id/disconnect` | Auth | Disconnect Salla store |

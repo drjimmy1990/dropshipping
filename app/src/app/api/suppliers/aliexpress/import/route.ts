@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getProductDetail } from "@/lib/aliexpress/client";
 import { pushProductToSalla, SallaApiError } from "@/lib/salla/client";
+import { pushProductToZid, ZidApiError } from "@/lib/zid/client";
 import type { Product } from "@/lib/supabase/types";
 
 /**
@@ -44,6 +45,8 @@ export async function POST(request: NextRequest) {
       shippingCost = 0,
       shippingMethod = null,
       estimatedDelivery = null,
+      targetStoreId = null,   // Optional: specific store to push to
+      targetPlatform = null,  // Optional: "salla" | "zid" — auto-detected if not provided
     } = body;
 
     if (!productId) {
@@ -86,14 +89,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Get merchant's connected Salla store
-    const { data: store } = await adminClient
+    // 5. Get merchant's connected store (Salla or Zid)
+    // If targetStoreId specified, use that. Otherwise find any active store.
+    let storeQuery = adminClient
       .from("stores")
-      .select("id, access_token, refresh_token")
+      .select("id, platform, access_token, refresh_token, partner_token, platform_store_id, salla_merchant_id")
       .eq("merchant_id", user.id)
-      .eq("platform", "salla")
-      .eq("is_active", true)
-      .maybeSingle();
+      .eq("is_active", true);
+
+    if (targetStoreId) {
+      storeQuery = storeQuery.eq("id", targetStoreId);
+    } else if (targetPlatform) {
+      storeQuery = storeQuery.eq("platform", targetPlatform);
+    }
+
+    const { data: store } = await storeQuery.maybeSingle();
 
     // 6. Insert product into Supabase
     const productData = {
@@ -145,38 +155,77 @@ export async function POST(request: NextRequest) {
       `[Import] ✅ Product imported: ${product.title} (ID: ${insertedProduct.id})`
     );
 
-    // 7. Push to Salla (if enabled and store is connected)
+    // 7. Push to store (Salla or Zid) if enabled and store is connected
     let pushedToStore = false;
     let storeProductId: string | null = null;
-    let sallaUrl: string | undefined;
+    let storeUrl: string | undefined;
     let pushError: string | null = null;
 
     if (pushToStore && store?.access_token && store?.refresh_token) {
+      const storePlatform = (store as { platform?: string }).platform;
+
       try {
-        const result = await pushProductToSalla(
-          {
-            accessToken: store.access_token,
-            refreshToken: store.refresh_token,
-            storeId: store.id,
-            onTokenRefresh: async (storeId, newAccess, newRefresh) => {
-              await adminClient
-                .from("stores")
-                .update({
-                  access_token: newAccess,
-                  refresh_token: newRefresh,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq("id", storeId);
+        if (storePlatform === "zid") {
+          // ---- Push to Zid ----
+          const result = await pushProductToZid(
+            {
+              accessToken: store.access_token,
+              refreshToken: store.refresh_token,
+              partnerToken: (store as { partner_token?: string }).partner_token || store.access_token,
+              storeId: (store as { platform_store_id?: string }).platform_store_id || store.id,
+              onTokenRefresh: async (storeId, newAccess, newRefresh, newPartner) => {
+                await adminClient
+                  .from("stores")
+                  .update({
+                    access_token: newAccess,
+                    refresh_token: newRefresh,
+                    ...(newPartner ? { partner_token: newPartner } : {}),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", storeId);
+              },
             },
-          },
-          insertedProduct as Product
-        );
+            insertedProduct as Product
+          );
 
-        storeProductId = String(result.sallaProductId);
-        sallaUrl = result.sallaUrl;
-        pushedToStore = true;
+          storeProductId = result.zidProductId;
+          storeUrl = result.zidUrl;
+          pushedToStore = true;
 
-        // Save the Salla product ID
+          console.log(
+            `[Import] ✅ Pushed to Zid: ${product.title} → Zid ID: ${storeProductId}`
+          );
+        } else {
+          // ---- Push to Salla (default) ----
+          const result = await pushProductToSalla(
+            {
+              accessToken: store.access_token,
+              refreshToken: store.refresh_token,
+              storeId: store.id,
+              onTokenRefresh: async (storeId, newAccess, newRefresh) => {
+                await adminClient
+                  .from("stores")
+                  .update({
+                    access_token: newAccess,
+                    refresh_token: newRefresh,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", storeId);
+              },
+            },
+            insertedProduct as Product
+          );
+
+          storeProductId = String(result.sallaProductId);
+          storeUrl = result.sallaUrl;
+          pushedToStore = true;
+
+          console.log(
+            `[Import] ✅ Pushed to Salla: ${product.title} → Salla ID: ${storeProductId}`
+          );
+        }
+
+        // Save the store product ID
         await adminClient
           .from("products")
           .update({
@@ -184,22 +233,20 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString(),
           })
           .eq("id", insertedProduct.id);
-
-        console.log(
-          `[Import] ✅ Pushed to Salla: ${product.title} → Salla ID: ${storeProductId}`
-        );
       } catch (err) {
         pushError =
           err instanceof SallaApiError
             ? err.sallaMessage || "Salla API error"
-            : err instanceof Error
-              ? err.message
-              : "Failed to push to store";
+            : err instanceof ZidApiError
+              ? err.zidMessage || "Zid API error"
+              : err instanceof Error
+                ? err.message
+                : "Failed to push to store";
 
-        console.error(`[Import] ⚠️ Salla push failed (product saved locally):`, pushError);
+        console.error(`[Import] ⚠️ Store push failed (product saved locally):`, pushError);
       }
     } else if (pushToStore && !store) {
-      pushError = "No active Salla store connected";
+      pushError = "No active store connected (connect Salla or Zid first)";
     }
 
     return NextResponse.json({
@@ -210,7 +257,8 @@ export async function POST(request: NextRequest) {
         supplierCost,
         retailPrice: finalRetailPrice,
         storeProductId,
-        sallaUrl,
+        storeUrl,
+        storePlatform: (store as { platform?: string })?.platform || null,
       },
       pushedToStore,
       pushError,
