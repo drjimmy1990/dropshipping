@@ -43,8 +43,10 @@ export async function GET(
     }
 
     // Fetch full product detail (includes shipping options via freight API)
+    // Args: (productId, accessToken?, shipTo?) — pass undefined for token so auto-refresh works
     const detail = await getProductDetail(
       Number(product.supplier_product_id),
+      undefined,
       "SA"
     );
 
