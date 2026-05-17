@@ -304,16 +304,27 @@ function IntegrationsContent() {
                   <Badge variant="neutral">new</Badge>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  Connect your Zid store using your Manager Token and Store ID from the Zid dashboard.
+                  Connect your Zid store to import and manage products.
                 </p>
-                <Button
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setShowZidTokenModal(true)}
-                >
-                  <Icon name="link" className="text-sm" />
-                  Connect Zid Store
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setShowZidTokenModal(true)}
+                  >
+                    <Icon name="link" className="text-sm" />
+                    Direct Connect
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1"
+                    onClick={() => window.location.href = "/api/auth/zid"}
+                  >
+                    <Icon name="lock_open" className="text-sm" />
+                    OAuth
+                  </Button>
+                </div>
               </Card>
             )}
           </>
