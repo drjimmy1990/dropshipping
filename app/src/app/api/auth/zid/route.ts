@@ -30,8 +30,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // 3. Build the callback URL (dynamically based on the request origin)
-  const origin = request.nextUrl.origin;
+  // 3. Build the callback URL (use forwarded headers behind Nginx proxy)
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "droplinker.asra3.com";
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const origin = `${proto}://${host}`;
   const redirectUri = `${origin}/api/auth/zid/callback`;
 
   // 4. Use the merchant's DropLinker user ID as the OAuth state parameter

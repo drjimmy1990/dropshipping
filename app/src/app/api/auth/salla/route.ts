@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
   }
 
   // 3. Build the callback URL (dynamically based on the request origin)
-  const origin = request.nextUrl.origin;
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "droplinker.asra3.com";
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const origin = `${proto}://${host}`;
   const redirectUri = `${origin}/api/auth/salla/callback`;
 
   // 4. Scopes we need from the Salla store

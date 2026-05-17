@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state"); // This is the DropLinker merchant UUID
   const errorParam = searchParams.get("error");
 
-  const origin = request.nextUrl.origin;
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "droplinker.asra3.com";
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const origin = `${proto}://${host}`;
 
   // --- Handle errors from Salla (e.g. user denied access) ---
   if (errorParam) {
