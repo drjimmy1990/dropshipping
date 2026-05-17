@@ -282,9 +282,38 @@ function IntegrationsContent() {
                       {store.is_active ? "connected" : "disconnected"}
                     </Badge>
                   </div>
-                  <Button variant="ghost" size="sm" className="w-full">
-                    Manage
-                  </Button>
+                  {store.last_sync && (
+                    <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
+                      <Icon name="sync" className="text-sm" />
+                      Last synced:{" "}
+                      {new Date(store.last_sync).toLocaleString("en", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  )}
+                  {store.is_active ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleDisconnect(store.id, store.store_name)}
+                      disabled={disconnecting === store.id}
+                    >
+                      {disconnecting === store.id ? "Disconnecting..." : "Disconnect"}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => window.location.href = "/api/auth/zid"}
+                    >
+                      <Icon name="link" className="text-sm" />
+                      Reconnect
+                    </Button>
+                  )}
                 </Card>
               ))}
 
