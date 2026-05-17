@@ -104,6 +104,7 @@ async function zidRequest<T>(options: ZidRequestOptions): Promise<T> {
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${partnerToken}`,
+    "X-Manager-Token": accessToken,
     "Access-Token": accessToken,
     "Store-Id": storeId,
     Role: "Manager",

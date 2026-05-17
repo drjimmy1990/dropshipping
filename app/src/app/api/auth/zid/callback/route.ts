@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${partnerToken || access_token}`,
+          "X-Manager-Token": access_token,
           "Access-Token": access_token,
           "Accept-Language": "en",
           Accept: "application/json",

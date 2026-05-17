@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${partnerToken || accessToken}`,
+          "X-Manager-Token": accessToken,
           "Access-Token": accessToken,
           "Store-Id": storeId,
           Role: "Manager",
