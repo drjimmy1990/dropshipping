@@ -60,6 +60,24 @@ function IntegrationsContent() {
     }
   };
 
+  const handleRemoveStore = async (storeId: string, storeName: string) => {
+    if (!confirm(`Permanently remove "${storeName}"? This will delete all store data. You can connect a new store afterward.`)) return;
+    setDisconnecting(storeId);
+    try {
+      const res = await fetch(`/api/stores/${storeId}`, { method: "DELETE" });
+      if (res.ok) {
+        setToast({ type: "success", message: `${storeName} removed.` });
+        refetch();
+      } else {
+        setToast({ type: "error", message: "Failed to remove store. Try again." });
+      }
+    } catch {
+      setToast({ type: "error", message: "Network error. Try again." });
+    } finally {
+      setDisconnecting(null);
+    }
+  };
+
   // Handle redirect query params from OAuth callback
   useEffect(() => {
     const success = searchParams.get("success");
@@ -222,12 +240,23 @@ function IntegrationsContent() {
                       {disconnecting === store.id ? "Disconnecting..." : "Disconnect"}
                     </Button>
                   ) : (
-                    <a href="/api/auth/salla">
-                      <Button size="sm" className="w-full">
-                        <Icon name="link" className="text-sm" />
-                        Reconnect
+                    <div className="flex gap-2">
+                      <a href="/api/auth/salla" className="flex-1">
+                        <Button size="sm" className="w-full">
+                          <Icon name="link" className="text-sm" />
+                          Reconnect
+                        </Button>
+                      </a>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveStore(store.id, store.store_name)}
+                        disabled={disconnecting === store.id}
+                        title="Remove store permanently"
+                      >
+                        <Icon name="delete" className="text-sm" />
                       </Button>
-                    </a>
+                    </div>
                   )}
                 </Card>
               ))}
@@ -305,14 +334,25 @@ function IntegrationsContent() {
                       {disconnecting === store.id ? "Disconnecting..." : "Disconnect"}
                     </Button>
                   ) : (
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={() => window.location.href = "/api/auth/zid"}
-                    >
-                      <Icon name="link" className="text-sm" />
-                      Reconnect
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => window.location.href = "/api/auth/zid"}
+                      >
+                        <Icon name="link" className="text-sm" />
+                        Reconnect
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveStore(store.id, store.store_name)}
+                        disabled={disconnecting === store.id}
+                        title="Remove store permanently"
+                      >
+                        <Icon name="delete" className="text-sm" />
+                      </Button>
+                    </div>
                   )}
                 </Card>
               ))}
