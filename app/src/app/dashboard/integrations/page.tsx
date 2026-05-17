@@ -37,9 +37,7 @@ function IntegrationsContent() {
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [showZidTokenModal, setShowZidTokenModal] = useState(false);
   const [zidTokenForm, setZidTokenForm] = useState({
-    accessToken: "",
-    partnerToken: "",
-    refreshToken: "",
+    managerToken: "",
     storeId: "",
   });
   const [zidConnecting, setZidConnecting] = useState(false);
@@ -99,8 +97,8 @@ function IntegrationsContent() {
 
   // Handle Zid manual token connection
   const handleZidManualConnect = async () => {
-    if (!zidTokenForm.accessToken || !zidTokenForm.storeId) {
-      setToast({ type: "error", message: "Access Token and Store ID are required." });
+    if (!zidTokenForm.managerToken || !zidTokenForm.storeId) {
+      setToast({ type: "error", message: "Manager Token and Store ID are required." });
       return;
     }
     setZidConnecting(true);
@@ -108,13 +106,16 @@ function IntegrationsContent() {
       const res = await fetch("/api/auth/zid/manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(zidTokenForm),
+        body: JSON.stringify({
+          accessToken: zidTokenForm.managerToken,
+          storeId: zidTokenForm.storeId,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
         setToast({ type: "success", message: `✅ ${data.storeName || "Zid store"} connected!` });
         setShowZidTokenModal(false);
-        setZidTokenForm({ accessToken: "", partnerToken: "", refreshToken: "", storeId: "" });
+        setZidTokenForm({ managerToken: "", storeId: "" });
         refetch();
       } else {
         setToast({ type: "error", message: data.error || "Failed to connect Zid store." });
@@ -303,30 +304,16 @@ function IntegrationsContent() {
                   <Badge variant="neutral">new</Badge>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  Connect your Zid store to import and manage products.
+                  Connect your Zid store using your Manager Token and Store ID from the Zid dashboard.
                 </p>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    className="flex-1"
-                    onClick={() => setShowZidTokenModal(true)}
-                  >
-                    Connect with Token
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="flex-1"
-                    onClick={() => window.location.href = "/api/auth/zid"}
-                    title="Requires approved Zid app"
-                  >
-                    OAuth
-                  </Button>
-                </div>
-                <p className="text-[10px] text-text-muted mt-2 text-center">
-                  Use <a href="https://bridge.zid.dev" target="_blank" rel="noopener noreferrer" className="underline text-brand">bridge.zid.dev</a> to get your tokens
-                </p>
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setShowZidTokenModal(true)}
+                >
+                  <Icon name="link" className="text-sm" />
+                  Connect Zid Store
+                </Button>
               </Card>
             )}
           </>
@@ -409,66 +396,41 @@ function IntegrationsContent() {
             </div>
 
             <div className="bg-surface-sunken rounded-lg p-3 mb-4">
-              <p className="text-xs text-text-secondary">
-                <strong>How to get your tokens:</strong>
+              <p className="text-xs font-medium text-text-secondary mb-1">
+                How to get your credentials:
               </p>
-              <ol className="text-xs text-text-muted mt-1 space-y-1 list-decimal list-inside">
-                <li>Go to <a href="https://bridge.zid.dev" target="_blank" rel="noopener noreferrer" className="underline text-brand">bridge.zid.dev</a></li>
-                <li>Install the app on your Zid store</li>
-                <li>Download the tokens (shown once)</li>
-                <li>Paste them below</li>
+              <ol className="text-xs text-text-muted space-y-1 list-decimal list-inside">
+                <li>Log in to your <a href="https://web.zid.sa" target="_blank" rel="noopener noreferrer" className="underline text-brand">Zid Dashboard</a></li>
+                <li>Go to <strong>Settings → Integrations</strong> (الإعدادات → الربط المباشر)</li>
+                <li>Copy <strong>Manager Token</strong> (المفتاح الخاص بالتاجر)</li>
+                <li>Copy <strong>Store ID</strong> (معرّف المتجر)</li>
+                <li>Paste both below</li>
               </ol>
             </div>
 
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-text-secondary mb-1">
-                  Access Token <span className="text-red-400">*</span>
+                  Manager Token (المفتاح الخاص) <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={zidTokenForm.accessToken}
-                  onChange={(e) => setZidTokenForm(prev => ({ ...prev, accessToken: e.target.value }))}
-                  placeholder="Paste your access token"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
+                <textarea
+                  value={zidTokenForm.managerToken}
+                  onChange={(e) => setZidTokenForm(prev => ({ ...prev, managerToken: e.target.value }))}
+                  placeholder="Paste your Manager Token from Zid dashboard"
+                  rows={3}
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50 font-mono resize-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-text-secondary mb-1">
-                  Partner Token (Authorization)
-                </label>
-                <input
-                  type="text"
-                  value={zidTokenForm.partnerToken}
-                  onChange={(e) => setZidTokenForm(prev => ({ ...prev, partnerToken: e.target.value }))}
-                  placeholder="Bearer JWT token"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">
-                  Refresh Token
-                </label>
-                <input
-                  type="text"
-                  value={zidTokenForm.refreshToken}
-                  onChange={(e) => setZidTokenForm(prev => ({ ...prev, refreshToken: e.target.value }))}
-                  placeholder="For automatic token renewal"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">
-                  Store ID <span className="text-red-400">*</span>
+                  Store ID (معرّف المتجر) <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={zidTokenForm.storeId}
                   onChange={(e) => setZidTokenForm(prev => ({ ...prev, storeId: e.target.value }))}
-                  placeholder="Your Zid store UUID"
+                  placeholder="e.g. 3146033"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
                 />
               </div>
@@ -488,7 +450,7 @@ function IntegrationsContent() {
                 size="sm"
                 className="flex-1"
                 onClick={handleZidManualConnect}
-                disabled={zidConnecting || !zidTokenForm.accessToken || !zidTokenForm.storeId}
+                disabled={zidConnecting || !zidTokenForm.managerToken || !zidTokenForm.storeId}
               >
                 {zidConnecting ? "Connecting..." : "Connect Store"}
               </Button>

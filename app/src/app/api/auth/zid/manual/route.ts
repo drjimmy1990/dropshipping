@@ -4,16 +4,13 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 /**
  * POST /api/auth/zid/manual
  *
- * Manual Zid token connection — bypasses OAuth flow.
- * Use this when the app isn't approved in Zid's partner dashboard yet.
- * 
- * The merchant provides tokens obtained from bridge.zid.dev:
- *  - accessToken: The merchant's OAuth access token
- *  - partnerToken (authorization): The partner-level JWT
- *  - refreshToken: For auto-refresh on expiry
- *  - storeId: The Zid store UUID
+ * Manual Zid token connection — uses Zid's Direct Integration (الربط المباشر).
+ * The merchant provides their Manager Token and Store ID from the Zid dashboard
+ * (Settings → Integrations → Direct Integration).
  *
- * Body: { accessToken, partnerToken, refreshToken?, storeId }
+ * Body: { accessToken, storeId }
+ *   - accessToken = The Manager Token (المفتاح الخاص بالتاجر) from Zid dashboard
+ *   - storeId     = Store ID (معرّف المتجر) from Zid dashboard
  */
 export async function POST(request: NextRequest) {
   // 1. Ensure the user is logged in
@@ -29,8 +26,6 @@ export async function POST(request: NextRequest) {
   // 2. Parse the body
   let body: {
     accessToken?: string;
-    partnerToken?: string;
-    refreshToken?: string;
     storeId?: string;
   };
 
@@ -43,25 +38,66 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { accessToken, partnerToken, refreshToken, storeId } = body;
+  const { accessToken, storeId } = body;
 
   if (!accessToken || !storeId) {
     return NextResponse.json(
-      { error: "accessToken and storeId are required" },
+      { error: "Manager Token and Store ID are required" },
       { status: 400 }
     );
   }
 
   try {
-    // 3. Validate the token by calling Zid's profile endpoint
+    // 3. Try to get a Partner/Authorization token from our app credentials
+    //    This uses OAuth client_credentials to get our app-level JWT
+    let partnerToken: string | null = null;
+
+    const clientId = process.env.ZID_CLIENT_ID;
+    const clientSecret = process.env.ZID_CLIENT_SECRET;
+    const oauthUrl = process.env.ZID_OAUTH_URL || "https://oauth.zid.sa";
+
+    if (clientId && clientSecret) {
+      try {
+        console.log("[Zid Manual] Attempting to get app Authorization token...");
+        const tokenRes = await fetch(`${oauthUrl}/oauth/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            grant_type: "client_credentials",
+            client_id: clientId,
+            client_secret: clientSecret,
+          }),
+        });
+
+        if (tokenRes.ok) {
+          const tokenData = await tokenRes.json();
+          partnerToken = tokenData.access_token || tokenData.token || null;
+          console.log("[Zid Manual] Got app Authorization token ✅");
+        } else {
+          console.warn(
+            "[Zid Manual] client_credentials grant failed (non-blocking):",
+            tokenRes.status
+          );
+        }
+      } catch (err) {
+        console.warn("[Zid Manual] OAuth token request failed (non-blocking):", err);
+      }
+    }
+
+    // 4. Validate the token by calling Zid's profile endpoint
+    //    Use our partner token if we have one, otherwise try the manager token
     console.log("[Zid Manual] Validating tokens by fetching store profile...");
+
+    const authHeader = partnerToken
+      ? `Bearer ${partnerToken}`
+      : `Bearer ${accessToken}`;
 
     const profileResponse = await fetch(
       "https://api.zid.sa/v1/managers/account/profile",
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${partnerToken || accessToken}`,
+          Authorization: authHeader,
           "X-Manager-Token": accessToken,
           "Access-Token": accessToken,
           "Store-Id": storeId,
@@ -77,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     if (profileResponse.ok) {
       const profileData = await profileResponse.json();
-      console.log("[Zid Manual] Profile fetched successfully");
+      console.log("[Zid Manual] Profile fetched successfully ✅");
 
       const store =
         profileData?.user?.store ||
@@ -93,14 +129,24 @@ export async function POST(request: NextRequest) {
     } else {
       const errorText = await profileResponse.text();
       console.warn(
-        "[Zid Manual] Profile fetch failed (non-blocking):",
+        "[Zid Manual] Profile fetch failed:",
         profileResponse.status,
         errorText
       );
-      // Non-blocking — tokens might still work for product operations
+      // If profile fails completely, tokens might be invalid
+      if (profileResponse.status === 401 || profileResponse.status === 403) {
+        return NextResponse.json(
+          {
+            error:
+              "Invalid Manager Token. Please copy a fresh token from your Zid dashboard (Settings → Integrations → الربط المباشر).",
+          },
+          { status: 401 }
+        );
+      }
+      // For other errors, continue (non-blocking)
     }
 
-    // 4. Upsert the store record in Supabase
+    // 5. Upsert the store record in Supabase
     const adminClient = createAdminClient();
     const merchantId = user.id;
 
@@ -117,7 +163,7 @@ export async function POST(request: NextRequest) {
       store_url: storeUrl,
       platform_store_id: storeId,
       access_token: accessToken,
-      refresh_token: refreshToken || null,
+      refresh_token: null,
       partner_token: partnerToken || null,
       is_active: true,
       last_sync: new Date().toISOString(),
@@ -163,7 +209,7 @@ export async function POST(request: NextRequest) {
       success: true,
       storeName,
       storeUrl,
-      message: "Zid store connected successfully via manual token",
+      message: "Zid store connected successfully",
     });
   } catch (error) {
     console.error("[Zid Manual] Unexpected error:", error);
