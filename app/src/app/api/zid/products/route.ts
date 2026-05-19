@@ -147,9 +147,16 @@ export async function POST() {
         try {
           const processed = normalizeZidProduct(zidProduct);
 
-          // Fetch images separately (Zid list endpoint doesn't include images)
-          const imageUrls = await getZidProductImages(tokens, String(zidProduct.id));
-          const productImages = imageUrls.length > 0 ? imageUrls : processed.images;
+          // Images: try inline first (from extended=true), then fetch separately
+          let productImages = processed.images;
+          if (productImages.length === 0) {
+            console.log(`[Zid Sync] No inline images for "${processed.title_en}", fetching separately...`);
+            const fetchedImages = await getZidProductImages(tokens, String(zidProduct.id));
+            if (fetchedImages.length > 0) {
+              productImages = fetchedImages;
+            }
+          }
+          console.log(`[Zid Sync] Product "${processed.title_en}": ${productImages.length} images`);
 
           // Check if product already exists in our DB
           const { data: existing } = await adminClient
@@ -285,7 +292,7 @@ function normalizeZidProduct(zidProduct: ZidProductListItem) {
 
   // Images
   const images = (zidProduct.images || [])
-    .map((img) => img.url || img.thumbnail_url)
+    .map((img) => img.url || img.image_url || img.original || img.src || img.image || img.thumbnail_url)
     .filter((url): url is string => !!url);
 
   // Category

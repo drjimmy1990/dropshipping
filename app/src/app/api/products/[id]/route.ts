@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { deleteSallaProduct, fullUpdateSallaProduct, SallaApiError } from "@/lib/salla/client";
-import { updateZidProduct, deleteZidProduct, ZidApiError } from "@/lib/zid/client";
+import { updateZidProduct, deleteZidProduct, uploadProductImages, ZidApiError } from "@/lib/zid/client";
 import type { SallaUpdateProductPayload } from "@/lib/salla/types";
 import type { ZidLocalizedString } from "@/lib/zid/types";
 
@@ -126,29 +126,42 @@ export async function PATCH(
               };
             }
 
+            const zidTokens = {
+              accessToken: store.access_token,
+              refreshToken: store.refresh_token || "",
+              partnerToken: (store as { partner_token?: string }).partner_token || store.access_token,
+              storeId: (store as { platform_store_id?: string }).platform_store_id || data.store_id,
+              onTokenRefresh: async (storeId: string, newAccess: string, newRefresh: string, newPartner?: string) => {
+                await adminClient
+                  .from("stores")
+                  .update({
+                    access_token: newAccess,
+                    refresh_token: newRefresh,
+                    ...(newPartner ? { partner_token: newPartner } : {}),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", data.store_id);
+              },
+            };
+
             if (Object.keys(zidPayload).length > 0) {
               await updateZidProduct(
-                {
-                  accessToken: store.access_token,
-                  refreshToken: store.refresh_token || "",
-                  partnerToken: (store as { partner_token?: string }).partner_token || store.access_token,
-                  storeId: (store as { platform_store_id?: string }).platform_store_id || data.store_id,
-                  onTokenRefresh: async (storeId, newAccess, newRefresh, newPartner) => {
-                    await adminClient
-                      .from("stores")
-                      .update({
-                        access_token: newAccess,
-                        refresh_token: newRefresh,
-                        ...(newPartner ? { partner_token: newPartner } : {}),
-                        updated_at: new Date().toISOString(),
-                      })
-                      .eq("id", data.store_id);
-                  },
-                },
+                zidTokens,
                 String(data.store_product_id),
                 zidPayload
               );
               storeSynced = true;
+            }
+
+            // Sync images to Zid if images were updated
+            if (updates.images && Array.isArray(updates.images) && (updates.images as string[]).length > 0) {
+              try {
+                console.log(`[Products PATCH] Uploading ${(updates.images as string[]).length} images to Zid product ${data.store_product_id}`);
+                await uploadProductImages(zidTokens, String(data.store_product_id), updates.images as string[]);
+                storeSynced = true;
+              } catch (imgErr) {
+                console.warn(`[Products PATCH] ⚠️ Image sync to Zid failed (non-blocking):`, imgErr);
+              }
             }
           } else {
             // ---------- Sync to Salla (default) ----------

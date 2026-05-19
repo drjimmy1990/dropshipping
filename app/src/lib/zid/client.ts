@@ -249,7 +249,7 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
  * Zid requires form-data with field "image" (file) — NOT JSON url.
  * We download each image URL, then re-upload as a file.
  */
-async function uploadProductImages(
+export async function uploadProductImages(
   tokens: ZidStoreTokens,
   zidProductId: string,
   imageUrls: string[]
@@ -626,7 +626,7 @@ export async function getZidProducts(
       previous?: string | null;
     }>({
       method: "GET",
-      path: `/products/?page=${page}&page_size=${pageSize}`,
+      path: `/products/?page=${page}&page_size=${pageSize}&extended=true`,
       accessToken,
       partnerToken,
       storeId: tokens.storeId,

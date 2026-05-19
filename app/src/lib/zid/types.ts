@@ -78,6 +78,10 @@ export interface ZidProductResponse {
 export interface ZidProductImage {
   id?: string;
   url?: string;
+  image_url?: string;
+  original?: string;
+  src?: string;
+  image?: string;
   thumbnail_url?: string;
   alt?: string;
   sort_order?: number;
