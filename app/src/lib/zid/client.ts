@@ -245,8 +245,9 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
 // ---------- Image Upload ----------
 
 /**
- * Uploads images to a Zid product via their image upload endpoint.
- * Zid accepts image URLs or multipart file uploads.
+ * Uploads images to a Zid product via multipart form-data.
+ * Zid requires form-data with field "image" (file) — NOT JSON url.
+ * We download each image URL, then re-upload as a file.
  */
 async function uploadProductImages(
   tokens: ZidStoreTokens,
@@ -255,29 +256,95 @@ async function uploadProductImages(
 ): Promise<void> {
   if (!imageUrls || imageUrls.length === 0) return;
 
-  console.log(`[Zid] Uploading ${imageUrls.length} images to product ${zidProductId}`);
+  // Limit to 10 images max
+  const urls = imageUrls.slice(0, 10);
+  console.log(`[Zid] Uploading ${urls.length} images to product ${zidProductId}`);
 
-  for (let i = 0; i < imageUrls.length; i++) {
+  for (let i = 0; i < urls.length; i++) {
     try {
-      await withAutoRefresh(tokens, (accessToken, partnerToken) =>
-        zidRequest({
+      // Step 1: Download the image
+      const imgResponse = await fetch(urls[i]);
+      if (!imgResponse.ok) {
+        console.warn(`[Zid] ⚠️ Image ${i + 1} download failed: ${imgResponse.status}`);
+        continue;
+      }
+
+      const imgBuffer = await imgResponse.arrayBuffer();
+      const contentType = imgResponse.headers.get("content-type") || "image/jpeg";
+      
+      // Extract filename from URL
+      const urlPath = new URL(urls[i]).pathname;
+      const fileName = urlPath.split("/").pop() || `image_${i + 1}.jpg`;
+
+      // Step 2: Upload as multipart form-data
+      const formData = new FormData();
+      const blob = new Blob([imgBuffer], { type: contentType });
+      formData.append("image", blob, fileName);
+      formData.append("alt_text", `Product image ${i + 1}`);
+
+      await withAutoRefresh(tokens, async (accessToken, partnerToken) => {
+        const url = `${ZID_API_BASE}/products/${zidProductId}/images/`;
+        const response = await fetch(url, {
           method: "POST",
-          path: `/products/${zidProductId}/images`,
-          body: {
-            url: imageUrls[i],
-            sort_order: i + 1,
-            is_default: i === 0,
+          headers: {
+            Authorization: `Bearer ${partnerToken}`,
+            "X-Manager-Token": accessToken,
+            "Access-Token": accessToken,
+            "Store-Id": tokens.storeId,
+            Role: "Manager",
+            "Accept-Language": "en",
+            // Do NOT set Content-Type — fetch sets it automatically with boundary for FormData
           },
-          accessToken,
-          partnerToken,
-          storeId: tokens.storeId,
-        })
-      );
-      console.log(`[Zid] ✅ Image ${i + 1}/${imageUrls.length} uploaded`);
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => null);
+          throw new ZidApiError(
+            response.status,
+            errData?.message?.description || `Image upload failed: ${response.status}`
+          );
+        }
+
+        return response.json();
+      });
+
+      console.log(`[Zid] ✅ Image ${i + 1}/${urls.length} uploaded`);
     } catch (error) {
       console.warn(`[Zid] ⚠️ Image ${i + 1} upload failed (non-blocking):`, error);
       // Non-blocking: continue with remaining images
     }
+  }
+}
+
+/**
+ * Fetches images for a specific Zid product.
+ * Zid doesn't include images in the product list — requires a separate call.
+ * GET /v1/products/:product_id/images
+ */
+export async function getZidProductImages(
+  tokens: ZidStoreTokens,
+  zidProductId: string
+): Promise<string[]> {
+  try {
+    const result = await withAutoRefresh(tokens, (accessToken, partnerToken) =>
+      zidRequest<{ results?: ZidProductImage[] } | ZidProductImage[]>({
+        method: "GET",
+        path: `/products/${zidProductId}/images/`,
+        accessToken,
+        partnerToken,
+        storeId: tokens.storeId,
+      })
+    );
+
+    // Handle both possible response shapes
+    const images = Array.isArray(result) ? result : (result.results || []);
+    return images
+      .map((img) => img.url || img.thumbnail_url)
+      .filter((url): url is string => !!url);
+  } catch (error) {
+    console.warn(`[Zid] ⚠️ Failed to fetch images for product ${zidProductId}:`, error);
+    return [];
   }
 }
 

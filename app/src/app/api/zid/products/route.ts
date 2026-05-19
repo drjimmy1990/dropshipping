@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { getZidProducts, ZidApiError } from "@/lib/zid/client";
+import { getZidProducts, getZidProductImages, ZidApiError } from "@/lib/zid/client";
 import type { ZidProductListItem } from "@/lib/zid/client";
 
 /**
@@ -147,6 +147,10 @@ export async function POST() {
         try {
           const processed = normalizeZidProduct(zidProduct);
 
+          // Fetch images separately (Zid list endpoint doesn't include images)
+          const imageUrls = await getZidProductImages(tokens, String(zidProduct.id));
+          const productImages = imageUrls.length > 0 ? imageUrls : processed.images;
+
           // Check if product already exists in our DB
           const { data: existing } = await adminClient
             .from("products")
@@ -166,7 +170,7 @@ export async function POST() {
                 description_en: processed.description || null,
                 is_active: !zidProduct.is_draft,
                 in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
-                images: processed.images,
+                images: productImages,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", existing.id);
@@ -195,7 +199,7 @@ export async function POST() {
               stock_quantity: zidProduct.quantity ?? 0,
               is_active: !zidProduct.is_draft,
               in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
-              images: processed.images,
+              images: productImages,
               store_product_id: String(zidProduct.id),
               category: processed.category || null,
             });
