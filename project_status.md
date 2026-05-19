@@ -196,7 +196,7 @@
 | CJ tracking sync | 🟠 P2 |
 | Supplier fallback logic (AliExpress → CJ) | 🟠 P2 |
 
-### ✅ Phase 7B: Zid Platform Integration (Session 10)
+### ✅ Phase 7B: Zid Platform Integration (Session 10 & 12)
 
 | Task | Status | Notes |
 |---|---|---|
@@ -209,8 +209,22 @@
 | Integrations page — Zid button | ✅ | "Connect Zid Store" replaces "Coming Soon" |
 | DB migration | ✅ | `platform_store_id` + `partner_token` columns |
 | `.env.local` config | ✅ | ZID_CLIENT_ID, ZID_CLIENT_SECRET, ZID_OAUTH_URL |
+| **Zid category sync API** | ✅ | `GET /api/zid/categories` — fetches store categories |
+| **useZidCategories hook** | ✅ | Flattens category hierarchy with indent prefixes |
 | Zid webhooks | ⏸️ | Blocked: app not selectable in Zid partner dashboard |
 | Tracking push to Zid | ⏸️ | Pending webhook setup |
+
+### ✅ Phase 4E-Store: Platform-Aware Store Settings & Categories (Session 12)
+
+| Task | Status | Notes |
+|---|---|---|
+| **Store Settings tab** | ✅ | Replaces SEO tab, conditionally renders panel based on connected stores |
+| **Platform-Aware panels** | ✅ | Salla panel shows Category picker + SEO. Zid panel shows Category picker + Keywords. |
+| **Dual-platform category dropdowns** | ✅ | Salla uses `useSallaCategories` hook; Zid uses `useZidCategories` hook. |
+| **Database extension** | ✅ | Added `zid_category_id` (TEXT) to the `products` table |
+| **PATCH route whitelisting** | ✅ | Allows editing of `zid_category_id`, `zid_keywords`, `metadata_title`, etc. |
+| **Platform synchronization** | ✅ | Syncs category and SEO inputs to Salla & Zid on save and push |
+| **Migration SQL script** | ✅ | `phase10_zid_category.sql` |
 
 ---
 
@@ -246,6 +260,33 @@
 | `DELETE` | `/api/stores/:id/disconnect` | Auth | Disconnect Salla store |
 | `GET` | `/api/salla/categories` | Auth | Fetch Salla store categories |
 | `GET` | `/api/salla/products` | Auth | Sync native Salla products to DB |
+| `GET` | `/api/zid/categories` | Auth | Fetch Zid store categories |
+
+---
+
+## 🧪 The E2E Test User Flow (Verification Checklist)
+
+The following E2E checklist covers the entire merchant workflow across Salla & Zid platforms:
+
+### 1. Store Connections & Authentication
+* **Connect Salla Store:** Initiate OAuth via `/api/auth/salla`. Confirm callback exchanges tokens and creates active store with `salla_merchant_id`.
+* **Connect Zid Store:** Click "Connect Zid Store" under `/dashboard/integrations`. Complete OAuth flow. Verify `platform = 'zid'` store is inserted with `partner_token` and `platform_store_id`.
+
+### 2. Product Discovery & Curation
+* Browse feeds and search for products in AliExpress catalog. Check pagination and price range filters. Verify all pricing is displayed strictly in Saudi Riyal (SAR).
+
+### 3. Shipping-Inclusive Product Import
+* Click a product → Select an AliExpress shipping option (e.g. AliExpress Direct) using the radio selector.
+* Verify total landed cost (`product_cost + shipping_cost`) and profit margins are calculated accurately.
+* Click "Import to My Store". Verify product is saved to Supabase `products` and auto-pushed to active connected store.
+* Verify `store_product_id` is successfully retrieved and stored back in the DB.
+
+### 4. Inventory & Pricing Management (`/dashboard/products`)
+* Verify imported products appear with accurate prices, stock counts, and platforms.
+* Edit retail price inline (Click -> edit -> Enter). Verify immediate persistence.
+* Click product -> **Store Settings** tab. Verify meta title, description, and platform-specific categories (dropdowns for Salla/Zid categories loaded via hooks) are editable and sync to platforms on save.
+* Change shipping carrier in the product's Pricing tab via live freight estimate refresh. Save and check updating landed costs.
+* Delete a product. Verify deletion from Supabase and the respective store dashboard.
 
 ---
 

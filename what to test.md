@@ -64,3 +64,24 @@ Import without platform spec → pushes to first active store found
 Run `phase7b_zid_integration.sql` on Supabase
 ✅ Verify `platform_store_id` column exists on `stores` table
 ✅ Verify `partner_token` column exists on `stores` table
+
+11. 🆕 Platform-Aware Store Settings & Categories (Session 12)
+Go to any product's details page at `/dashboard/products/[id]`
+Click the **"Store Settings"** tab (replaces the old "SEO" tab)
+✅ Verify conditional panel rendering:
+  - If **only Salla** is connected: Salla panel appears (Meta Title, Meta Description, Salla Category picker). Zid panel is hidden.
+  - If **only Zid** is connected: Zid panel appears (Zid Keywords input, Zid Category picker). Salla panel is hidden.
+  - If **both** are connected: Both panels appear side-by-side or stacked.
+  - If **neither** is connected: Shows empty/alert state indicating no stores are connected.
+✅ Verify Category Loading:
+  - Salla Category picker displays flattened Salla categories with indent prefixes.
+  - Zid Category picker displays flattened Zid categories (via `useZidCategories`) with indent prefixes.
+✅ Verify Category & SEO Save:
+  - Change Salla category and meta tags, and change Zid category and keywords.
+  - Verify the unsaved changes pulsing dot appears on the **Save** button.
+  - Click **Save** → Verify changes are whitelisted and saved successfully in Supabase (`salla_category_id`, `zid_category_id`, `metadata_title`, `metadata_description`, `zid_keywords`).
+  - Verify automatic background sync sends Salla edits to Salla and Zid edits to Zid.
+✅ Verify Zid Category Push:
+  - For a product never pushed to Zid, select a Zid category in Store Settings and click Save.
+  - Click **Push to Zid** -> Verify product is successfully created on Zid with the assigned category.
+  - For an already synced Zid product, update the category and click Save -> Verify it updates the category on the Zid store dashboard.

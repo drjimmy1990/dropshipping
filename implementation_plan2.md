@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-16 (Session 9 — Product Shipping Editor + Token Auto-Refresh)
+> **Last Updated:** 2026-05-19 (Session 12 — Platform-Aware Store Settings + Dual Category Sync)
 
 ## 1. Business Concept
 
@@ -321,7 +321,7 @@ Steps:
 
 ## 7. Database Schema
 
-> ✅ **IMPLEMENTED** — 20 tables deployed to Supabase (including `platform_feeds`)
+> ✅ **IMPLEMENTED** — 20 tables deployed to Supabase (including `platform_feeds`). Products table extended with SEO + category columns.
 
 ```mermaid
 erDiagram
@@ -598,6 +598,23 @@ sequenceDiagram
 - [x] **AliExpress token auto-refresh** — `refreshAccessToken()` with retry logic in `apiRequest()`
 - [x] **Token refresh persistence** — new tokens auto-saved to `platform_config`
 
+### Phase 4E-Store — Platform-Aware Store Settings (✅ COMPLETE)
+> Per-platform settings with conditional UI, dual-category management, SEO sync
+
+- [x] Store Settings tab replaces SEO tab — platform-aware conditional rendering
+- [x] Connected stores detection via `connectedStores` registry
+- [x] **Salla panel:** Meta title, meta description, SERP preview, category dropdown
+- [x] **Zid panel:** Keywords input, category dropdown
+- [x] `useZidCategories` hook — mirrors Salla hook with tree flattening
+- [x] `zid_category_id` column added to products table
+- [x] PATCH route: `zid_category_id`, `metadata_title`, `metadata_description`, `zid_keywords` whitelisted
+- [x] Salla sync: categories, SEO metadata, status toggle
+- [x] Zid sync: categories, keywords, status (is_draft), stock quantity
+- [x] `mapDroplinkerToZid` includes category on product push
+- [x] `updateZidProduct` supports categories on product edit
+- [x] Sync coverage map in UI showing field-by-platform matrix
+- [x] DB migrations: `phase9_seo_fields.sql`, `phase10_zid_category.sql`
+
 ### Phase 4E — Trending Products & Smart Discovery
 > Data-driven product recommendations for merchants
 
@@ -635,6 +652,7 @@ sequenceDiagram
 - [x] Zid OAuth 2.0 flow + dual-header API client ✅ (Session 10)
 - [x] Product push to Zid (bilingual name, images, variants) ✅
 - [x] Import + push routes updated for dual-platform support ✅
+- [x] Zid category sync (useZidCategories hook + zid_category_id + PATCH/push)
 - [ ] Zid webhook integration (blocked: app not selectable in dashboard)
 - [ ] Multi-store selector UI
 - [ ] Supplier fallback logic (AE → CJ)
@@ -665,9 +683,31 @@ sequenceDiagram
 - Integration tests: webhook signature validation (Salla/Zid)
 - E2E: mock webhook → n8n processes → order in DB → supplier API called → wallet deducted
 
-### Manual
-- Connect test Salla store → place order → verify auto-fulfill on AliExpress
-- Bank transfer flow: upload receipt → admin approves → wallet credited
-- Test held orders (low balance) → top up → retry → order placed
-- Bilingual: switch AR↔EN, verify all UI + product content
-- Admin panel: change commission mode → verify it applies to next order
+### Manual & E2E Verification (The E2E Test User Flow)
+
+Perform the following manual test cases to verify full platform integration and dual platform capability:
+
+#### 1. Dual Store Connection & OAuth
+- Connect Salla store via Salla card: Verify Salla OAuth flow completes and stores token + merchant ID.
+- Connect Zid store via Zid card: Verify Zid OAuth flow completes and stores partner token + platform store ID.
+- Check database `stores` table: Ensure both active store rows exist with correct credentials.
+
+#### 2. E2E Importing with Logistics Selection
+- Go to Product Discovery -> Search and select a product.
+- Select a specific shipping method in the modal.
+- Verify total landed cost (`price + shipping`) and target markup calculation are correct.
+- Click "Import to My Store" -> Verify DB save and push to active stores. Check respective store dashboards to verify listing.
+
+#### 3. Per-Platform Store Settings Management (`/dashboard/products/[id]`)
+- Navigate to `/dashboard/products/[id]` -> Click "Store Settings" tab.
+- Verify Salla Settings panel shows only Salla Category dropdown + Meta Title + Meta Description if only Salla is connected.
+- Verify Zid Settings panel shows only Zid Category dropdown + Zid Keywords if only Zid is connected.
+- Verify both panels render side-by-side if both platforms are connected.
+- Modify values for Category & SEO and click Save. Verify persistence in DB and sync to Salla & Zid stores.
+
+#### 4. AliExpress Token Auto-Refresh
+- Artificially expire the AliExpress access token in `platform_config`.
+- Attempt a product edit or fetch shipping options -> Verify system captures 401, issues token refresh call, and completes operation successfully without merchant intervention.
+
+#### 5. Wallet Transactions & Manual Bank Transfer
+- Merchant uploads transfer receipt -> Admin approves transfer in Admin Transfers panel -> Verify wallet balance is atomically credited and transactions table logs a deposit.

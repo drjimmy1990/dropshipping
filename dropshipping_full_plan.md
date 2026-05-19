@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
-> **Date:** 2026-05-17  
-> **Status:** Phase 7B Complete ✅ — Zid Platform Integration (OAuth ✅, API Client ✅, Product Push ✅, Dual-Platform Import/Push ✅)
+> **Date:** 2026-05-19  
+> **Status:** Phase 7B & 4E-Store Complete ✅ — Zid Platform Integration + Store Settings (OAuth ✅, API Client ✅, Dual Product Push ✅, Dual Category Sync ✅, Platform-Aware Settings Panel ✅)
 
 ---
 
@@ -28,7 +28,7 @@
 | **Push-to-Salla** (manual + auto on import) | ✅ Working |
 | **Salla 2-way product sync** | ✅ Working — native Salla products imported as `direct` type |
 | **Salla category sync** | ✅ Working — `GET /api/salla/categories` |
-| **Product editor** (4 tabs) | ✅ Working — General, Images, Pricing, SEO |
+| **Product editor** (4 tabs) | ✅ Working — General, Images, Pricing, Store Settings (replaces SEO) |
 | **Image management** (interactive) | ✅ Working — delete, reorder, set main, add by URL |
 | **Unsaved changes indicator** | ✅ Working — pulsing dot on Save button |
 | **Import wizard with shipping** | ✅ Working — selectable shipping methods, landed cost, profit calc |
@@ -36,6 +36,11 @@
 | **Product editor shipping selector** | ✅ Working — "Refresh Options" fetches live freight, radio buttons to change carrier post-import |
 | **Shipping API route** | ✅ Working — `GET /api/products/[id]/shipping` for live AliExpress freight |
 | **AliExpress token auto-refresh** | ✅ Working — transparent retry on expired token with `/auth/token/refresh` |
+| **Zid OAuth 2.0 flow & credentials** | ✅ Working — partner_token + platform_store_id saved |
+| **Zid product push & edit client** | ✅ Working — bilingual product pushes, images, and variants |
+| **Zid category sync API & hook** | ✅ Working — `GET /api/zid/categories` & `useZidCategories` hook |
+| **Store Settings per-platform UI** | ✅ Working — Salla SEO + Category picker; Zid Keywords + Category picker |
+| **Auto-sync & PATCH route** | ✅ Working — `salla_category_id`, `zid_category_id`, `zid_keywords`, `metadata_title`, `metadata_description` fully synchronized |
 
 ---
 
@@ -74,13 +79,18 @@ Merchant browses Product Discovery
 | `profit_margin` | Calculated: retail - supplier - platform_fee |
 | `images` | Array of image URLs |
 | `store_id` | Which Salla store it's pushed to |
-| `store_product_id` | Salla's product ID after push |
+| `store_product_id` | Salla/Zid product ID after push |
 | `shipping_cost` | AliExpress shipping cost selected during import (SAR) |
 | `shipping_method` | Selected shipping carrier name |
 | `estimated_delivery` | Estimated delivery timeframe (e.g., "15-30 days") |
 | `status` | `draft` / `active` / `inactive` / `out_of_stock` |
 | `stock_quantity` | Last synced stock from AliExpress |
 | `variants` | JSON array of selected variants |
+| `salla_category_id` | Connected Salla store category numerical ID (BIGINT) |
+| `zid_category_id` | Connected Zid store category UUID/text ID (TEXT) |
+| `zid_keywords` | Array of text keywords for Zid store SEO (TEXT[]) |
+| `metadata_title` | SEO Title used for Salla metadata |
+| `metadata_description` | SEO Description used for Salla metadata |
 
 ### Pricing Model:
 
@@ -385,3 +395,32 @@ CREATE TABLE stock_sync_logs (
 3. **Shipping visibility:** Should merchants see the AliExpress shipping cost, or should it be hidden and baked into the platform commission?
 4. **Auto-fulfill default:** Should new merchants have auto-fulfillment ON or OFF by default?
 5. **Which phase to build next:** Product Import (4A) or the full Auto-Fulfillment Engine (Phase 6)?
+
+---
+
+## 🧪 9. The E2E Test User Flow (Validation Run Checklist)
+
+To verify the dropshipping lifecycle works seamlessly across Salla and Zid stores, execute the following step-by-step E2E flow:
+
+### 1. The Setup (Authentication)
+* Open `/dashboard/integrations`. Connect a test Salla store, a test Zid store, and ensure the AliExpress developer platform credential is saved and active.
+* Verify stores exist in Supabase `stores` table with complete tokens.
+
+### 2. Search & Curation (Product Discovery)
+* Go to `/dashboard/discover`. Type a search query, select "Saudi Arabia" for Ship-To country, and sort by best selling. Verify all search card prices and details display strictly in **SAR**.
+
+### 3. Shipping & Pricing Calculation (Import Wizard)
+* Click a search card -> view variant options and live AliExpress shipping carriers.
+* Select a shipping method (e.g., AliExpress Direct - 12.00 SAR).
+* Verify Landed Cost (`Supplier Price + Shipping Cost`) and Suggested Retail Price (Landed + 30% markup) update dynamically.
+* Click **"Import to My Store"** -> Verify success toast, and check database to ensure shipping columns are stored correctly.
+
+### 4. Customizing Store Settings per Platform
+* Go to `/dashboard/products` -> Click the imported product -> Click the **"Store Settings"** tab.
+* If Salla is connected, verify you can choose a Salla category and enter Meta Title/Description.
+* If Zid is connected, verify you can choose a Zid category (loaded via client-side tree flattening) and enter Zid keywords.
+* Click **Save** -> Verify changes persist in Supabase (`salla_category_id`, `zid_category_id`, `metadata_title`, etc.) and immediately push/sync to the connected Salla and Zid dashboards in the background.
+
+### 5. Manual Push / Sync Validation
+* Go to `/dashboard/products`, find a product with "Not Synced" badge.
+* Click **"Push to Store"** -> Verify push completes successfully, badge updates to "Synced", and the correct `store_product_id` is recorded in Supabase. Check store dashboards to ensure identical listings (names, descriptions, pricing, inventory, categories, and SEO tags).

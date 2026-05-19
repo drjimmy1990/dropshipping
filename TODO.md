@@ -330,6 +330,23 @@
 
 ---
 
+## ✅ Phase 4E-Store — Platform-Aware Store Settings & Categories (Session 12)
+
+- [x] Store Settings tab UI implementation (replaces SEO tab)
+- [x] Connected platform checking logic for Salla & Zid
+- [x] Conditional display of settings panels: Salla panel / Zid panel
+- [x] Fetch Zid categories from `/api/zid/categories` via client-side hook
+- [x] Flat category list formatting with hierarchical indent prefixes for dropdowns
+- [x] Expand Supabase `products` schema with `zid_category_id TEXT` migration
+- [x] Extend whitelisted fields list in PATCH API router
+- [x] Salla update synchronization: categories, SEO title & description, status
+- [x] Zid update synchronization: categories, keywords, stock, status
+- [x] Sync category list payload mapping on Zid create (`mapDroplinkerToZid`)
+- [x] Sync category updates payload mapping on Zid edit (`updateZidProduct`)
+- [x] Clear and comprehensive E2E Verification Flow documented and validated
+
+---
+
 ## 📋 Phase 4E — Trending Products & Smart Discovery
 
 > **Goal:** Help merchants answer "what should I sell?" with data-driven product recommendations
@@ -454,9 +471,9 @@
 - [x] Integrations page — "Connect Zid Store" button activated
 - [x] DB migration: `platform_store_id` + `partner_token` columns
 - [x] `.env.local` — ZID_CLIENT_ID, ZID_CLIENT_SECRET, ZID_OAUTH_URL
+- [x] Zid category sync route (`GET /api/zid/categories` + `useZidCategories`)
 - [ ] Webhook registration (order.created, order.updated) — ⏸️ blocked: app not selectable in Zid partner dashboard
 - [ ] Tracking push to Zid
-- [ ] Zid category sync route
 
 ### Multi-Store
 - [x] Import route supports `targetStoreId` / `targetPlatform` params
