@@ -55,10 +55,10 @@ export default function MyProductsPage() {
   }, []);
   useEffect(() => { fetchStores(); }, [fetchStores]);
 
-  // Helper to get platform for a product
-  const getProductPlatform = useCallback((p: { store_id: string | null }) => {
-    if (!p.store_id) return null;
-    return storeMap[p.store_id]?.platform || null;
+  // Helper to get platforms for a product
+  const getProductPlatforms = useCallback((p: any) => {
+    if (!p.listings || p.listings.length === 0) return [];
+    return p.listings.map((l: any) => storeMap[l.store_id]?.platform).filter(Boolean);
   }, [storeMap]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -118,15 +118,15 @@ export default function MyProductsPage() {
     // Platform filter
     if (platformFilter !== "all") {
       result = result.filter((p) => {
-        const plat = getProductPlatform(p);
-        if (platformFilter === "salla") return plat === "salla";
-        if (platformFilter === "zid") return plat === "zid";
+        const plats = getProductPlatforms(p);
+        if (platformFilter === "salla") return plats.includes("salla");
+        if (platformFilter === "zid") return plats.includes("zid");
         return true;
       });
     }
 
     return result;
-  }, [products, searchQuery, statusFilter, sourceFilter, platformFilter, getProductPlatform]);
+  }, [products, searchQuery, statusFilter, sourceFilter, platformFilter, getProductPlatforms]);
 
   // ---------- Action Handlers ----------
 
@@ -288,9 +288,12 @@ export default function MyProductsPage() {
               The product will be removed from your catalog.
               {(() => {
                 const dp = products.find((p) => p.id === deleteConfirmId);
-                if (dp?.store_product_id) {
-                  const plat = getProductPlatform(dp);
-                  return ` It will also be removed from your ${plat === "zid" ? "Zid" : "Salla"} store.`;
+                if (dp?.listings && dp.listings.length > 0) {
+                  const plats = getProductPlatforms(dp);
+                  const platNames = Array.from(new Set(plats.map((p: any) => p === "zid" ? "Zid" : "Salla"))).join(" and ");
+                  if (platNames) {
+                    return ` It will also be removed from your ${platNames} store(s).`;
+                  }
                 }
                 return null;
               })()}
@@ -592,8 +595,9 @@ export default function MyProductsPage() {
                       {/* Store Sync Status */}
                       <td className="px-4 py-3">
                         {(() => {
-                          const isSalla = !!p.salla_product_id;
-                          const isZid = !!p.zid_product_id;
+                          const plats = getProductPlatforms(p);
+                          const isSalla = plats.includes("salla");
+                          const isZid = plats.includes("zid");
                           return (
                             <div className="flex gap-1">
                               {isSalla ? (
