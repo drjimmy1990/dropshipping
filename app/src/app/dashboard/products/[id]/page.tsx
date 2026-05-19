@@ -45,6 +45,8 @@ export default function ProductEditorPage() {
   // Image management
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
+  // Connected stores
+  const [connectedStores, setConnectedStores] = useState<{id: string; platform: string; store_name: string; is_active: boolean}[]>([]);
 
   // Unsaved changes tracking
   const hasChanges = useMemo(() => {
@@ -104,7 +106,20 @@ export default function ProductEditorPage() {
     setLoading(false);
   }, [id]);
 
-  useEffect(() => { fetchProduct(); }, [fetchProduct]);
+  // Fetch connected stores
+  const fetchStores = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("stores")
+      .select("id, platform, store_name, is_active")
+      .eq("merchant_id", user.id)
+      .eq("is_active", true);
+    if (data) setConnectedStores(data);
+  }, []);
+
+  useEffect(() => { fetchProduct(); fetchStores(); }, [fetchProduct, fetchStores]);
 
   // Save changes
   const handleSave = async () => {
@@ -170,14 +185,21 @@ export default function ProductEditorPage() {
   };
 
   // Push to store
-  const handlePush = async () => {
+  const handlePush = async (targetPlatform?: string) => {
     if (!product) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/products/${product.id}/push`, { method: "POST" });
+      const res = await fetch(`/api/products/${product.id}/push`, {
+        method: "POST",
+        ...(targetPlatform ? {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ targetPlatform }),
+        } : {}),
+      });
       const data = await res.json();
       if (res.ok && data.success) {
-        setToast({ type: "success", message: `Pushed to Salla! ID: ${data.sallaProductId}` });
+        const platformName = data.platform === "zid" ? "Zid" : "Salla";
+        setToast({ type: "success", message: `Pushed to ${platformName}! ID: ${data.storeProductId}` });
         fetchProduct();
       } else {
         setToast({ type: "error", message: data.error || "Push failed" });
@@ -306,10 +328,14 @@ export default function ProductEditorPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          {!product.store_product_id && (
-            <Button variant="secondary" size="sm" onClick={handlePush} disabled={saving}>
-              <Icon name="cloud_upload" className="text-sm" /> Push to Salla
-            </Button>
+          {!product.store_product_id && connectedStores.length > 0 && (
+            <div className="flex gap-1">
+              {connectedStores.map((store) => (
+                <Button key={store.id} variant="secondary" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>
+                  <Icon name="cloud_upload" className="text-sm" /> Push to {store.platform === "zid" ? "Zid" : "Salla"}
+                </Button>
+              ))}
+            </div>
           )}
           <Button size="sm" onClick={handleSave} disabled={saving}>
             <Icon name="save" className="text-sm" />
@@ -740,7 +766,7 @@ export default function ProductEditorPage() {
               </div>
               {product.store_product_id && (
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Salla ID</span>
+                  <span className="text-text-secondary">Store ID</span>
                   <span className="text-text font-mono text-xs">{product.store_product_id}</span>
                 </div>
               )}
@@ -754,10 +780,14 @@ export default function ProductEditorPage() {
               <Button className="w-full justify-start" size="sm" onClick={handleSave} disabled={saving}>
                 <Icon name="save" className="text-sm" /> {saving ? "Saving..." : "Save Changes"}
               </Button>
-              {!product.store_product_id && (
-                <Button variant="secondary" className="w-full justify-start" size="sm" onClick={handlePush} disabled={saving}>
-                  <Icon name="cloud_upload" className="text-sm" /> Push to Salla
-                </Button>
+              {!product.store_product_id && connectedStores.length > 0 && (
+                <>
+                  {connectedStores.map((store) => (
+                    <Button key={store.id} variant="secondary" className="w-full justify-start" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>
+                      <Icon name="cloud_upload" className="text-sm" /> Push to {store.platform === "zid" ? "Zid" : "Salla"}
+                    </Button>
+                  ))}
+                </>
               )}
               <Button variant="secondary" className="w-full justify-start text-error hover:!bg-error/10" size="sm" onClick={() => setDeleteConfirm(true)}>
                 <Icon name="delete" className="text-sm" /> Delete Product

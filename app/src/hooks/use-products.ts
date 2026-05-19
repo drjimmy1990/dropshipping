@@ -16,7 +16,7 @@ interface ProductsState {
   updateProduct: (id: string, updates: Partial<Product>) => Promise<{ success: boolean; error?: string }>;
   deleteProduct: (id: string) => Promise<{ success: boolean; error?: string }>;
   toggleActive: (id: string) => Promise<{ success: boolean; error?: string }>;
-  pushToStore: (id: string) => Promise<{ success: boolean; error?: string; sallaProductId?: number }>;
+  pushToStore: (id: string, targetPlatform?: string) => Promise<{ success: boolean; error?: string; storeProductId?: string; platform?: string }>;
 }
 
 /**
@@ -120,14 +120,19 @@ export function useProducts(): ProductsState {
   }, [products, updateProduct]);
 
   /**
-   * Push a product to the merchant's Salla store
+   * Push a product to the merchant's connected store (Salla or Zid)
    */
   const pushToStore = useCallback(async (
-    id: string
-  ): Promise<{ success: boolean; error?: string; sallaProductId?: number }> => {
+    id: string,
+    targetPlatform?: string
+  ): Promise<{ success: boolean; error?: string; storeProductId?: string; platform?: string }> => {
     try {
       const response = await fetch(`/api/products/${id}/push`, {
         method: "POST",
+        ...(targetPlatform ? {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ targetPlatform }),
+        } : {}),
       });
 
       const data = await response.json();
@@ -135,16 +140,16 @@ export function useProducts(): ProductsState {
         return { success: false, error: data.error || "Push to store failed" };
       }
 
-      // Update local state with the Salla product ID
+      // Update local state with the store product ID
       setProducts((prev) =>
         prev.map((p) =>
           p.id === id
-            ? { ...p, store_product_id: String(data.sallaProductId), updated_at: new Date().toISOString() }
+            ? { ...p, store_product_id: String(data.storeProductId), updated_at: new Date().toISOString() }
             : p
         )
       );
 
-      return { success: true, sallaProductId: data.sallaProductId };
+      return { success: true, storeProductId: data.storeProductId, platform: data.platform };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : "Push failed" };
     }

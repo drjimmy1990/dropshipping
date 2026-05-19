@@ -133,7 +133,8 @@ export default function MyProductsPage() {
       return next;
     });
     if (result.success) {
-      setToast({ type: "success", message: `Pushed to Salla! ID: ${result.sallaProductId}` });
+      const platformName = result.platform === "zid" ? "Zid" : "Salla";
+      setToast({ type: "success", message: `Pushed to ${platformName}! ID: ${result.storeProductId}` });
     } else {
       setToast({ type: "error", message: result.error || "Push failed" });
     }
@@ -576,7 +577,7 @@ export default function MyProductsPage() {
                               size="sm"
                               onClick={() => handlePushToStore(p.id)}
                               disabled={isLoading}
-                              title="Push to Salla"
+                              title="Push to Store"
                             >
                               <Icon name="upload" className="text-sm text-accent" />
                             </Button>
