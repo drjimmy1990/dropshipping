@@ -316,9 +316,13 @@ export default function ProductEditorPage() {
               <Badge variant={product.supplier === "direct" ? "info" : "accent"} icon={product.supplier === "direct" ? "storefront" : "link"}>
                 {product.supplier === "direct" ? "Direct" : "AliExpress"}
               </Badge>
-              {product.store_product_id ? (
-                <Badge variant="success" icon="cloud_done">Synced</Badge>
-              ) : (
+              {product.salla_product_id && (
+                <Badge variant="success" icon="cloud_done">Salla ✓</Badge>
+              )}
+              {product.zid_product_id && (
+                <Badge variant="success" icon="cloud_done">Zid ✓</Badge>
+              )}
+              {!product.salla_product_id && !product.zid_product_id && (
                 <Badge variant="warning" icon="cloud_off">Not Synced</Badge>
               )}
               <Badge variant={isActive ? "success" : "neutral"}>
@@ -330,7 +334,14 @@ export default function ProductEditorPage() {
         <div className="flex gap-2">
           {connectedStores.length > 0 && (
             <div className="flex gap-1">
-              {connectedStores.filter((store) => store.id !== product.store_id).map((store) => (
+              {connectedStores
+                .filter((store) => {
+                  // Show push button only if product is NOT yet pushed to this platform
+                  if (store.platform === "salla" && product.salla_product_id) return false;
+                  if (store.platform === "zid" && product.zid_product_id) return false;
+                  return true;
+                })
+                .map((store) => (
                 <Button key={store.id} variant="secondary" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>
                   <Icon name="cloud_upload" className="text-sm" /> Push to {store.platform === "zid" ? "Zid" : "Salla"}
                 </Button>
@@ -780,9 +791,17 @@ export default function ProductEditorPage() {
               <Button className="w-full justify-start" size="sm" onClick={handleSave} disabled={saving}>
                 <Icon name="save" className="text-sm" /> {saving ? "Saving..." : "Save Changes"}
               </Button>
-              {connectedStores.filter((store) => store.id !== product.store_id).length > 0 && (
+              {connectedStores.filter((store) => {
+                if (store.platform === "salla" && product.salla_product_id) return false;
+                if (store.platform === "zid" && product.zid_product_id) return false;
+                return true;
+              }).length > 0 && (
                 <>
-                  {connectedStores.filter((store) => store.id !== product.store_id).map((store) => (
+                  {connectedStores.filter((store) => {
+                    if (store.platform === "salla" && product.salla_product_id) return false;
+                    if (store.platform === "zid" && product.zid_product_id) return false;
+                    return true;
+                  }).map((store) => (
                     <Button key={store.id} variant="secondary" className="w-full justify-start" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>
                       <Icon name="cloud_upload" className="text-sm" /> Push to {store.platform === "zid" ? "Zid" : "Salla"}
                     </Button>

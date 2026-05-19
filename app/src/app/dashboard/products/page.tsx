@@ -592,9 +592,8 @@ export default function MyProductsPage() {
                       {/* Store Sync Status */}
                       <td className="px-4 py-3">
                         {(() => {
-                          const plat = getProductPlatform(p);
-                          const isSalla = plat === "salla" && !!p.store_product_id;
-                          const isZid = plat === "zid" && !!p.store_product_id;
+                          const isSalla = !!p.salla_product_id;
+                          const isZid = !!p.zid_product_id;
                           return (
                             <div className="flex gap-1">
                               {isSalla ? (

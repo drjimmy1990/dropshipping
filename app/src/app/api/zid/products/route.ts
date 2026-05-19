@@ -163,13 +163,26 @@ export async function POST() {
           }
           console.log(`[Zid Sync] Product "${processed.title_en}": ${productImages.length} images, URLs: ${JSON.stringify(productImages.slice(0, 2))}`);
 
-          // Check if product already exists in our DB
-          const { data: existing } = await adminClient
+          // Check if product already exists in our DB (match on zid_product_id or legacy store_product_id)
+          let existing = null;
+          const zidId = String(zidProduct.id);
+          const { data: byZidId } = await adminClient
             .from("products")
             .select("id")
-            .eq("store_product_id", String(zidProduct.id))
+            .eq("zid_product_id", zidId)
             .eq("merchant_id", user.id)
             .maybeSingle();
+          existing = byZidId;
+
+          if (!existing) {
+            const { data: byStoreId } = await adminClient
+              .from("products")
+              .select("id")
+              .eq("store_product_id", zidId)
+              .eq("merchant_id", user.id)
+              .maybeSingle();
+            existing = byStoreId;
+          }
 
           if (existing) {
             // Update existing product (sync latest data from Zid)
@@ -181,6 +194,10 @@ export async function POST() {
               description_en: processed.description || null,
               is_active: !zidProduct.is_draft,
               in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
+              zid_product_id: zidId,
+              zid_store_id: store.id,
+              store_product_id: zidId,
+              store_id: store.id,
               updated_at: new Date().toISOString(),
             };
             if (productImages.length > 0) {
@@ -204,7 +221,7 @@ export async function POST() {
               merchant_id: user.id,
               store_id: store.id,
               supplier: "direct",
-              supplier_product_id: String(zidProduct.id),
+              supplier_product_id: zidId,
               title_en: processed.title_en,
               title_ar: processed.title_ar,
               description_en: processed.description || null,
@@ -217,7 +234,9 @@ export async function POST() {
               is_active: !zidProduct.is_draft,
               in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
               images: productImages,
-              store_product_id: String(zidProduct.id),
+              store_product_id: zidId,
+              zid_product_id: zidId,
+              zid_store_id: store.id,
               category: processed.category || null,
             });
 

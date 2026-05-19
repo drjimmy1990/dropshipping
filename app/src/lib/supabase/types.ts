@@ -119,6 +119,11 @@ export interface Product {
   salla_category_id: number | null;
   tags: string[] | null;
   store_product_id: string | null;
+  // Platform-specific sync IDs (dual-platform support)
+  salla_product_id: string | null;
+  salla_store_id: string | null;
+  zid_product_id: string | null;
+  zid_store_id: string | null;
   shipping_cost: number;
   shipping_method: string | null;
   estimated_delivery: string | null;

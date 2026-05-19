@@ -75,7 +75,7 @@ export async function PATCH(
       .update(updates)
       .eq("id", id)
       .eq("merchant_id", user.id)
-      .select("id, retail_price, is_active, store_product_id, store_id, title_en, title_ar, description_en, salla_category_id")
+      .select("id, retail_price, is_active, store_product_id, store_id, title_en, title_ar, description_en, salla_category_id, salla_product_id, salla_store_id, zid_product_id, zid_store_id")
       .single();
 
     if (error) {
@@ -93,125 +93,123 @@ export async function PATCH(
       );
     }
 
-    // Auto-sync to connected store if product is synced
+    // Auto-sync to ALL connected platforms independently
     let storeSynced = false;
-    let storeSyncError: string | null = null;
+    const syncErrors: string[] = [];
 
-    if (data.store_product_id && data.store_id) {
+    // ---------- Sync to Salla if connected ----------
+    const sallaProductId = (data as Record<string, unknown>).salla_product_id as string | null;
+    const sallaStoreId = (data as Record<string, unknown>).salla_store_id as string | null;
+
+    if (sallaProductId && sallaStoreId) {
       try {
-        const { data: store } = await adminClient
+        const { data: sallaStore } = await adminClient
           .from("stores")
-          .select("access_token, refresh_token, platform, partner_token, platform_store_id")
-          .eq("id", data.store_id)
+          .select("access_token, refresh_token")
+          .eq("id", sallaStoreId)
           .single();
 
-        if (store?.access_token) {
-          const platform = (store as { platform?: string }).platform;
+        if (sallaStore?.access_token && sallaStore.refresh_token) {
+          const sallaPayload: SallaUpdateProductPayload = {};
+          if (updates.title_en) sallaPayload.name = String(updates.title_en);
+          if (updates.retail_price) sallaPayload.price = Number(updates.retail_price);
+          if (updates.description_en) sallaPayload.description = String(updates.description_en);
+          if (updates.stock_quantity) sallaPayload.quantity = Number(updates.stock_quantity);
+          if (updates.salla_category_id) sallaPayload.categories = [Number(updates.salla_category_id)];
+          if (updates.title_en) sallaPayload.metadata_title = String(updates.title_en).slice(0, 70);
 
-          if (platform === "zid") {
-            // ---------- Sync to Zid ----------
-            const zidPayload: { name?: ZidLocalizedString; price?: number; short_description?: ZidLocalizedString } = {};
-
-            if (updates.title_en || updates.title_ar) {
-              zidPayload.name = {
-                en: String(updates.title_en || data.title_en || ""),
-                ar: String(updates.title_ar || data.title_ar || ""),
-              };
-            }
-            if (updates.retail_price) zidPayload.price = Number(updates.retail_price);
-            if (updates.description_en) {
-              zidPayload.short_description = {
-                en: String(updates.description_en).replace(/<[^>]*>/g, "").slice(0, 250),
-                ar: String(updates.description_en).replace(/<[^>]*>/g, "").slice(0, 250),
-              };
-            }
-
-            const zidTokens = {
-              accessToken: store.access_token,
-              refreshToken: store.refresh_token || "",
-              partnerToken: (store as { partner_token?: string }).partner_token || store.access_token,
-              storeId: (store as { platform_store_id?: string }).platform_store_id || data.store_id,
-              onTokenRefresh: async (storeId: string, newAccess: string, newRefresh: string, newPartner?: string) => {
-                await adminClient
-                  .from("stores")
-                  .update({
-                    access_token: newAccess,
-                    refresh_token: newRefresh,
-                    ...(newPartner ? { partner_token: newPartner } : {}),
-                    updated_at: new Date().toISOString(),
-                  })
-                  .eq("id", data.store_id);
+          if (Object.keys(sallaPayload).length > 0) {
+            await fullUpdateSallaProduct(
+              {
+                accessToken: sallaStore.access_token,
+                refreshToken: sallaStore.refresh_token,
+                storeId: sallaStoreId,
+                onTokenRefresh: async (storeId, newAccess, newRefresh) => {
+                  await adminClient.from("stores").update({
+                    access_token: newAccess, refresh_token: newRefresh, updated_at: new Date().toISOString(),
+                  }).eq("id", storeId);
+                },
               },
+              Number(sallaProductId),
+              sallaPayload
+            );
+            storeSynced = true;
+            console.log(`[Products PATCH] ✅ Synced to Salla (product ${sallaProductId})`);
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof SallaApiError ? err.sallaMessage : "Salla sync failed";
+        syncErrors.push(msg ?? "Salla sync error");
+        console.error("[Products PATCH] Salla sync failed:", msg);
+      }
+    }
+
+    // ---------- Sync to Zid if connected ----------
+    const zidProductId = (data as Record<string, unknown>).zid_product_id as string | null;
+    const zidStoreId = (data as Record<string, unknown>).zid_store_id as string | null;
+
+    if (zidProductId && zidStoreId) {
+      try {
+        const { data: zidStore } = await adminClient
+          .from("stores")
+          .select("access_token, refresh_token, partner_token, platform_store_id")
+          .eq("id", zidStoreId)
+          .single();
+
+        if (zidStore?.access_token) {
+          const zidTokens = {
+            accessToken: zidStore.access_token,
+            refreshToken: zidStore.refresh_token || "",
+            partnerToken: (zidStore as { partner_token?: string }).partner_token || zidStore.access_token,
+            storeId: (zidStore as { platform_store_id?: string }).platform_store_id || zidStoreId,
+            onTokenRefresh: async (storeId: string, newAccess: string, newRefresh: string, newPartner?: string) => {
+              await adminClient.from("stores").update({
+                access_token: newAccess, refresh_token: newRefresh,
+                ...(newPartner ? { partner_token: newPartner } : {}),
+                updated_at: new Date().toISOString(),
+              }).eq("id", zidStoreId);
+            },
+          };
+
+          const zidPayload: { name?: ZidLocalizedString; price?: number; short_description?: ZidLocalizedString } = {};
+          if (updates.title_en || updates.title_ar) {
+            zidPayload.name = {
+              en: String(updates.title_en || data.title_en || ""),
+              ar: String(updates.title_ar || data.title_ar || ""),
             };
+          }
+          if (updates.retail_price) zidPayload.price = Number(updates.retail_price);
+          if (updates.description_en) {
+            zidPayload.short_description = {
+              en: String(updates.description_en).replace(/<[^>]*>/g, "").slice(0, 250),
+              ar: String(updates.description_en).replace(/<[^>]*>/g, "").slice(0, 250),
+            };
+          }
 
-            if (Object.keys(zidPayload).length > 0) {
-              await updateZidProduct(
-                zidTokens,
-                String(data.store_product_id),
-                zidPayload
-              );
+          if (Object.keys(zidPayload).length > 0) {
+            await updateZidProduct(zidTokens, zidProductId, zidPayload);
+            storeSynced = true;
+            console.log(`[Products PATCH] ✅ Synced to Zid (product ${zidProductId})`);
+          }
+
+          // Sync images to Zid if images were updated
+          if (updates.images && Array.isArray(updates.images) && (updates.images as string[]).length > 0) {
+            try {
+              await uploadProductImages(zidTokens, zidProductId, updates.images as string[]);
               storeSynced = true;
-            }
-
-            // Sync images to Zid if images were updated
-            if (updates.images && Array.isArray(updates.images) && (updates.images as string[]).length > 0) {
-              try {
-                console.log(`[Products PATCH] Uploading ${(updates.images as string[]).length} images to Zid product ${data.store_product_id}`);
-                await uploadProductImages(zidTokens, String(data.store_product_id), updates.images as string[]);
-                storeSynced = true;
-              } catch (imgErr) {
-                console.warn(`[Products PATCH] ⚠️ Image sync to Zid failed (non-blocking):`, imgErr);
-              }
-            }
-          } else {
-            // ---------- Sync to Salla (default) ----------
-            if (store.refresh_token) {
-              const sallaPayload: SallaUpdateProductPayload = {};
-
-              if (updates.title_en) sallaPayload.name = String(updates.title_en);
-              if (updates.retail_price) sallaPayload.price = Number(updates.retail_price);
-              if (updates.description_en) sallaPayload.description = String(updates.description_en);
-              if (updates.stock_quantity) sallaPayload.quantity = Number(updates.stock_quantity);
-              if (updates.salla_category_id) sallaPayload.categories = [Number(updates.salla_category_id)];
-              if (updates.title_en) sallaPayload.metadata_title = String(updates.title_en).slice(0, 70);
-
-              // Only sync if there are Salla-relevant changes
-              if (Object.keys(sallaPayload).length > 0) {
-                await fullUpdateSallaProduct(
-                  {
-                    accessToken: store.access_token,
-                    refreshToken: store.refresh_token,
-                    storeId: data.store_id,
-                    onTokenRefresh: async (storeId, newAccess, newRefresh) => {
-                      await adminClient
-                        .from("stores")
-                        .update({
-                          access_token: newAccess,
-                          refresh_token: newRefresh,
-                          updated_at: new Date().toISOString(),
-                        })
-                        .eq("id", storeId);
-                    },
-                  },
-                  Number(data.store_product_id),
-                  sallaPayload
-                );
-                storeSynced = true;
-              }
+            } catch (imgErr) {
+              console.warn(`[Products PATCH] ⚠️ Image sync to Zid failed (non-blocking):`, imgErr);
             }
           }
         }
       } catch (err) {
-        if (err instanceof ZidApiError) {
-          storeSyncError = err.zidMessage ?? "Zid sync error";
-        } else if (err instanceof SallaApiError) {
-          storeSyncError = err.sallaMessage ?? "Salla sync error";
-        } else {
-          storeSyncError = "Failed to sync with store";
-        }
-        console.error("[Products PATCH] Store sync failed:", storeSyncError);
+        const msg = err instanceof ZidApiError ? err.zidMessage : "Zid sync failed";
+        syncErrors.push(msg ?? "Zid sync error");
+        console.error("[Products PATCH] Zid sync failed:", msg);
       }
     }
+
+    const storeSyncError = syncErrors.length > 0 ? syncErrors.join("; ") : null;
 
     return NextResponse.json({
       success: true,
@@ -255,7 +253,7 @@ export async function DELETE(
     // 1. Fetch the product (verify ownership + get store info)
     const { data: product, error: fetchError } = await adminClient
       .from("products")
-      .select("id, store_product_id, store_id")
+      .select("id, store_product_id, store_id, salla_product_id, salla_store_id, zid_product_id, zid_store_id")
       .eq("id", id)
       .eq("merchant_id", user.id)
       .single();
@@ -267,77 +265,77 @@ export async function DELETE(
       );
     }
 
-    // 2. If synced to a store, delete from that store first
-    let storeDeleteError: string | null = null;
-    if (product.store_product_id && product.store_id) {
+    // 2. Delete from ALL connected stores
+    const deleteErrors: string[] = [];
+
+    // Delete from Salla if connected
+    if (product.salla_product_id && product.salla_store_id) {
       try {
-        const { data: store } = await adminClient
+        const { data: sallaStore } = await adminClient
           .from("stores")
-          .select("access_token, refresh_token, platform, partner_token, platform_store_id")
-          .eq("id", product.store_id)
+          .select("access_token, refresh_token")
+          .eq("id", product.salla_store_id)
           .single();
 
-        if (store?.access_token) {
-          const platform = (store as { platform?: string }).platform;
-
-          if (platform === "zid") {
-            // ---------- Delete from Zid ----------
-            await deleteZidProduct(
-              {
-                accessToken: store.access_token,
-                refreshToken: store.refresh_token || "",
-                partnerToken: (store as { partner_token?: string }).partner_token || store.access_token,
-                storeId: (store as { platform_store_id?: string }).platform_store_id || product.store_id,
-                onTokenRefresh: async (storeId, newAccess, newRefresh, newPartner) => {
-                  await adminClient
-                    .from("stores")
-                    .update({
-                      access_token: newAccess,
-                      refresh_token: newRefresh,
-                      ...(newPartner ? { partner_token: newPartner } : {}),
-                      updated_at: new Date().toISOString(),
-                    })
-                    .eq("id", product.store_id);
-                },
+        if (sallaStore?.access_token && sallaStore.refresh_token) {
+          await deleteSallaProduct(
+            {
+              accessToken: sallaStore.access_token,
+              refreshToken: sallaStore.refresh_token,
+              storeId: product.salla_store_id,
+              onTokenRefresh: async (storeId, newAccess, newRefresh) => {
+                await adminClient.from("stores").update({
+                  access_token: newAccess, refresh_token: newRefresh, updated_at: new Date().toISOString(),
+                }).eq("id", storeId);
               },
-              String(product.store_product_id)
-            );
-          } else {
-            // ---------- Delete from Salla ----------
-            if (store.refresh_token) {
-              await deleteSallaProduct(
-                {
-                  accessToken: store.access_token,
-                  refreshToken: store.refresh_token,
-                  storeId: product.store_id,
-                  onTokenRefresh: async (storeId, newAccess, newRefresh) => {
-                    await adminClient
-                      .from("stores")
-                      .update({
-                        access_token: newAccess,
-                        refresh_token: newRefresh,
-                        updated_at: new Date().toISOString(),
-                      })
-                      .eq("id", storeId);
-                  },
-                },
-                Number(product.store_product_id)
-              );
-            }
-          }
+            },
+            Number(product.salla_product_id)
+          );
+          console.log(`[Products DELETE] ✅ Deleted from Salla (${product.salla_product_id})`);
         }
       } catch (err) {
-        // Log but don't block the DB delete
-        if (err instanceof ZidApiError) {
-          storeDeleteError = err.zidMessage ?? "Zid API error";
-        } else if (err instanceof SallaApiError) {
-          storeDeleteError = err.sallaMessage ?? "Salla API error";
-        } else {
-          storeDeleteError = "Failed to delete from store";
-        }
-        console.error("[Products DELETE] Store delete failed:", storeDeleteError);
+        const msg = err instanceof SallaApiError ? err.sallaMessage : "Salla delete failed";
+        deleteErrors.push(msg ?? "Salla delete error");
+        console.error("[Products DELETE] Salla delete failed:", msg);
       }
     }
+
+    // Delete from Zid if connected
+    if (product.zid_product_id && product.zid_store_id) {
+      try {
+        const { data: zidStore } = await adminClient
+          .from("stores")
+          .select("access_token, refresh_token, partner_token, platform_store_id")
+          .eq("id", product.zid_store_id)
+          .single();
+
+        if (zidStore?.access_token) {
+          await deleteZidProduct(
+            {
+              accessToken: zidStore.access_token,
+              refreshToken: zidStore.refresh_token || "",
+              partnerToken: (zidStore as { partner_token?: string }).partner_token || zidStore.access_token,
+              storeId: (zidStore as { platform_store_id?: string }).platform_store_id || product.zid_store_id,
+              onTokenRefresh: async (storeId, newAccess, newRefresh, newPartner) => {
+                await adminClient.from("stores").update({
+                  access_token: newAccess, refresh_token: newRefresh,
+                  ...(newPartner ? { partner_token: newPartner } : {}),
+                  updated_at: new Date().toISOString(),
+                }).eq("id", product.zid_store_id);
+              },
+            },
+            String(product.zid_product_id)
+          );
+          console.log(`[Products DELETE] ✅ Deleted from Zid (${product.zid_product_id})`);
+        }
+      } catch (err) {
+        const msg = err instanceof ZidApiError ? err.zidMessage : "Zid delete failed";
+        deleteErrors.push(msg ?? "Zid delete error");
+        console.error("[Products DELETE] Zid delete failed:", msg);
+      }
+    }
+
+    const storeDeleteError = deleteErrors.length > 0 ? deleteErrors.join("; ") : null;
 
     // 3. Delete from Supabase
     const { error: deleteError } = await adminClient

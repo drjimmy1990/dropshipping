@@ -63,18 +63,27 @@ export async function POST(
       );
     }
 
-    // 2. Check if already synced — but allow pushing to a DIFFERENT platform
-    if (product.store_product_id && product.store_id) {
-      // If a specific platform/store was requested, check if it differs from the current one
-      if (!targetPlatform && !targetStoreId) {
-        return NextResponse.json(
-          {
-            error: "Product is already synced to a store. Specify targetPlatform to push to another store.",
-            store_product_id: product.store_product_id,
-          },
-          { status: 409 }
-        );
-      }
+    // 2. Check if already synced to the TARGET platform (not just any platform)
+    const typedProduct = product as Product & { salla_product_id?: string; zid_product_id?: string };
+    
+    if (targetPlatform === "salla" && typedProduct.salla_product_id) {
+      return NextResponse.json(
+        { error: "Product is already synced to Salla.", store_product_id: typedProduct.salla_product_id },
+        { status: 409 }
+      );
+    }
+    if (targetPlatform === "zid" && typedProduct.zid_product_id) {
+      return NextResponse.json(
+        { error: "Product is already synced to Zid.", store_product_id: typedProduct.zid_product_id },
+        { status: 409 }
+      );
+    }
+    // If no target platform specified, check if synced to ALL available platforms
+    if (!targetPlatform && !targetStoreId && typedProduct.salla_product_id && typedProduct.zid_product_id) {
+      return NextResponse.json(
+        { error: "Product is already synced to all available platforms." },
+        { status: 409 }
+      );
     }
 
     // 3. Get merchant's active store (Salla or Zid)
@@ -161,14 +170,25 @@ export async function POST(
       storeUrl = result.sallaUrl;
     }
 
-    // 5. Save the store product ID back to our DB
+    // 5. Save the store product ID back to our DB (platform-specific + legacy)
+    const platformUpdate: Record<string, unknown> = {
+      store_product_id: storeProductId,
+      store_id: store.id,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Save to platform-specific fields for dual-platform support
+    if (storePlatform === "zid") {
+      platformUpdate.zid_product_id = storeProductId;
+      platformUpdate.zid_store_id = store.id;
+    } else {
+      platformUpdate.salla_product_id = storeProductId;
+      platformUpdate.salla_store_id = store.id;
+    }
+
     const { error: updateError } = await adminClient
       .from("products")
-      .update({
-        store_product_id: storeProductId,
-        store_id: store.id,
-        updated_at: new Date().toISOString(),
-      })
+      .update(platformUpdate)
       .eq("id", id);
 
     if (updateError) {

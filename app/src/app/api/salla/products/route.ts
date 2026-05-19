@@ -150,13 +150,26 @@ export async function POST(request: NextRequest) {
             ? sallaProduct.images.map((img) => typeof img === 'string' ? img : img.url)
             : sallaProduct.main_image ? [sallaProduct.main_image] : [];
 
-          // Check if product already exists in our DB
-          const { data: existing } = await adminClient
+          // Check if product already exists in our DB (match salla_product_id or legacy store_product_id)
+          const sallaId = String(sallaProduct.id);
+          let existing = null;
+          const { data: bySallaId } = await adminClient
             .from("products")
             .select("id")
-            .eq("store_product_id", String(sallaProduct.id))
+            .eq("salla_product_id", sallaId)
             .eq("merchant_id", user.id)
             .maybeSingle();
+          existing = bySallaId;
+
+          if (!existing) {
+            const { data: byStoreId } = await adminClient
+              .from("products")
+              .select("id")
+              .eq("store_product_id", sallaId)
+              .eq("merchant_id", user.id)
+              .maybeSingle();
+            existing = byStoreId;
+          }
 
           if (existing) {
             // Update existing product (sync latest data from Salla)
@@ -169,6 +182,10 @@ export async function POST(request: NextRequest) {
                 is_active: sallaProduct.status === "sale",
                 in_stock: sallaProduct.status !== "out",
                 images: imageUrls,
+                salla_product_id: sallaId,
+                salla_store_id: store.id,
+                store_product_id: sallaId,
+                store_id: store.id,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", existing.id);
@@ -187,7 +204,7 @@ export async function POST(request: NextRequest) {
               merchant_id: user.id,
               store_id: store.id,
               supplier: "direct",
-              supplier_product_id: String(sallaProduct.id),
+              supplier_product_id: sallaId,
               title_en: sallaProduct.name,
               description_en: sallaProduct.description || null,
               supplier_cost: costPrice,
@@ -199,7 +216,9 @@ export async function POST(request: NextRequest) {
               is_active: sallaProduct.status === "sale",
               in_stock: sallaProduct.status !== "out",
               images: imageUrls,
-              store_product_id: String(sallaProduct.id),
+              store_product_id: sallaId,
+              salla_product_id: sallaId,
+              salla_store_id: store.id,
               salla_category_id: categoryId,
               category: sallaProduct.categories?.[0]?.name || null,
             });
