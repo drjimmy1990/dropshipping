@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
 > **Date:** 2026-05-19  
-> **Status:** Phase 7B & 4E-Store Complete ✅ — Zid Platform Integration + Store Settings (OAuth ✅, API Client ✅, Dual Product Push ✅, Dual Category Sync ✅, Platform-Aware Settings Panel ✅)
+> **Status:** Phase 7B, 4E-Store & Multi-Store Complete ✅ — Zid Platform Integration + Store Settings + Multi-Store Support (OAuth ✅, API Client ✅, Dual Product Push ✅, Dual Category Sync ✅, Platform-Aware Settings Panel ✅, Multi-Store DB Schema ✅, 1:N Product Listings ✅)
 
 ---
 
@@ -63,7 +63,7 @@ Merchant browses Product Discovery
     → Product appears in merchant's Salla storefront
 ```
 
-### Database Table: `products`
+### Database Tables: `products` & `product_listings`
 
 | Column | Purpose |
 |--------|---------|
@@ -74,12 +74,10 @@ Merchant browses Product Discovery
 | `supplier_sku_id` | Selected variant SKU ID |
 | `title` / `title_ar` | Merchant's custom title (EN/AR) |
 | `description` / `description_ar` | Product description |
-| `retail_price` | What the merchant sells it for (SAR) |
+| `retail_price` | Default retail price (SAR) |
 | `supplier_price` | AliExpress cost price (SAR) |
 | `profit_margin` | Calculated: retail - supplier - platform_fee |
 | `images` | Array of image URLs |
-| `store_id` | Which Salla store it's pushed to |
-| `store_product_id` | Salla/Zid product ID after push |
 | `shipping_cost` | AliExpress shipping cost selected during import (SAR) |
 | `shipping_method` | Selected shipping carrier name |
 | `estimated_delivery` | Estimated delivery timeframe (e.g., "15-30 days") |
@@ -91,6 +89,8 @@ Merchant browses Product Discovery
 | `zid_keywords` | Array of text keywords for Zid store SEO (TEXT[]) |
 | `metadata_title` | SEO Title used for Salla metadata |
 | `metadata_description` | SEO Description used for Salla metadata |
+
+> **Note:** The mapping between DropLinker products and the actual stores they are published to is handled by the `product_listings` table (1:N relationship). This allows a single product to be pushed to multiple stores. The `product_listings` table stores the `store_id`, `store_product_id`, and any store-specific `retail_price` overrides.
 
 ### Pricing Model:
 

@@ -85,3 +85,9 @@ Click the **"Store Settings"** tab (replaces the old "SEO" tab)
   - For a product never pushed to Zid, select a Zid category in Store Settings and click Save.
   - Click **Push to Zid** -> Verify product is successfully created on Zid with the assigned category.
   - For an already synced Zid product, update the category and click Save -> Verify it updates the category on the Zid store dashboard.
+
+12. 🆕 Multi-Store Architecture (Session 13)
+Go to Product Discovery → import a product.
+✅ Verify that when pushing to multiple stores (Salla, Zid, or multiple of the same type), the `product_listings` table correctly stores a 1:N mapping of the product to each store.
+✅ Verify that the product's Pricing Tab displays individual listings and store-specific `retail_price` overrides.
+✅ Verify that manual and auto-sync updates apply across all connected stores present in `product_listings` rather than looking at hardcoded columns.

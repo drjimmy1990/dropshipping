@@ -287,7 +287,6 @@ function IntegrationsContent() {
                   </Button>
                 </a>
               </Card>
-            )}
 
             {/* Connected Zid stores */}
             {stores

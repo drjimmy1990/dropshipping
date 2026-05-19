@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-19 (Session 12 — Platform-Aware Store Settings + Dual Category Sync)
+> **Last Updated:** 2026-05-19 (Session 13 — Multi-Store Support & 1:N Listings)
 
 ## 1. Business Concept
 
@@ -321,7 +321,7 @@ Steps:
 
 ## 7. Database Schema
 
-> ✅ **IMPLEMENTED** — 20 tables deployed to Supabase (including `platform_feeds`). Products table extended with SEO + category columns.
+> ✅ **IMPLEMENTED** — 21 tables deployed to Supabase (including `platform_feeds` and `product_listings`). Products table extended with SEO + category columns.
 
 ```mermaid
 erDiagram
@@ -329,6 +329,8 @@ erDiagram
     MERCHANT ||--o{ STORE : "connects"
     MERCHANT ||--o{ SUPPLIER_ACCOUNT : "links"
     MERCHANT ||--o{ PRODUCT : "imports"
+    PRODUCT ||--o{ PRODUCT_LISTING : "has"
+    STORE ||--o{ PRODUCT_LISTING : "hosts"
     WALLET ||--o{ TRANSACTION : "records"
     STORE ||--o{ ORDER : "receives"
     ORDER ||--o{ ORDER_ITEM : "contains"
@@ -337,7 +339,7 @@ erDiagram
     FULFILLMENT ||--|| TRANSACTION : "deducts"
 ```
 
-### Tables (19)
+### Tables (21)
 
 | # | Table | Purpose | Status |
 |---|---|---|---|
@@ -361,6 +363,7 @@ erDiagram
 | 18 | `trend_reports` | Weekly niche/category trend analysis | ✅ |
 | 19 | `notifications` | In-app, email, SMS notification records | ✅ |
 | 20 | `platform_feeds` | Curated AliExpress feeds with enable/disable + bilingual names | ✅ |
+| 21 | `product_listings` | Maps products to stores (1:N) with store-specific pricing | ✅ |
 
 ### Key Functions
 
@@ -614,6 +617,15 @@ sequenceDiagram
 - [x] `updateZidProduct` supports categories on product edit
 - [x] Sync coverage map in UI showing field-by-platform matrix
 - [x] DB migrations: `phase9_seo_fields.sql`, `phase10_zid_category.sql`
+
+### Phase 13 — Multi-Store Support (✅ COMPLETE)
+> 1:N mapping from product to multiple stores (Salla/Zid), store-specific pricing, and syncing
+
+- [x] Multi-Store Architecture: Migrated to 1:N `product_listings` table
+- [x] Store-Specific Pricing: Default price in `products`, store overrides in `product_listings`
+- [x] API Refactoring: Push, Edit, Delete ops iterate over `product_listings`
+- [x] Frontend Updates: Product list and details use `product_listings` for sync status
+- [x] Database Migration: `phase13_multi_store.sql` executed
 
 ### Phase 4E — Trending Products & Smart Discovery
 > Data-driven product recommendations for merchants

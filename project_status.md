@@ -1,10 +1,10 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-17 (Session 10 — Zid Platform Integration)
+> **Last Updated:** 2026-05-19 (Session 13 — Multi-Store Support)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (20 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, and **automatic AliExpress token refresh** when tokens expire. Merchants can sign up, connect their Salla or Zid store, receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla or Zid, and manage everything including images and pricing**. All prices are enforced in SAR.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (21 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, and **automatic AliExpress token refresh** when tokens expire. Merchants can sign up, connect their Salla or Zid store (or multiple stores!), receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla or Zid, and manage everything including images and pricing**. All prices are enforced in SAR.
 
 **What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, CJDropshipping integration, Zid webhooks, auto-fulfillment engine. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
 
@@ -225,6 +225,16 @@
 | **PATCH route whitelisting** | ✅ | Allows editing of `zid_category_id`, `zid_keywords`, `metadata_title`, etc. |
 | **Platform synchronization** | ✅ | Syncs category and SEO inputs to Salla & Zid on save and push |
 | **Migration SQL script** | ✅ | `phase10_zid_category.sql` |
+
+### ✅ Phase 13: Multi-Store Support (Session 13)
+
+| Task | Status | Notes |
+|---|---|---|
+| **Multi-Store Architecture** | ✅ | Migrated to 1:N `product_listings` table |
+| **Store-Specific Pricing** | ✅ | Default price in `products`, store overrides in `product_listings` |
+| **API Refactoring** | ✅ | Push, Edit, Delete ops iterate over `product_listings` |
+| **Frontend Updates** | ✅ | Product list and details use `product_listings` for sync status |
+| **Database Migration** | ✅ | `phase13_multi_store.sql` executed |
 
 ---
 
