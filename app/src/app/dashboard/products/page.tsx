@@ -161,9 +161,9 @@ export default function MyProductsPage() {
     }
   };
 
-  const handlePushToStore = async (id: string) => {
+  const handlePushToStore = async (id: string, targetPlatform?: string) => {
     setActionLoading((prev) => ({ ...prev, [id]: "push" }));
-    const result = await pushToStore(id);
+    const result = await pushToStore(id, targetPlatform);
     setActionLoading((prev) => {
       const next = { ...prev };
       delete next[id];
@@ -596,15 +596,26 @@ export default function MyProductsPage() {
                             {getProductPlatform(p) === "zid" ? "Zid" : "Salla"}
                           </Badge>
                         ) : (
-                          <button
-                            onClick={() => handlePushToStore(p.id)}
-                            disabled={isLoading}
-                            className="group"
-                          >
-                            <Badge variant="warning" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80">
-                              {loadingAction === "push" ? "Pushing..." : "Push"}
-                            </Badge>
-                          </button>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handlePushToStore(p.id, "salla")}
+                              disabled={isLoading}
+                              className="group"
+                            >
+                              <Badge variant="warning" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80 text-[10px]">
+                                {loadingAction === "push" ? "..." : "Salla"}
+                              </Badge>
+                            </button>
+                            <button
+                              onClick={() => handlePushToStore(p.id, "zid")}
+                              disabled={isLoading}
+                              className="group"
+                            >
+                              <Badge variant="info" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80 text-[10px]">
+                                {loadingAction === "push" ? "..." : "Zid"}
+                              </Badge>
+                            </button>
+                          </div>
                         )}
                       </td>
 
@@ -638,17 +649,15 @@ export default function MyProductsPage() {
                               <Icon name="edit" className="text-sm text-accent" />
                             </Button>
                           </Link>
-                          {!p.store_product_id && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handlePushToStore(p.id)}
-                              disabled={isLoading}
-                              title="Push to Store"
-                            >
-                              <Icon name="upload" className="text-sm text-accent" />
-                            </Button>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePushToStore(p.id)}
+                            disabled={isLoading}
+                            title="Push to Store"
+                          >
+                            <Icon name="upload" className="text-sm text-accent" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"

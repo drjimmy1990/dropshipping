@@ -63,15 +63,18 @@ export async function POST(
       );
     }
 
-    // 2. Check if already synced
-    if (product.store_product_id) {
-      return NextResponse.json(
-        {
-          error: "Product is already synced to store",
-          store_product_id: product.store_product_id,
-        },
-        { status: 409 }
-      );
+    // 2. Check if already synced — but allow pushing to a DIFFERENT platform
+    if (product.store_product_id && product.store_id) {
+      // If a specific platform/store was requested, check if it differs from the current one
+      if (!targetPlatform && !targetStoreId) {
+        return NextResponse.json(
+          {
+            error: "Product is already synced to a store. Specify targetPlatform to push to another store.",
+            store_product_id: product.store_product_id,
+          },
+          { status: 409 }
+        );
+      }
     }
 
     // 3. Get merchant's active store (Salla or Zid)

@@ -327,8 +327,9 @@ export async function getZidProductImages(
   zidProductId: string
 ): Promise<string[]> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await withAutoRefresh(tokens, (accessToken, partnerToken) =>
-      zidRequest<{ results?: ZidProductImage[] } | ZidProductImage[]>({
+      zidRequest<any>({
         method: "GET",
         path: `/products/${zidProductId}/images/`,
         accessToken,
@@ -337,11 +338,33 @@ export async function getZidProductImages(
       })
     );
 
-    // Handle both possible response shapes
-    const images = Array.isArray(result) ? result : (result.results || []);
-    return images
-      .map((img) => img.url || img.thumbnail_url)
+    console.log(`[Zid] Images response for product ${zidProductId}:`, JSON.stringify(result)?.substring(0, 500));
+
+    // Handle ALL possible Zid response shapes:
+    // 1. { results: [...] }  — paginated list
+    // 2. { data: [...] }     — wrapped response
+    // 3. [...] directly      — plain array
+    // 4. { images: [...] }   — product sub-object
+    let rawImages: ZidProductImage[] = [];
+
+    if (Array.isArray(result)) {
+      rawImages = result;
+    } else if (result?.results && Array.isArray(result.results)) {
+      rawImages = result.results;
+    } else if (result?.data && Array.isArray(result.data)) {
+      rawImages = result.data;
+    } else if (result?.images && Array.isArray(result.images)) {
+      rawImages = result.images;
+    }
+
+    const urls = rawImages
+      .map((img: ZidProductImage & { image_url?: string; original?: string; src?: string }) =>
+        img.url || img.image_url || img.original || img.src || img.thumbnail_url
+      )
       .filter((url): url is string => !!url);
+
+    console.log(`[Zid] Found ${urls.length} images for product ${zidProductId}`);
+    return urls;
   } catch (error) {
     console.warn(`[Zid] ⚠️ Failed to fetch images for product ${zidProductId}:`, error);
     return [];
