@@ -225,7 +225,9 @@ export function mapDroplinkerToSalla(product: Product): SallaCreateProductPayloa
     require_shipping: true,
     weight: 0.5, // Default weight in kg — AliExpress doesn't always provide weight
     weight_type: "kg",
-    sku: product.supplier_product_id || undefined,
+    sku: product.supplier_product_id
+      ? `${product.supplier_product_id}-${Date.now().toString(36)}`
+      : undefined,
     images: images.length > 0 ? images : undefined,
     options: options.length > 0 ? options : undefined,
     metadata_title: name.slice(0, 70) || undefined,
