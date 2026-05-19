@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { deleteSallaProduct, fullUpdateSallaProduct, SallaApiError } from "@/lib/salla/client";
+import { attachSallaImage, deleteSallaProduct, fullUpdateSallaProduct, SallaApiError } from "@/lib/salla/client";
 import { updateZidProduct, deleteZidProduct, uploadProductImages, ZidApiError } from "@/lib/zid/client";
 import type { SallaUpdateProductPayload } from "@/lib/salla/types";
 import type { ZidLocalizedString } from "@/lib/zid/types";
@@ -49,6 +49,9 @@ export async function PATCH(
       "shipping_cost",
       "shipping_method",
       "estimated_delivery",
+      "metadata_title",
+      "metadata_description",
+      "zid_keywords",
     ];
 
     const updates: Record<string, unknown> = {};
@@ -75,7 +78,7 @@ export async function PATCH(
       .update(updates)
       .eq("id", id)
       .eq("merchant_id", user.id)
-      .select("id, retail_price, is_active, store_product_id, store_id, title_en, title_ar, description_en, salla_category_id, salla_product_id, salla_store_id, zid_product_id, zid_store_id")
+      .select("id, retail_price, is_active, store_product_id, store_id, title_en, title_ar, description_en, description_ar, salla_category_id, salla_product_id, salla_store_id, zid_product_id, zid_store_id, metadata_title, metadata_description, zid_keywords")
       .single();
 
     if (error) {
@@ -94,7 +97,8 @@ export async function PATCH(
     }
 
     // Auto-sync to ALL connected platforms independently
-    let storeSynced = false;
+    let sallaSynced = false;
+    let zidSynced = false;
     const syncErrors: string[] = [];
 
     // ---------- Sync to Salla if connected ----------
@@ -110,36 +114,60 @@ export async function PATCH(
           .single();
 
         if (sallaStore?.access_token && sallaStore.refresh_token) {
+          const sallaTokens = {
+            accessToken: sallaStore.access_token,
+            refreshToken: sallaStore.refresh_token,
+            storeId: sallaStoreId,
+            onTokenRefresh: async (storeId: string, newAccess: string, newRefresh: string) => {
+              await adminClient.from("stores").update({
+                access_token: newAccess, refresh_token: newRefresh, updated_at: new Date().toISOString(),
+              }).eq("id", storeId);
+            },
+          };
+
           const sallaPayload: SallaUpdateProductPayload = {};
           if (updates.title_en) sallaPayload.name = String(updates.title_en);
           if (updates.retail_price) sallaPayload.price = Number(updates.retail_price);
           if (updates.description_en) sallaPayload.description = String(updates.description_en);
           if (updates.stock_quantity) sallaPayload.quantity = Number(updates.stock_quantity);
           if (updates.salla_category_id) sallaPayload.categories = [Number(updates.salla_category_id)];
-          if (updates.title_en) sallaPayload.metadata_title = String(updates.title_en).slice(0, 70);
+          // SEO fields
+          if (updates.metadata_title) sallaPayload.metadata_title = String(updates.metadata_title).slice(0, 70);
+          else if (updates.title_en) sallaPayload.metadata_title = String(updates.title_en).slice(0, 70);
+          if (updates.metadata_description) sallaPayload.metadata_description = String(updates.metadata_description).slice(0, 160);
+          // Status sync
+          if (updates.is_active !== undefined) {
+            // Salla doesn't have is_active in update payload directly — use status field workaround
+            // Note: status is not in SallaUpdateProductPayload type, so we cast
+            (sallaPayload as Record<string, unknown>).status = updates.is_active ? "sale" : "hidden";
+          }
 
           if (Object.keys(sallaPayload).length > 0) {
-            await fullUpdateSallaProduct(
-              {
-                accessToken: sallaStore.access_token,
-                refreshToken: sallaStore.refresh_token,
-                storeId: sallaStoreId,
-                onTokenRefresh: async (storeId, newAccess, newRefresh) => {
-                  await adminClient.from("stores").update({
-                    access_token: newAccess, refresh_token: newRefresh, updated_at: new Date().toISOString(),
-                  }).eq("id", storeId);
-                },
-              },
-              Number(sallaProductId),
-              sallaPayload
-            );
-            storeSynced = true;
+            await fullUpdateSallaProduct(sallaTokens, Number(sallaProductId), sallaPayload);
+            sallaSynced = true;
             console.log(`[Products PATCH] ✅ Synced to Salla (product ${sallaProductId})`);
+          }
+
+          // Sync images to Salla if images were updated
+          if (updates.images && Array.isArray(updates.images) && (updates.images as string[]).length > 0) {
+            try {
+              const imageUrls = updates.images as string[];
+              console.log(`[Products PATCH] Uploading ${imageUrls.length} images to Salla product ${sallaProductId}`);
+              for (let i = 0; i < imageUrls.length; i++) {
+                await attachSallaImage(sallaTokens, Number(sallaProductId), imageUrls[i], {
+                  isDefault: i === 0,
+                  sort: i + 1,
+                });
+              }
+              sallaSynced = true;
+            } catch (imgErr) {
+              console.warn(`[Products PATCH] ⚠️ Image sync to Salla failed (non-blocking):`, imgErr);
+            }
           }
         }
       } catch (err) {
         const msg = err instanceof SallaApiError ? err.sallaMessage : "Salla sync failed";
-        syncErrors.push(msg ?? "Salla sync error");
+        syncErrors.push(`Salla: ${msg ?? "sync error"}`);
         console.error("[Products PATCH] Salla sync failed:", msg);
       }
     }
@@ -171,7 +199,8 @@ export async function PATCH(
             },
           };
 
-          const zidPayload: { name?: ZidLocalizedString; price?: number; short_description?: ZidLocalizedString } = {};
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const zidPayload: Record<string, any> = {};
           if (updates.title_en || updates.title_ar) {
             zidPayload.name = {
               en: String(updates.title_en || data.title_en || ""),
@@ -179,16 +208,26 @@ export async function PATCH(
             };
           }
           if (updates.retail_price) zidPayload.price = Number(updates.retail_price);
-          if (updates.description_en) {
+          if (updates.description_en || updates.description_ar) {
             zidPayload.short_description = {
-              en: String(updates.description_en).replace(/<[^>]*>/g, "").slice(0, 250),
-              ar: String(updates.description_en).replace(/<[^>]*>/g, "").slice(0, 250),
+              en: String(updates.description_en || data.description_en || "").replace(/<[^>]*>/g, "").slice(0, 250),
+              ar: String(updates.description_ar || data.description_ar || updates.description_en || "").replace(/<[^>]*>/g, "").slice(0, 250),
             };
+          }
+          // Stock sync
+          if (updates.stock_quantity !== undefined) zidPayload.quantity = Number(updates.stock_quantity);
+          // Keywords/SEO sync
+          if (updates.zid_keywords && Array.isArray(updates.zid_keywords)) {
+            zidPayload.keywords = updates.zid_keywords;
+          }
+          // Status sync
+          if (updates.is_active !== undefined) {
+            zidPayload.is_draft = !updates.is_active;
           }
 
           if (Object.keys(zidPayload).length > 0) {
             await updateZidProduct(zidTokens, zidProductId, zidPayload);
-            storeSynced = true;
+            zidSynced = true;
             console.log(`[Products PATCH] ✅ Synced to Zid (product ${zidProductId})`);
           }
 
@@ -196,7 +235,7 @@ export async function PATCH(
           if (updates.images && Array.isArray(updates.images) && (updates.images as string[]).length > 0) {
             try {
               await uploadProductImages(zidTokens, zidProductId, updates.images as string[]);
-              storeSynced = true;
+              zidSynced = true;
             } catch (imgErr) {
               console.warn(`[Products PATCH] ⚠️ Image sync to Zid failed (non-blocking):`, imgErr);
             }
@@ -204,17 +243,20 @@ export async function PATCH(
         }
       } catch (err) {
         const msg = err instanceof ZidApiError ? err.zidMessage : "Zid sync failed";
-        syncErrors.push(msg ?? "Zid sync error");
+        syncErrors.push(`Zid: ${msg ?? "sync error"}`);
         console.error("[Products PATCH] Zid sync failed:", msg);
       }
     }
 
+    const storeSynced = sallaSynced || zidSynced;
     const storeSyncError = syncErrors.length > 0 ? syncErrors.join("; ") : null;
 
     return NextResponse.json({
       success: true,
       product: data,
       storeSynced,
+      sallaSynced,
+      zidSynced,
       ...(storeSyncError && { storeWarning: storeSyncError }),
     });
   } catch (error) {

@@ -567,6 +567,9 @@ export async function updateZidProduct(
     name?: ZidLocalizedString;
     price?: number;
     short_description?: ZidLocalizedString;
+    quantity?: number;
+    keywords?: string[];
+    is_draft?: boolean;
   }
 ): Promise<void> {
   console.log(`[Zid] Updating product ${zidProductId} on store ${tokens.storeId}`);

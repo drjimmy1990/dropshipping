@@ -124,6 +124,10 @@ export interface Product {
   salla_store_id: string | null;
   zid_product_id: string | null;
   zid_store_id: string | null;
+  // SEO & platform-specific settings
+  metadata_title: string | null;
+  metadata_description: string | null;
+  zid_keywords: string[] | null;
   shipping_cost: number;
   shipping_method: string | null;
   estimated_delivery: string | null;

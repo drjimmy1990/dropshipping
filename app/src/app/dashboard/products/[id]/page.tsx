@@ -9,7 +9,7 @@ import { useSallaCategories } from "@/hooks/use-salla-categories";
 import type { Product } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/client";
 
-type Tab = "general" | "images" | "pricing" | "seo";
+type Tab = "general" | "images" | "pricing" | "store";
 
 export default function ProductEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,8 +45,14 @@ export default function ProductEditorPage() {
   // Image management
   const [localImages, setLocalImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
+  // Zid-specific keywords
+  const [zidKeywords, setZidKeywords] = useState("");
   // Connected stores
   const [connectedStores, setConnectedStores] = useState<{id: string; platform: string; store_name: string; is_active: boolean}[]>([]);
+
+  // Platform detection (derived from connected stores)
+  const hasSallaStore = connectedStores.some(s => s.platform === "salla");
+  const hasZidStore = connectedStores.some(s => s.platform === "zid");
 
   // Unsaved changes tracking
   const hasChanges = useMemo(() => {
@@ -59,9 +65,12 @@ export default function ProductEditorPage() {
       retailPrice !== String(product.retail_price) ||
       stockQty !== String(product.stock_quantity) ||
       isActive !== product.is_active ||
-      JSON.stringify(localImages) !== JSON.stringify(product.images || [])
+      JSON.stringify(localImages) !== JSON.stringify(product.images || []) ||
+      metaTitle !== (product.metadata_title || (product.title_en || "").slice(0, 70)) ||
+      metaDesc !== (product.metadata_description || (product.description_en || "").slice(0, 160)) ||
+      zidKeywords !== (product.zid_keywords || []).join(", ")
     );
-  }, [product, titleEn, titleAr, descEn, descAr, retailPrice, stockQty, isActive, localImages]);
+  }, [product, titleEn, titleAr, descEn, descAr, retailPrice, stockQty, isActive, localImages, metaTitle, metaDesc, zidKeywords]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -95,8 +104,9 @@ export default function ProductEditorPage() {
       setRetailPrice(String(p.retail_price));
       setStockQty(String(p.stock_quantity));
       setCategoryId(p.salla_category_id ? String(p.salla_category_id) : "");
-      setMetaTitle((p.title_en || "").slice(0, 70));
-      setMetaDesc((p.description_en || "").slice(0, 160));
+      setMetaTitle(p.metadata_title || (p.title_en || "").slice(0, 70));
+      setMetaDesc(p.metadata_description || (p.description_en || "").slice(0, 160));
+      setZidKeywords((p.zid_keywords || []).join(", "));
       setIsActive(p.is_active);
       setLocalImages(p.images || []);
       setShippingCostInput(String(p.shipping_cost || 0));
@@ -140,6 +150,9 @@ export default function ProductEditorPage() {
         shipping_cost: parseFloat(shippingCostInput) || 0,
         shipping_method: shippingMethodInput || null,
         estimated_delivery: estimatedDeliveryInput || null,
+        metadata_title: metaTitle || null,
+        metadata_description: metaDesc || null,
+        zid_keywords: zidKeywords ? zidKeywords.split(",").map(s => s.trim()).filter(Boolean) : null,
       };
 
       const res = await fetch(`/api/products/${product.id}`, {
@@ -150,10 +163,14 @@ export default function ProductEditorPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        const syncParts: string[] = [];
+        if (data.sallaSynced) syncParts.push("Salla ✅");
+        if (data.zidSynced) syncParts.push("Zid ✅");
+        if (data.storeWarning) syncParts.push(data.storeWarning);
         setToast({
           type: "success",
-          message: data.sallaSynced
-            ? "Saved & synced to Salla ✅"
+          message: syncParts.length > 0
+            ? `Saved — ${syncParts.join(" · ")}`
             : "Saved successfully",
         });
         fetchProduct();
@@ -265,7 +282,7 @@ export default function ProductEditorPage() {
     { key: "general", label: "General", icon: "edit_note" },
     { key: "images", label: "Images", icon: "photo_library" },
     { key: "pricing", label: "Pricing", icon: "payments" },
-    { key: "seo", label: "SEO", icon: "search" },
+    { key: "store", label: "Store Settings", icon: "tune" },
   ];
 
   return (
@@ -702,32 +719,127 @@ export default function ProductEditorPage() {
             </Card>
           )}
 
-          {tab === "seo" && (
+          {tab === "store" && (
             <Card className="p-6">
-              <h2 className="font-semibold text-text mb-4">SEO Settings</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">
-                    Meta Title <span className={`float-right ${metaTitle.length > 70 ? "text-error" : "text-text-muted"}`}>{metaTitle.length}/70</span>
-                  </label>
-                  <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value.slice(0, 70))} maxLength={70}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent" />
+              <h2 className="font-semibold text-text mb-4">Store Settings</h2>
+
+              {/* Sync Coverage Map */}
+              <div className="mb-6 p-4 bg-surface-sunken rounded-lg">
+                <h3 className="text-xs font-medium text-text-muted uppercase mb-3">Sync Coverage</h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {[
+                    { field: "Title (EN)", salla: true, zid: true },
+                    { field: "Title (AR)", salla: false, zid: true },
+                    { field: "Description", salla: true, zid: true },
+                    { field: "Price", salla: true, zid: true },
+                    { field: "Stock", salla: true, zid: true },
+                    { field: "Images", salla: true, zid: true },
+                    { field: "Status", salla: true, zid: true },
+                  ].map(({ field, salla, zid }) => (
+                    <div key={field} className="flex items-center justify-between py-1">
+                      <span className="text-text-secondary">{field}</span>
+                      <div className="flex gap-1">
+                        {hasSallaStore && salla && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-medium">Salla</span>}
+                        {hasZidStore && zid && <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-medium">Zid</span>}
+                        {hasSallaStore && !salla && hasZidStore && zid && <span className="px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded text-[10px]">—</span>}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">
-                    Meta Description <span className={`float-right ${metaDesc.length > 160 ? "text-error" : "text-text-muted"}`}>{metaDesc.length}/160</span>
-                  </label>
-                  <textarea value={metaDesc} onChange={(e) => setMetaDesc(e.target.value.slice(0, 160))} maxLength={160} rows={3}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent resize-none" />
-                </div>
-                {/* Preview */}
-                <div className="bg-surface-sunken rounded-lg p-4 mt-4">
-                  <p className="text-xs text-text-muted mb-2">Search preview</p>
-                  <div className="text-[#1a0dab] text-base font-medium truncate">{metaTitle || titleEn || "Product Title"}</div>
-                  <div className="text-[#006621] text-xs truncate mt-0.5">droplinker.asra3.com › product</div>
-                  <div className="text-text-secondary text-xs mt-1 line-clamp-2">{metaDesc || descEn?.slice(0, 160) || "Product description..."}</div>
-                </div>
+                <p className="text-[10px] text-text-muted mt-2 italic">Edit these fields in General/Pricing tabs. Changes sync on save.</p>
               </div>
+
+              {/* ---- SALLA PANEL ---- */}
+              {hasSallaStore && (
+                <div className="border border-emerald-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <span className="text-emerald-600 text-xs font-bold">S</span>
+                      </div>
+                      <span className="font-medium text-text">Salla</span>
+                    </div>
+                    {product.salla_product_id
+                      ? <Badge variant="success">Synced</Badge>
+                      : <Badge variant="warning">Not Pushed</Badge>
+                    }
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">
+                        Meta Title <span className={`float-right ${metaTitle.length > 60 ? "text-warning" : "text-text-muted"}`}>{metaTitle.length}/70</span>
+                      </label>
+                      <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value.slice(0, 70))} maxLength={70}
+                        placeholder="SEO title for Salla store"
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">
+                        Meta Description <span className={`float-right ${metaDesc.length > 150 ? "text-warning" : "text-text-muted"}`}>{metaDesc.length}/160</span>
+                      </label>
+                      <textarea value={metaDesc} onChange={(e) => setMetaDesc(e.target.value.slice(0, 160))} maxLength={160} rows={3}
+                        placeholder="SEO description for search engines"
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent resize-none" />
+                    </div>
+
+                    {/* SERP Preview */}
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-border">
+                      <p className="text-[10px] text-text-muted mb-2 uppercase font-medium tracking-wide">Google Search Preview</p>
+                      <div className="text-[#1a0dab] dark:text-blue-400 text-base font-medium truncate">{metaTitle || titleEn || "Product Title"}</div>
+                      <div className="text-[#006621] dark:text-green-400 text-xs truncate mt-0.5">store.salla.sa › products</div>
+                      <div className="text-text-secondary text-xs mt-1 line-clamp-2">{metaDesc || descEn?.slice(0, 160) || "Product description..."}</div>
+                    </div>
+
+                    <button disabled className="flex items-center gap-2 text-xs text-text-muted px-3 py-2 rounded-md bg-surface-sunken cursor-not-allowed opacity-60">
+                      <Icon name="auto_awesome" className="text-sm" /> Auto-Generate SEO with AI (Coming Soon)
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ---- ZID PANEL ---- */}
+              {hasZidStore && (
+                <div className="border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span className="text-blue-600 text-xs font-bold">Z</span>
+                      </div>
+                      <span className="font-medium text-text">Zid</span>
+                    </div>
+                    {product.zid_product_id
+                      ? <Badge variant="success">Synced</Badge>
+                      : <Badge variant="warning">Not Pushed</Badge>
+                    }
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Keywords</label>
+                      <input value={zidKeywords} onChange={(e) => setZidKeywords(e.target.value)}
+                        placeholder="keyword1, keyword2, keyword3"
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent" />
+                      <p className="text-[10px] text-text-muted mt-1">Comma-separated keywords for Zid store search optimization.</p>
+                    </div>
+
+                    <button disabled className="flex items-center gap-2 text-xs text-text-muted px-3 py-2 rounded-md bg-surface-sunken cursor-not-allowed opacity-60">
+                      <Icon name="auto_awesome" className="text-sm" /> Auto-Generate Keywords with AI (Coming Soon)
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* No stores connected */}
+              {!hasSallaStore && !hasZidStore && (
+                <div className="text-center py-8">
+                  <Icon name="store" className="text-4xl text-text-muted mb-2" />
+                  <p className="text-sm text-text-secondary mb-3">Connect a Salla or Zid store to manage platform-specific settings</p>
+                  <Link href="/dashboard/integrations">
+                    <Button size="sm" variant="secondary"><Icon name="add" className="text-sm" /> Connect Store</Button>
+                  </Link>
+                </div>
+              )}
             </Card>
           )}
         </div>
