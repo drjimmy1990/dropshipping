@@ -411,45 +411,76 @@ function IntegrationsContent() {
               <Skeleton className="h-8 w-24" />
             </Card>
           ))
-        ) : suppliers.length === 0 ? (
-          <Card className="p-8 md:col-span-2 text-center">
-            <Icon name="inventory_2" className="text-3xl text-text-muted mb-2 mx-auto block" />
-            <p className="text-sm text-text-muted">No supplier accounts linked yet</p>
-            <Button size="sm" className="mt-3">Link Supplier</Button>
-          </Card>
         ) : (
-          suppliers.map((sup) => (
-            <Card key={sup.id} className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
-                    <Icon name={sup.supplier === "aliexpress" ? "inventory_2" : "rocket"} className="text-accent text-base" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-text text-sm capitalize">{sup.supplier}</div>
-                    <div className="text-xs text-text-secondary">
-                      {sup.is_default ? "Default supplier" : "Connected"}
+          <>
+            {/* Existing connected suppliers */}
+            {suppliers.map((sup) => (
+              <Card key={sup.id} className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
+                      <Icon name={sup.supplier === "cj" ? "local_shipping" : sup.supplier === "aliexpress" ? "inventory_2" : "rocket"} className="text-accent text-base" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-text text-sm">
+                        {sup.supplier === "cj" ? "CJDropshipping" : sup.supplier === "aliexpress" ? "AliExpress" : sup.supplier}
+                      </div>
+                      <div className="text-xs text-text-secondary">
+                        {sup.is_default ? "Default supplier" : "Connected"}
+                      </div>
                     </div>
                   </div>
+                  <Badge variant={sup.is_active ? "success" : "error"}>
+                    {sup.is_active ? "active" : "inactive"}
+                  </Badge>
                 </div>
-                <Badge variant={sup.is_active ? "success" : "error"}>
-                  {sup.is_active ? "active" : "inactive"}
-                </Badge>
-              </div>
-              {sup.last_health_check && (
-                <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
-                  <Icon name="sync" className="text-sm" />
-                  Last check: {new Date(sup.last_health_check).toLocaleString("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                {sup.last_health_check && (
+                  <div className="flex items-center gap-1 text-xs text-text-muted mb-3">
+                    <Icon name="sync" className="text-sm" />
+                    Last check: {new Date(sup.last_health_check).toLocaleString("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" className="flex-1">Settings</Button>
+                  <button className="p-2 rounded-md hover:bg-surface-sunken transition-colors text-text-muted">
+                    <Icon name="more_vert" className="text-base" />
+                  </button>
                 </div>
-              )}
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="flex-1">Settings</Button>
-                <button className="p-2 rounded-md hover:bg-surface-sunken transition-colors text-text-muted">
-                  <Icon name="more_vert" className="text-base" />
-                </button>
-              </div>
-            </Card>
-          ))
+              </Card>
+            ))}
+
+            {/* CJ connect card — show if no CJ supplier account */}
+            {!suppliers.some(s => s.supplier === "cj") && (
+              <CJConnectCard
+                onSuccess={() => {
+                  setToast({ type: "success", message: "✅ CJDropshipping connected!" });
+                  refetch();
+                }}
+                onError={(msg) => setToast({ type: "error", message: msg })}
+              />
+            )}
+
+            {/* AliExpress info card — always present since it uses platform keys */}
+            {!suppliers.some(s => s.supplier === "aliexpress") && (
+              <Card className="p-5 border-dashed">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#e8400a]/10 flex items-center justify-center">
+                      <Icon name="inventory_2" className="text-[#e8400a] text-base" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-text text-sm">AliExpress</div>
+                      <div className="text-xs text-text-secondary">Platform-level integration</div>
+                    </div>
+                  </div>
+                  <Badge variant="success">built-in</Badge>
+                </div>
+                <p className="text-xs text-text-muted mb-3">
+                  AliExpress is pre-configured at the platform level. No additional setup needed.
+                </p>
+              </Card>
+            )}
+          </>
         )}
       </div>
 
@@ -531,6 +562,145 @@ function IntegrationsContent() {
                 disabled={zidConnecting || !zidTokenForm.managerToken || !zidTokenForm.storeId}
               >
                 {zidConnecting ? "Connecting..." : "Connect Store"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ---------- CJ Connect Card ----------
+
+function CJConnectCard({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: () => void;
+  onError: (msg: string) => void;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ apiKey: "" });
+  const [connecting, setConnecting] = useState(false);
+
+  const handleConnect = async () => {
+    if (!form.apiKey.trim()) {
+      onError("CJ API Key is required.");
+      return;
+    }
+    setConnecting(true);
+    try {
+      const res = await fetch("/api/auth/cj/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: form.apiKey.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setShowModal(false);
+        setForm({ apiKey: "" });
+        onSuccess();
+      } else {
+        onError(data.error || "Failed to connect CJ account.");
+      }
+    } catch {
+      onError("Network error. Please try again.");
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  return (
+    <>
+      <Card className="p-5 border-dashed">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#e94560]/10 flex items-center justify-center">
+              <Icon name="local_shipping" className="text-[#e94560] text-base" />
+            </div>
+            <div>
+              <div className="font-medium text-text text-sm">CJDropshipping</div>
+              <div className="text-xs text-text-secondary">Not connected</div>
+            </div>
+          </div>
+          <Badge variant="neutral">new</Badge>
+        </div>
+        <p className="text-xs text-text-muted mb-3">
+          Connect your CJDropshipping account to access fast-shipping products from US, EU, and CN warehouses.
+        </p>
+        <Button
+          size="sm"
+          className="w-full"
+          onClick={() => setShowModal(true)}
+        >
+          <Icon name="link" className="text-sm" />
+          Connect CJ Account
+        </Button>
+      </Card>
+
+      {/* CJ Connect Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowModal(false)}
+          />
+          <Card className="relative z-10 w-full max-w-md p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-text">Connect CJDropshipping</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-md hover:bg-surface-sunken text-text-muted"
+              >
+                <Icon name="close" className="text-lg" />
+              </button>
+            </div>
+
+            <div className="bg-surface-sunken rounded-lg p-3 mb-4">
+              <p className="text-xs font-medium text-text-secondary mb-1">
+                How to get your CJ API Key:
+              </p>
+              <ol className="text-xs text-text-muted space-y-1 list-decimal list-inside">
+                <li>Log in to <a href="https://cjdropshipping.com" target="_blank" rel="noopener noreferrer" className="underline text-brand">CJDropshipping</a></li>
+                <li>Go to <strong>API Management</strong> in your account settings</li>
+                <li>Generate or copy your <strong>Access Token</strong></li>
+                <li>Paste it below</li>
+              </ol>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-text-secondary mb-1">
+                  CJ Access Token <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={form.apiKey}
+                  onChange={(e) => setForm({ apiKey: e.target.value })}
+                  placeholder="Paste your CJ Access Token here..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50 font-mono resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                onClick={handleConnect}
+                disabled={connecting || !form.apiKey.trim()}
+              >
+                {connecting ? "Connecting..." : "Connect CJ"}
               </Button>
             </div>
           </Card>

@@ -6,6 +6,8 @@ import { Card, Button, Badge, Icon } from "@/components/shared";
 import { useProductSearch } from "@/hooks/use-product-search";
 import type { NormalizedProduct, NormalizedProductDetail } from "@/lib/aliexpress/types";
 
+type SupplierSource = "aliexpress" | "cj";
+
 // ---------- Feed Type ----------
 interface Feed {
   id: string;
@@ -73,7 +75,7 @@ function SearchFilters({
         <Icon name="search" className="text-text-muted text-base" />
         <input
           type="text"
-          placeholder="Search AliExpress products by keyword..."
+          placeholder={`Search products by keyword...`}
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -152,7 +154,7 @@ function ProductCard({
           <Icon name="image" className="text-text-muted text-3xl" />
         )}
         <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-surface/90 text-text-secondary text-xs font-medium border border-border-subtle backdrop-blur-sm">
-          AliExpress
+          {product.supplier === "cj" ? "CJDropshipping" : "AliExpress"}
         </span>
         {product.discount > 0 && (
           <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-error text-white text-xs font-bold">
@@ -722,6 +724,8 @@ function FeedTabs({
 // ---------- Main Page ----------
 
 export default function ProductDiscoveryPage() {
+  const [activeSupplier, setActiveSupplier] = useState<SupplierSource>("aliexpress");
+
   const {
     search,
     searchProducts,
@@ -731,7 +735,7 @@ export default function ProductDiscoveryPage() {
     importState,
     importProduct,
     clearImportState,
-  } = useProductSearch();
+  } = useProductSearch(activeSupplier);
 
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [activeFeed, setActiveFeed] = useState("all");
@@ -770,20 +774,28 @@ export default function ProductDiscoveryPage() {
     return sorted;
   }, [search.products, clientSort]);
 
-  // Fetch available feeds on mount
+  // Fetch available feeds on mount (AliExpress only)
   useEffect(() => {
-    fetch("/api/suppliers/aliexpress/feeds")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.feeds) setFeeds(data.feeds);
-      })
-      .catch(console.error);
-  }, []);
+    if (activeSupplier === "aliexpress") {
+      fetch("/api/suppliers/aliexpress/feeds")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.feeds) setFeeds(data.feeds);
+        })
+        .catch(console.error);
+    } else {
+      setFeeds([]); // CJ doesn't have feed tabs
+      setActiveFeed("all");
+    }
+  }, [activeSupplier]);
 
-  // Initial load — fetch recommended products
+  // Re-search when supplier changes
   useEffect(() => {
+    setCurrentFilters({});
+    setClientSort("");
+    setSearchFeedNotice(null);
     searchProducts({ shipTo: "SA" });
-  }, [searchProducts]);
+  }, [activeSupplier, searchProducts]);
 
   const handleSearch = useCallback(
     (params: {
@@ -882,9 +894,33 @@ export default function ProductDiscoveryPage() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-text">Product Discovery</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-xl font-semibold text-text">Product Discovery</h1>
+          {/* Supplier Dropdown */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-text-muted font-medium">Supplier:</label>
+            <select
+              value={activeSupplier}
+              onChange={(e) => {
+                const newSupplier = e.target.value as SupplierSource;
+                setActiveSupplier(newSupplier);
+              }}
+              className={`text-sm font-medium rounded-lg px-3 py-2 border outline-none transition-all cursor-pointer ${
+                activeSupplier === "cj"
+                  ? "bg-[#1a1a2e] text-[#e94560] border-[#e94560]/40"
+                  : "bg-[#e8400a]/5 text-[#e8400a] border-[#e8400a]/30"
+              }`}
+            >
+              <option value="aliexpress">🛒 AliExpress</option>
+              <option value="cj">📦 CJDropshipping</option>
+            </select>
+          </div>
+        </div>
         <p className="text-sm text-text-secondary">
-          Browse millions of products from AliExpress suppliers
+          {activeSupplier === "cj"
+            ? "Browse products from CJDropshipping — fast shipping, US/EU warehouses"
+            : "Browse millions of products from AliExpress suppliers"
+          }
         </p>
       </div>
 

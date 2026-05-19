@@ -35,7 +35,7 @@ interface ImportState {
  * Client-side hook for AliExpress product discovery.
  * Provides search, detail view, and import functionality.
  */
-export function useProductSearch() {
+export function useProductSearch(supplier: "aliexpress" | "cj" = "aliexpress") {
   // Search state
   const [search, setSearch] = useState<SearchState>({
     products: [],
@@ -89,9 +89,10 @@ export function useProductSearch() {
         if (params.maxPrice) query.set("maxPrice", String(params.maxPrice));
         if (params.shipTo) query.set("shipTo", params.shipTo);
 
-        const response = await fetch(
-          `/api/suppliers/aliexpress/search?${query.toString()}`
-        );
+        const apiBase = supplier === "cj"
+          ? `/api/suppliers/cj/search`
+          : `/api/suppliers/aliexpress/search`;
+        const response = await fetch(`${apiBase}?${query.toString()}`);
         const data = await response.json();
 
         if (data.error) {
@@ -142,9 +143,10 @@ export function useProductSearch() {
     setDetail({ product: null, loading: true, error: null });
 
     try {
-      const response = await fetch(
-        `/api/suppliers/aliexpress/product/${productId}`
-      );
+      const detailUrl = supplier === "cj"
+        ? `/api/suppliers/cj/product?pid=${productId}`
+        : `/api/suppliers/aliexpress/product/${productId}`;
+      const response = await fetch(detailUrl);
       const data = await response.json();
 
       if (data.error) {
@@ -186,10 +188,19 @@ export function useProductSearch() {
       setImportState({ loading: true, error: null, success: false });
 
       try {
-        const response = await fetch("/api/suppliers/aliexpress/import", {
+        const importUrl = supplier === "cj"
+          ? "/api/suppliers/cj/import"
+          : "/api/suppliers/aliexpress/import";
+
+        // For CJ, map productId → pid
+        const importBody = supplier === "cj"
+          ? { ...params, pid: params.productId }
+          : params;
+
+        const response = await fetch(importUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(params),
+          body: JSON.stringify(importBody),
         });
 
         const data = await response.json();

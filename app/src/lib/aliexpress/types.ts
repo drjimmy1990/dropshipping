@@ -216,7 +216,7 @@ export interface NormalizedProduct {
   shipping: string;
   category: string;
   url: string;
-  supplier: "aliexpress";
+  supplier: "aliexpress" | "cj";
 }
 
 export interface NormalizedProductDetail extends NormalizedProduct {
