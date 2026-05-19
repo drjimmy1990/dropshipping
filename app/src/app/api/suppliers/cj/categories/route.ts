@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCJToken, getCJCategories } from "@/lib/cj/client";
+import { getCJPlatformToken, getCJCategories } from "@/lib/cj/client";
 
 /**
  * GET /api/suppliers/cj/categories
  * Returns CJ category tree for filter dropdowns.
+ * Uses platform-level API key.
  */
 export async function GET() {
   try {
@@ -15,15 +16,15 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const cjAuth = await getCJToken(user.id);
-    if (!cjAuth) {
+    const cjToken = await getCJPlatformToken();
+    if (!cjToken) {
       return NextResponse.json(
-        { error: "CJ account not connected." },
-        { status: 400 }
+        { error: "CJ API not configured." },
+        { status: 503 }
       );
     }
 
-    const categories = await getCJCategories(cjAuth.accessToken);
+    const categories = await getCJCategories(cjToken);
 
     // Flatten to a simple list for the UI dropdown
     const flatCategories: { id: string; name: string; parent: string }[] = [];

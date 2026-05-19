@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
-> **Last Updated:** 2026-05-16
-> **Current Phase:** Phase 4D ✅ (Product Management Hub — Salla Sync ✅, Image Mgmt ✅, Import Wizard + Shipping ✅, Product Shipping Editor ✅)
+> **Last Updated:** 2026-05-20
+> **Current Phase:** Phase 7A ✅ (CJDropshipping Integration — Search ✅, Import ✅, Categories ✅, Freight ✅, Auth Connect ✅, Discovery UI ✅)
 
 ---
 
@@ -455,11 +455,25 @@
 
 ## 📋 Phase 7 — Expand (CJ + Zid)
 
-### CJDropshipping
-- [ ] Register CJ API account
-- [ ] Product search integration
-- [ ] Auto-order integration
-- [ ] Tracking sync
+### CJDropshipping ✅ (Session 14)
+- [x] CJ API v2.0 documentation scraped and saved (`lib/cj/API_REFERENCE.md`)
+- [x] CJ TypeScript type definitions (`lib/cj/types.ts`)
+- [x] CJ API client with token management, search, detail, freight, normalization (`lib/cj/client.ts`)
+- [x] CJ product search route (`GET /api/suppliers/cj/search`)
+- [x] CJ product detail route (`GET /api/suppliers/cj/product`)
+- [x] CJ product import route (`POST /api/suppliers/cj/import`) — mirrors AliExpress pattern
+- [x] CJ categories route (`GET /api/suppliers/cj/categories`)
+- [x] CJ freight calculator route (`POST /api/suppliers/cj/freight`)
+- [x] CJ auth connect endpoint (`POST /api/auth/cj/connect`) — validates token + saves to supplier_accounts
+- [x] `NormalizedProduct.supplier` widened to `"aliexpress" | "cj"`
+- [x] `useProductSearch` hook updated with supplier-aware routing
+- [x] Discovery page supplier dropdown (AliExpress / CJDropshipping toggle)
+- [x] Product cards show dynamic supplier badge
+- [x] AliExpress feed tabs only show when AliExpress selected
+- [x] Integrations page CJ connect card + modal
+- [ ] CJ order creation API (Phase 6 — auto-fulfillment engine)
+- [ ] CJ webhook listener
+- [ ] Supplier fallback logic (AliExpress → CJ)
 
 ### Zid Platform ✅ (Session 10)
 - [x] Zid OAuth 2.0 flow (`/api/auth/zid` + `/api/auth/zid/callback`)
@@ -539,3 +553,6 @@
 
 > [!NOTE]
 > **Admin Panel Security:** All `/admin/*` routes protected by auth guard (checks login + `merchants.role = 'admin'`). Feed sync API requires admin role. Sign out uses full page reload to clear client state.
+
+> [!NOTE]
+> **CJDropshipping fully integrated.** API client supports product search, detail, import, categories, and freight calculation. Discovery page has a supplier dropdown to switch between AliExpress and CJ. CJ products normalize to the same `NormalizedProduct` interface, so all existing product management flows work automatically. See `app/src/lib/cj/API_REFERENCE.md` for full endpoint documentation.

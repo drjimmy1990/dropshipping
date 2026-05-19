@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-19 (Session 13 — Multi-Store Support & 1:N Listings)
+> **Last Updated:** 2026-05-20 (Session 14 — CJDropshipping Integration)
 
 ## 1. Business Concept
 
@@ -660,11 +660,26 @@ sequenceDiagram
 ### Phase 7 — Expand (CJ + Zid)
 > Second supplier + second platform
 
-- [ ] CJDropshipping integration (search + auto-order)
+- [x] CJDropshipping API v2.0 documentation scraped ✅ (Session 14)
+- [x] CJ TypeScript types (`lib/cj/types.ts`) ✅
+- [x] CJ API client (`lib/cj/client.ts`) — token mgmt, search, detail, freight, normalization ✅
+- [x] CJ product search route (`GET /api/suppliers/cj/search`) ✅
+- [x] CJ product detail route (`GET /api/suppliers/cj/product`) ✅
+- [x] CJ product import route (`POST /api/suppliers/cj/import`) — mirrors AliExpress pattern ✅
+- [x] CJ categories route (`GET /api/suppliers/cj/categories`) ✅
+- [x] CJ freight calculator route (`POST /api/suppliers/cj/freight`) ✅
+- [x] CJ auth connect endpoint (`POST /api/auth/cj/connect`) — validates token + saves ✅
+- [x] `NormalizedProduct.supplier` widened to `"aliexpress" | "cj"` ✅
+- [x] `useProductSearch` hook updated with supplier-aware routing ✅
+- [x] Discovery page supplier dropdown (AliExpress / CJDropshipping toggle) ✅
+- [x] Product cards show dynamic supplier badge ✅
+- [x] Integrations page CJ connect card + modal ✅
 - [x] Zid OAuth 2.0 flow + dual-header API client ✅ (Session 10)
 - [x] Product push to Zid (bilingual name, images, variants) ✅
 - [x] Import + push routes updated for dual-platform support ✅
 - [x] Zid category sync (useZidCategories hook + zid_category_id + PATCH/push)
+- [ ] CJ order creation API (auto-fulfillment engine)
+- [ ] CJ webhook listener
 - [ ] Zid webhook integration (blocked: app not selectable in dashboard)
 - [ ] Multi-store selector UI
 - [ ] Supplier fallback logic (AE → CJ)

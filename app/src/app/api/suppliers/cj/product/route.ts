@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCJToken, getCJProductDetail } from "@/lib/cj/client";
+import { getCJPlatformToken, getCJProductDetail } from "@/lib/cj/client";
 
 /**
  * GET /api/suppliers/cj/product?pid=...
  * Get CJ product detail with variants + shipping.
+ * Uses platform-level API key.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -15,11 +16,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const cjAuth = await getCJToken(user.id);
-    if (!cjAuth) {
+    const cjToken = await getCJPlatformToken();
+    if (!cjToken) {
       return NextResponse.json(
-        { error: "CJ account not connected." },
-        { status: 400 }
+        { error: "CJ API not configured." },
+        { status: 503 }
       );
     }
 
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     const countryCode = searchParams.get("countryCode") || "SA";
 
-    const product = await getCJProductDetail(pid, cjAuth.accessToken, countryCode);
+    const product = await getCJProductDetail(pid, cjToken, countryCode);
 
     return NextResponse.json({ product });
   } catch (error: any) {

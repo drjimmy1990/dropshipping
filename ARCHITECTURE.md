@@ -1,8 +1,8 @@
 # DropLinker — Architecture Map
 
 > Auto-generated from GitNexus Knowledge Graph
-> **1572 nodes | 2,460 edges | 11 clusters | 86 execution flows**
-> Last updated: 2026-05-17 (Session 10 — Zid Platform Integration)
+> **1908 nodes | 2,975 edges | 12 clusters | 100 execution flows**
+> Last updated: 2026-05-20 (Session 14 — CJDropshipping Integration)
 
 ---
 
@@ -83,6 +83,15 @@ graph TB
         AE_IMPORT["/api/suppliers/aliexpress/import"]
     end
 
+    subgraph "API Routes — CJDropshipping"
+        CJ_SEARCH["/api/suppliers/cj/search"]
+        CJ_DETAIL["/api/suppliers/cj/product"]
+        CJ_IMPORT["/api/suppliers/cj/import"]
+        CJ_CATS["/api/suppliers/cj/categories"]
+        CJ_FREIGHT["/api/suppliers/cj/freight"]
+        CJ_AUTH["/api/auth/cj/connect"]
+    end
+
     subgraph "AliExpress SDK"
         AE_CLIENT["aliexpress/client.ts\n(HMAC-SHA256 signing\n+ auto token refresh)"]
         AE_NORM["normalizers.ts\n(search, feed, detail)"]
@@ -91,6 +100,11 @@ graph TB
     subgraph "Salla SDK"
         SALLA_CLIENT["salla/client.ts\n(OAuth2 auto-refresh)"]
         SALLA_TYPES["salla/types.ts\n(payload typedefs)"]
+    end
+
+    subgraph "CJ SDK"
+        CJ_CLIENT["cj/client.ts\n(Bearer token auth\n+ normalization)"]
+        CJ_TYPES["cj/types.ts\n(product/freight types)"]
     end
 
     subgraph "Zid SDK"
@@ -107,8 +121,9 @@ graph TB
         SALLA["Salla API"]
         ZID_API["Zid API"]
         AE_API["AliExpress API"]
+        CJ_API["CJ API v2.0"]
         N8N["n8n Webhooks"]
-        DB[("Supabase DB\n20 tables")]
+        DB[("Supabase DB\n21 tables")]
     end
 
     %% Public → Auth
@@ -155,6 +170,7 @@ graph TB
     %% Discovery Hook → API Routes
     HPS --> AE_SEARCH
     HPS --> AE_FEEDS_GET
+    HPS --> CJ_SEARCH
 
     %% AliExpress API Routes → SDK → External
     AE_SEARCH --> AE_CLIENT
@@ -163,6 +179,17 @@ graph TB
     AE_CLIENT --> AE_API
     AE_SEARCH --> AE_NORM
     AE_DETAIL --> AE_NORM
+
+    %% CJ API Routes → SDK → External
+    CJ_SEARCH --> CJ_CLIENT
+    CJ_DETAIL --> CJ_CLIENT
+    CJ_IMPORT --> CJ_CLIENT
+    CJ_CATS --> CJ_CLIENT
+    CJ_FREIGHT --> CJ_CLIENT
+    CJ_CLIENT --> CJ_API
+    CJ_AUTH --> AC
+    CJ_IMPORT --> SALLA_CLIENT
+    CJ_IMPORT --> ZID_CLIENT
 
     %% Feed persistence
     AE_FEEDS_GET --> SC
@@ -205,6 +232,7 @@ graph TB
 |---|---|---|---|
 | **Hooks** | 25 | 60% | `use-wallet.ts`, `use-orders.ts`, `use-products.ts`, `use-merchant.ts`, `use-integrations.ts`, `use-admin.ts`, `use-auth.ts` |
 | **AliExpress** | 20+ | — | `lib/aliexpress/client.ts`, `normalizers.ts`, 5 API routes, `useProductSearch` |
+| **CJDropshipping** | 15+ | — | `lib/cj/client.ts`, `types.ts`, `API_REFERENCE.md`, 5 API routes + auth connect |
 | **Admin** | 15+ | — | `admin/layout.tsx` (auth guard), `admin/feeds/page.tsx`, admin hooks |
 | **Settings** | 13 | 46% | `dashboard/settings/page.tsx` (ProfileTab, BillingTab, FulfillmentTab, NotificationsTab, TeamTab) |
 | **App** | 12 | 47% | `layout.tsx`, `page.tsx`, shared components |
@@ -395,6 +423,12 @@ Each hook already calls `createClient()` and has a `fetch` function. Pages don't
 | `/api/products/[id]/shipping` | GET | Fetch live AliExpress shipping options | Server createClient |
 | `/api/salla/categories` | GET | Fetch Salla store categories | Server createClient |
 | `/api/salla/products` | GET | Sync native Salla products to DB | Admin createClient |
+| `/api/suppliers/cj/search` | GET | CJ product keyword search | Server createClient |
+| `/api/suppliers/cj/product` | GET | CJ product detail by PID | Server createClient |
+| `/api/suppliers/cj/import` | POST | Import CJ product + auto-push to Salla/Zid | Server createClient |
+| `/api/suppliers/cj/categories` | GET | CJ category tree | Server createClient |
+| `/api/suppliers/cj/freight` | POST | CJ shipping cost calculator | Server createClient |
+| `/api/auth/cj/connect` | POST | Connect CJ account (validate + save) | Server createClient |
 
 ---
 
@@ -510,9 +544,16 @@ app/src/
 │   ├── aliexpress/
 │   │   ├── client.ts                     # HMAC-SHA256 API client + auto token refresh
 │   │   └── normalizers.ts                # 3 product normalizers (SAR)
-│   └── salla/
-│       ├── client.ts                     # OAuth2 auto-refresh API client
-│       └── types.ts                      # Salla payload type definitions
+│   ├── cj/
+│   │   ├── client.ts                     # CJ API v2.0 client (token mgmt, normalization)
+│   │   ├── types.ts                      # CJ TypeScript type definitions
+│   │   └── API_REFERENCE.md              # Full CJ endpoint reference docs
+│   ├── salla/
+│   │   ├── client.ts                     # OAuth2 auto-refresh API client
+│   │   └── types.ts                      # Salla payload type definitions
+│   └── zid/
+│       ├── client.ts                     # Dual-header auth + bilingual mapper
+│       └── types.ts                      # Zid product/order types
 ├── data/mockData.ts                      # Static marketing content ONLY
 └── middleware.ts                          # Route protection
 ```

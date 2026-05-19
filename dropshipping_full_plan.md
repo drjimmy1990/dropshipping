@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
-> **Date:** 2026-05-19  
-> **Status:** Phase 7B, 4E-Store & Multi-Store Complete ✅ — Zid Platform Integration + Store Settings + Multi-Store Support (OAuth ✅, API Client ✅, Dual Product Push ✅, Dual Category Sync ✅, Platform-Aware Settings Panel ✅, Multi-Store DB Schema ✅, 1:N Product Listings ✅)
+> **Date:** 2026-05-20  
+> **Status:** Phase 7A, 7B, 4E-Store & Multi-Store Complete ✅ — CJDropshipping Integration (API Client ✅, Search ✅, Import ✅, Categories ✅, Freight ✅, Discovery UI ✅, Auth Connect ✅) + Zid Platform + Store Settings + Multi-Store Support
 
 ---
 
@@ -41,6 +41,15 @@
 | **Zid category sync API & hook** | ✅ Working — `GET /api/zid/categories` & `useZidCategories` hook |
 | **Store Settings per-platform UI** | ✅ Working — Salla SEO + Category picker; Zid Keywords + Category picker |
 | **Auto-sync & PATCH route** | ✅ Working — `salla_category_id`, `zid_category_id`, `zid_keywords`, `metadata_title`, `metadata_description` fully synchronized |
+| **CJDropshipping API client** | ✅ Working — `lib/cj/client.ts` with token management, search, detail, freight, normalization |
+| **CJ product search** | ✅ Working — `GET /api/suppliers/cj/search` with keyword + category filters |
+| **CJ product detail** | ✅ Working — `GET /api/suppliers/cj/product` with variant/image parsing |
+| **CJ product import** | ✅ Working — `POST /api/suppliers/cj/import` mirrors AliExpress pattern, pushes to Salla/Zid |
+| **CJ categories** | ✅ Working — `GET /api/suppliers/cj/categories` (flat + tree output) |
+| **CJ freight calculator** | ✅ Working — `POST /api/suppliers/cj/freight` |
+| **CJ auth connect** | ✅ Working — `POST /api/auth/cj/connect` validates token + saves to supplier_accounts |
+| **Dual-supplier Discovery UI** | ✅ Working — Dropdown switcher (AliExpress / CJDropshipping) with independent search flows |
+| **Dynamic supplier badges** | ✅ Working — Product cards show "AliExpress" or "CJDropshipping" badge |
 
 ---
 
@@ -69,7 +78,7 @@ Merchant browses Product Discovery
 |--------|---------|
 | `id` | Our internal product ID |
 | `merchant_id` | Who imported this product |
-| `supplier` | `"aliexpress"` |
+| `supplier` | `"aliexpress"` or `"cj"` |
 | `supplier_product_id` | AliExpress product ID (e.g., `1005011868343510`) |
 | `supplier_sku_id` | Selected variant SKU ID |
 | `title` / `title_ar` | Merchant's custom title (EN/AR) |
@@ -190,7 +199,7 @@ When a customer orders, AliExpress ships **directly to the customer's address**.
 | **Merchant net profit** | **23.46 SAR** |
 
 > [!WARNING]
-> **Shipping cost gap:** Currently the `freight.calculate` API returns shipping options in the discovery modal, but shipping cost is NOT saved to DB during import. The Import Wizard (Phase 4D) will fix this by letting merchants select a shipping method before importing, so `supplier_cost + shipping_cost` reflects true COGS.
+> **Shipping cost gap:** ❌ **(RESOLVED in Phase 4D)** Shipping cost is now saved to DB during import. The Import Wizard lets merchants select a shipping method before importing, and `supplier_cost + shipping_cost` reflects true COGS.
 
 ---
 

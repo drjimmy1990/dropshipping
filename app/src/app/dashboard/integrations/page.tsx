@@ -449,15 +449,25 @@ function IntegrationsContent() {
               </Card>
             ))}
 
-            {/* CJ connect card — show if no CJ supplier account */}
+            {/* CJ info card — platform-level integration (like AliExpress) */}
             {!suppliers.some(s => s.supplier === "cj") && (
-              <CJConnectCard
-                onSuccess={() => {
-                  setToast({ type: "success", message: "✅ CJDropshipping connected!" });
-                  refetch();
-                }}
-                onError={(msg) => setToast({ type: "error", message: msg })}
-              />
+              <Card className="p-5 border-dashed">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#0066cc]/10 flex items-center justify-center">
+                      <Icon name="local_shipping" className="text-[#0066cc] text-base" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-text text-sm">CJDropshipping</div>
+                      <div className="text-xs text-text-secondary">Platform-level integration</div>
+                    </div>
+                  </div>
+                  <Badge variant="success">built-in</Badge>
+                </div>
+                <p className="text-xs text-text-muted mb-3">
+                  CJDropshipping is pre-configured at the platform level. No additional setup needed — browse CJ products directly from Product Discovery.
+                </p>
+              </Card>
             )}
 
             {/* AliExpress info card — always present since it uses platform keys */}
@@ -571,141 +581,4 @@ function IntegrationsContent() {
   );
 }
 
-// ---------- CJ Connect Card ----------
 
-function CJConnectCard({
-  onSuccess,
-  onError,
-}: {
-  onSuccess: () => void;
-  onError: (msg: string) => void;
-}) {
-  const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ apiKey: "" });
-  const [connecting, setConnecting] = useState(false);
-
-  const handleConnect = async () => {
-    if (!form.apiKey.trim()) {
-      onError("CJ API Key is required.");
-      return;
-    }
-    setConnecting(true);
-    try {
-      const res = await fetch("/api/auth/cj/connect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey: form.apiKey.trim() }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setShowModal(false);
-        setForm({ apiKey: "" });
-        onSuccess();
-      } else {
-        onError(data.error || "Failed to connect CJ account.");
-      }
-    } catch {
-      onError("Network error. Please try again.");
-    } finally {
-      setConnecting(false);
-    }
-  };
-
-  return (
-    <>
-      <Card className="p-5 border-dashed">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#e94560]/10 flex items-center justify-center">
-              <Icon name="local_shipping" className="text-[#e94560] text-base" />
-            </div>
-            <div>
-              <div className="font-medium text-text text-sm">CJDropshipping</div>
-              <div className="text-xs text-text-secondary">Not connected</div>
-            </div>
-          </div>
-          <Badge variant="neutral">new</Badge>
-        </div>
-        <p className="text-xs text-text-muted mb-3">
-          Connect your CJDropshipping account to access fast-shipping products from US, EU, and CN warehouses.
-        </p>
-        <Button
-          size="sm"
-          className="w-full"
-          onClick={() => setShowModal(true)}
-        >
-          <Icon name="link" className="text-sm" />
-          Connect CJ Account
-        </Button>
-      </Card>
-
-      {/* CJ Connect Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowModal(false)}
-          />
-          <Card className="relative z-10 w-full max-w-md p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-text">Connect CJDropshipping</h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1 rounded-md hover:bg-surface-sunken text-text-muted"
-              >
-                <Icon name="close" className="text-lg" />
-              </button>
-            </div>
-
-            <div className="bg-surface-sunken rounded-lg p-3 mb-4">
-              <p className="text-xs font-medium text-text-secondary mb-1">
-                How to get your CJ API Key:
-              </p>
-              <ol className="text-xs text-text-muted space-y-1 list-decimal list-inside">
-                <li>Log in to <a href="https://cjdropshipping.com" target="_blank" rel="noopener noreferrer" className="underline text-brand">CJDropshipping</a></li>
-                <li>Go to <strong>API Management</strong> in your account settings</li>
-                <li>Generate or copy your <strong>Access Token</strong></li>
-                <li>Paste it below</li>
-              </ol>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">
-                  CJ Access Token <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                  value={form.apiKey}
-                  onChange={(e) => setForm({ apiKey: e.target.value })}
-                  placeholder="Paste your CJ Access Token here..."
-                  rows={3}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50 font-mono resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-5">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                className="flex-1"
-                onClick={handleConnect}
-                disabled={connecting || !form.apiKey.trim()}
-              >
-                {connecting ? "Connecting..." : "Connect CJ"}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-    </>
-  );
-}

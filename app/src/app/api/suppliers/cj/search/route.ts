@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCJToken, searchCJProducts } from "@/lib/cj/client";
+import { getCJPlatformToken, searchCJProducts } from "@/lib/cj/client";
 
 /**
  * GET /api/suppliers/cj/search
- * Search CJ products. Mirrors the AliExpress search route.
+ * Search CJ products. Uses platform-level API key (shared for all merchants).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get merchant's CJ token
-    const cjAuth = await getCJToken(user.id);
-    if (!cjAuth) {
+    // Get platform-level CJ token (shared for all merchants)
+    const cjToken = await getCJPlatformToken();
+    if (!cjToken) {
       return NextResponse.json(
-        { error: "CJ account not connected. Go to Integrations to connect your CJDropshipping account." },
-        { status: 400 }
+        { error: "CJ API not configured. Platform admin needs to add the CJ Access Token." },
+        { status: 503 }
       );
     }
 
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         orderBy,
         productFlag,
       },
-      cjAuth.accessToken,
+      cjToken,
     );
 
     return NextResponse.json(result);

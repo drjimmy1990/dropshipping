@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { getCJToken, getCJProductDetail } from "@/lib/cj/client";
+import { getCJPlatformToken, getCJProductDetail } from "@/lib/cj/client";
 import { pushProductToSalla, SallaApiError } from "@/lib/salla/client";
 import { pushProductToZid, ZidApiError } from "@/lib/zid/client";
 import type { Product } from "@/lib/supabase/types";
@@ -54,12 +54,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Get CJ token
-    const cjAuth = await getCJToken(user.id);
-    if (!cjAuth) {
+    // 2. Get platform-level CJ token (shared for all merchants)
+    const cjToken = await getCJPlatformToken();
+    if (!cjToken) {
       return NextResponse.json(
-        { error: "CJ account not connected. Go to Integrations to connect." },
-        { status: 400 }
+        { error: "CJ API not configured. Platform admin needs to add the CJ Access Token." },
+        { status: 503 }
       );
     }
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Fetch CJ product detail
-    const product = await getCJProductDetail(cjProductId, cjAuth.accessToken, "SA");
+    const product = await getCJProductDetail(cjProductId, cjToken, "SA");
 
     // 5. Calculate retail price (CJ prices are in USD)
     const supplierCost = product.price;
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     // 7. Insert product into Supabase
     const productData = {
       merchant_id: user.id,
-      supplier_account_id: cjAuth.accountId,
+      supplier_account_id: null,
       store_id: store?.id || null,
       supplier: "cj" as const,
       supplier_product_id: String(cjProductId),

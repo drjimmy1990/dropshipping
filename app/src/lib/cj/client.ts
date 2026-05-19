@@ -33,36 +33,38 @@ const CJ_BASE_URL = "https://developers.cjdropshipping.com/api2.0/v1";
 // ---------- Token Management ----------
 
 /**
- * Get a merchant's CJ access token from supplier_accounts.
- * CJ tokens are per-merchant (unlike AliExpress platform-level key).
+ * Get the platform-level CJ access token from platform_config.
+ * CJ uses a single platform API key for all merchants (like AliExpress).
+ * No per-merchant accounts needed.
  */
-export async function getCJToken(merchantId: string): Promise<{
-  accessToken: string;
-  refreshToken: string;
-  accountId: string;
-} | null> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("supplier_accounts")
-    .select("id, api_key, api_secret, access_token, refresh_token")
-    .eq("merchant_id", merchantId)
-    .eq("supplier", "cj")
-    .eq("is_active", true)
-    .maybeSingle();
+export async function getCJPlatformToken(): Promise<string | null> {
+  // 1. Check environment variable first
+  if (process.env.CJ_ACCESS_TOKEN) {
+    return process.env.CJ_ACCESS_TOKEN;
+  }
 
-  if (!data) return null;
+  // 2. Fall back to platform_config in Supabase
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("platform_config")
+      .select("value")
+      .eq("key", "cj_access_token")
+      .single();
 
-  // api_key stores the CJ access token, api_secret stores refresh token
-  const accessToken = data.access_token || data.api_key;
-  const refreshToken = data.refresh_token || data.api_secret;
+    if (data && data.value) {
+      let token = data.value as string;
+      // Strip surrounding quotes if present
+      if (token.startsWith('"') && token.endsWith('"')) {
+        token = token.slice(1, -1);
+      }
+      return token;
+    }
+  } catch (err) {
+    console.warn("[CJ] Failed to fetch access token from platform_config:", err);
+  }
 
-  if (!accessToken) return null;
-
-  return {
-    accessToken,
-    refreshToken: refreshToken || "",
-    accountId: data.id,
-  };
+  return null;
 }
 
 /**
@@ -87,20 +89,22 @@ async function refreshCJToken(refreshToken: string): Promise<CJTokenData | null>
 }
 
 /**
- * Save refreshed CJ tokens to supplier_accounts.
+ * Save refreshed CJ tokens to platform_config.
  */
-async function saveCJTokens(accountId: string, tokens: CJTokenData): Promise<void> {
+async function saveCJTokens(tokens: CJTokenData): Promise<void> {
   const supabase = createAdminClient();
-  await supabase
-    .from("supplier_accounts")
-    .update({
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken,
-      api_key: tokens.accessToken,
-      api_secret: tokens.refreshToken,
+  await supabase.from("platform_config").upsert({
+    key: "cj_access_token",
+    value: tokens.accessToken,
+    updated_at: new Date().toISOString(),
+  });
+  if (tokens.refreshToken) {
+    await supabase.from("platform_config").upsert({
+      key: "cj_refresh_token",
+      value: tokens.refreshToken,
       updated_at: new Date().toISOString(),
-    })
-    .eq("id", accountId);
+    });
+  }
 }
 
 // ---------- Core API Request ----------
@@ -114,8 +118,6 @@ async function cjRequest<T>(
   token: string,
   body?: Record<string, unknown>,
   _isRetry = false,
-  refreshToken?: string,
-  accountId?: string,
 ): Promise<T> {
   const url = endpoint.startsWith("http")
     ? endpoint
@@ -146,13 +148,26 @@ async function cjRequest<T>(
 
   console.log(`[CJ] Response: code=${data.code}, msg=${data.message}, requestId=${data.requestId}`);
 
-  // Token expired — try refresh
-  if (data.code === 1600200 && !_isRetry && refreshToken && accountId) {
+  // Token expired — try refresh using platform_config refresh token
+  if (data.code === 1600200 && !_isRetry) {
     console.warn("[CJ] Token expired — attempting refresh...");
-    const newTokens = await refreshCJToken(refreshToken);
-    if (newTokens) {
-      await saveCJTokens(accountId, newTokens);
-      return cjRequest<T>(endpoint, method, newTokens.accessToken, body, true);
+    try {
+      const supabase = createAdminClient();
+      const { data: refreshData } = await supabase
+        .from("platform_config")
+        .select("value")
+        .eq("key", "cj_refresh_token")
+        .single();
+
+      if (refreshData?.value) {
+        const newTokens = await refreshCJToken(refreshData.value as string);
+        if (newTokens) {
+          await saveCJTokens(newTokens);
+          return cjRequest<T>(endpoint, method, newTokens.accessToken, body, true);
+        }
+      }
+    } catch (err) {
+      console.error("[CJ] Auto-refresh failed:", err);
     }
   }
 

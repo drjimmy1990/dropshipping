@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCJToken, getCJFreight } from "@/lib/cj/client";
+import { getCJPlatformToken, getCJFreight } from "@/lib/cj/client";
 
 /**
  * POST /api/suppliers/cj/freight
  * Calculate CJ shipping options.
+ * Uses platform-level API key.
  *
  * Body: { products: [{ vid, quantity }], endCountryCode: "SA", startCountryCode?: "CN" }
  */
@@ -17,11 +18,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const cjAuth = await getCJToken(user.id);
-    if (!cjAuth) {
+    const cjToken = await getCJPlatformToken();
+    if (!cjToken) {
       return NextResponse.json(
-        { error: "CJ account not connected." },
-        { status: 400 }
+        { error: "CJ API not configured." },
+        { status: 503 }
       );
     }
 
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const options = await getCJFreight(
       { startCountryCode, endCountryCode, products },
-      cjAuth.accessToken,
+      cjToken,
     );
 
     return NextResponse.json({

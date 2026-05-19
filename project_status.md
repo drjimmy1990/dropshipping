@@ -1,12 +1,12 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-19 (Session 13 — Multi-Store Support)
+> **Last Updated:** 2026-05-20 (Session 14 — CJDropshipping Integration)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (21 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, and **automatic AliExpress token refresh** when tokens expire. Merchants can sign up, connect their Salla or Zid store (or multiple stores!), receive orders via webhooks, browse AliExpress products, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla or Zid, and manage everything including images and pricing**. All prices are enforced in SAR.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (21 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, **CJDropshipping API integration with full search/import pipeline**, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, **automatic AliExpress token refresh** when tokens expire, and a **dual-supplier Product Discovery UI** with an AliExpress/CJ dropdown switcher. Merchants can sign up, connect their Salla or Zid store (or multiple stores!), **connect their CJDropshipping account**, receive orders via webhooks, browse products from **both AliExpress and CJDropshipping**, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla or Zid, and manage everything including images and pricing**. All prices are enforced in SAR.
 
-**What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, CJDropshipping integration, Zid webhooks, auto-fulfillment engine. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
+**What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, CJ order fulfillment engine, Zid webhooks. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
 
 ---
 
@@ -185,16 +185,26 @@
 | n8n WF3: Tracking sync (poll → push to Salla) | 🟡 P1 |
 | n8n WF4: Stock sync (cron every 6h) | 🟡 P1 |
 
-### 📋 Phase 7A: CJDropshipping Integration
+### ✅ Phase 7A: CJDropshipping Integration (Session 14)
 
-| Task | Priority |
-|---|---|
-| Register CJ API account + get API keys | 🔴 P0 |
-| CJ product search integration | 🔴 P0 |
-| CJ product detail + import flow | 🟡 P1 |
-| CJ auto-order integration | 🟡 P1 |
-| CJ tracking sync | 🟠 P2 |
-| Supplier fallback logic (AliExpress → CJ) | 🟠 P2 |
+| Task | Status | Notes |
+|---|---|---|
+| CJ API v2.0 documentation scraping | ✅ | Full endpoint reference in `lib/cj/API_REFERENCE.md` |
+| CJ TypeScript types | ✅ | `lib/cj/types.ts` — products, variants, categories, freight |
+| CJ API client | ✅ | `lib/cj/client.ts` — token mgmt, search, detail, freight, categories, normalization |
+| CJ product search API | ✅ | `GET /api/suppliers/cj/search` |
+| CJ product detail API | ✅ | `GET /api/suppliers/cj/product` |
+| CJ product import | ✅ | `POST /api/suppliers/cj/import` — mirrors AliExpress pattern, pushes to Salla/Zid |
+| CJ categories API | ✅ | `GET /api/suppliers/cj/categories` — flat + tree output |
+| CJ freight calculator | ✅ | `POST /api/suppliers/cj/freight` |
+| CJ auth connect endpoint | ✅ | `POST /api/auth/cj/connect` — validates token, saves to supplier_accounts |
+| `NormalizedProduct.supplier` widened | ✅ | Now supports `"aliexpress" \| "cj"` |
+| `useProductSearch` supplier routing | ✅ | Routes search/detail/import to correct supplier API |
+| Discovery page supplier dropdown | ✅ | AliExpress/CJ switcher with independent search flows |
+| Product card dynamic badge | ✅ | Shows "AliExpress" or "CJDropshipping" per product |
+| Integrations page CJ connect card | ✅ | CJ account connection modal with token validation |
+| CJ order creation API | 📋 | Phase 3 — order fulfillment engine |
+| CJ webhooks | 📋 | Phase 4 — webhook event listener |
 
 ### ✅ Phase 7B: Zid Platform Integration (Session 10 & 12)
 
@@ -271,6 +281,12 @@
 | `GET` | `/api/salla/categories` | Auth | Fetch Salla store categories |
 | `GET` | `/api/salla/products` | Auth | Sync native Salla products to DB |
 | `GET` | `/api/zid/categories` | Auth | Fetch Zid store categories |
+| `GET` | `/api/suppliers/cj/search` | Auth | CJ product keyword search |
+| `GET` | `/api/suppliers/cj/product` | Auth | CJ product detail by PID |
+| `POST` | `/api/suppliers/cj/import` | Auth | Import CJ product + auto-push to Salla/Zid |
+| `GET` | `/api/suppliers/cj/categories` | Auth | CJ category tree |
+| `POST` | `/api/suppliers/cj/freight` | Auth | CJ shipping cost calculator |
+| `POST` | `/api/auth/cj/connect` | Auth | Connect CJ account (validate + save token) |
 
 ---
 
@@ -311,4 +327,5 @@ The following E2E checklist covers the entire merchant workflow across Salla & Z
 | `PRODUCT.md` | Brand personality, design principles |
 | `DESIGN.md` | Design system tokens |
 | `deployment_guide.md` | VPS deployment instructions |
-| `supabase/schema.sql` | Complete database schema (19 tables) |
+| `supabase/schema.sql` | Complete database schema (21 tables) |
+| `app/src/lib/cj/API_REFERENCE.md` | CJ API v2.0 endpoint reference |

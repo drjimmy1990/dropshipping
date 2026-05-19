@@ -4,13 +4,14 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 /**
  * POST /api/auth/cj/connect
  *
- * Saves a CJ Access Token to the merchant's supplier_accounts.
- * Called from the CJ Connect modal on the Integrations page.
+ * Admin-only endpoint to save the platform-level CJ API token.
+ * This token is shared across all merchants (like AliExpress).
  *
  * Body: { apiKey: string }
  */
 export async function POST(request: NextRequest) {
   try {
+    // 1. Auth check — admin only
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,26 +19,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Check admin role
+    const adminClient = createAdminClient();
+    const { data: merchant } = await adminClient
+      .from("merchants")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!merchant || merchant.role !== "admin") {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
+    // 2. Parse body
     const body = await request.json();
     const { apiKey } = body;
 
     if (!apiKey || typeof apiKey !== "string" || apiKey.trim().length < 10) {
       return NextResponse.json(
-        { error: "A valid CJ Access Token is required." },
+        { error: "A valid CJ Access Token is required (minimum 10 chars)." },
         { status: 400 }
       );
     }
 
-    // Validate the token by making a test request to CJ
+    const token = apiKey.trim();
+
+    // 3. Validate the token by making a test API call (get categories)
     try {
-      const testResponse = await fetch(
+      const testRes = await fetch(
         "https://developers.cjdropshipping.com/api2.0/v1/product/getCategory",
         {
           method: "GET",
-          headers: { "CJ-Access-Token": apiKey.trim() },
+          headers: { "CJ-Access-Token": token },
         }
       );
-      const testData = await testResponse.json();
+      const testData = await testRes.json();
 
       if (testData.code !== 200) {
         return NextResponse.json(
@@ -47,54 +63,28 @@ export async function POST(request: NextRequest) {
       }
     } catch (err) {
       return NextResponse.json(
-        { error: "Could not reach CJ API. Please check your token and try again." },
+        { error: "Failed to validate CJ token. Check your network and try again." },
         { status: 502 }
       );
     }
 
-    const adminClient = createAdminClient();
+    // 4. Save to platform_config (upsert)
+    await adminClient.from("platform_config").upsert({
+      key: "cj_access_token",
+      value: token,
+      updated_at: new Date().toISOString(),
+    });
 
-    // Check if merchant already has a CJ supplier account
-    const { data: existing } = await adminClient
-      .from("supplier_accounts")
-      .select("id")
-      .eq("merchant_id", user.id)
-      .eq("supplier", "cj")
-      .maybeSingle();
-
-    if (existing) {
-      // Update existing
-      await adminClient
-        .from("supplier_accounts")
-        .update({
-          api_key: apiKey.trim(),
-          access_token: apiKey.trim(),
-          is_active: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existing.id);
-    } else {
-      // Create new
-      await adminClient
-        .from("supplier_accounts")
-        .insert({
-          merchant_id: user.id,
-          supplier: "cj",
-          api_key: apiKey.trim(),
-          access_token: apiKey.trim(),
-          is_active: true,
-          is_default: false,
-        });
-    }
+    console.log(`[CJ Auth] ✅ Platform CJ token saved by admin ${user.id}`);
 
     return NextResponse.json({
       success: true,
-      message: "CJDropshipping connected successfully!",
+      message: "CJ Access Token saved. All merchants can now browse CJ products.",
     });
   } catch (error: any) {
-    console.error("[CJ Connect] Error:", error);
+    console.error("[CJ Auth] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to connect CJ account" },
+      { error: error.message || "Failed to save CJ token" },
       { status: 500 }
     );
   }
