@@ -20,6 +20,7 @@
 import type {
   ZidCreateProductPayload,
   ZidProductResponse,
+  ZidProductImage,
   ZidTokenResponse,
   ZidCategoryItem,
   ZidLocalizedString,
@@ -485,6 +486,77 @@ export async function updateZidProduct(
   );
 
   console.log(`[Zid] ✅ Product ${zidProductId} updated`);
+}
+
+// ---------- List Products ----------
+
+/**
+ * Zid product list item from GET /v1/products
+ * Based on the Zid Postman docs response shape.
+ */
+export interface ZidProductListItem {
+  id: string;
+  name: ZidLocalizedString;
+  sku: string;
+  price: number;
+  sale_price?: number | null;
+  quantity?: number;
+  is_infinite?: boolean;
+  is_draft?: boolean;
+  images?: ZidProductImage[];
+  categories?: { id: string; name?: ZidLocalizedString }[];
+  short_description?: string | ZidLocalizedString;
+  html_url?: string;
+  currency?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * Fetches paginated products from a Zid store.
+ * Zid API: GET /v1/products?page=1&page_size=15
+ *
+ * @returns Normalized product list with pagination info.
+ */
+export async function getZidProducts(
+  tokens: ZidStoreTokens,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<{
+  products: ZidProductListItem[];
+  pagination: { currentPage: number; totalPages: number; total: number };
+}> {
+  console.log(`[Zid] Fetching products page ${page} for store ${tokens.storeId}`);
+
+  const result = await withAutoRefresh(tokens, (accessToken, partnerToken) =>
+    zidRequest<{
+      results?: ZidProductListItem[];
+      count?: number;
+      next?: string | null;
+      previous?: string | null;
+    }>({
+      method: "GET",
+      path: `/products/?page=${page}&page_size=${pageSize}`,
+      accessToken,
+      partnerToken,
+      storeId: tokens.storeId,
+    })
+  );
+
+  const products = result.results || [];
+  const totalCount = result.count || products.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  console.log(`[Zid] ✅ Fetched ${products.length} products (page ${page}/${totalPages})`);
+
+  return {
+    products,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      total: totalCount,
+    },
+  };
 }
 
 /**

@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
 import { useProducts } from "@/hooks/use-products";
+import { createClient } from "@/lib/supabase/client";
 
 type StatusFilter = "all" | "active" | "inactive" | "out_of_stock" | "synced" | "not_synced";
 type SourceFilter = "all" | "aliexpress" | "direct";
+type PlatformFilter = "all" | "salla" | "zid";
+
+interface StoreInfo { id: string; platform: string; is_active: boolean }
 
 export default function MyProductsPage() {
   const {
@@ -28,11 +32,34 @@ export default function MyProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPriceValue, setEditPriceValue] = useState("");
-  const [syncing, setSyncing] = useState(false);
+  const [syncingSalla, setSyncingSalla] = useState(false);
+  const [syncingZid, setSyncingZid] = useState(false);
   const [actionLoading, setActionLoading] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [storeMap, setStoreMap] = useState<Record<string, StoreInfo>>({});
+
+  // Fetch connected stores to build storeId → platform map
+  const fetchStores = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase.from("stores").select("id, platform, is_active").eq("merchant_id", user.id);
+    if (data) {
+      const map: Record<string, StoreInfo> = {};
+      for (const s of data) map[s.id] = s as StoreInfo;
+      setStoreMap(map);
+    }
+  }, []);
+  useEffect(() => { fetchStores(); }, [fetchStores]);
+
+  // Helper to get platform for a product
+  const getProductPlatform = useCallback((p: { store_id: string | null }) => {
+    if (!p.store_id) return null;
+    return storeMap[p.store_id]?.platform || null;
+  }, [storeMap]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Auto-dismiss toast
@@ -88,8 +115,18 @@ export default function MyProductsPage() {
         break;
     }
 
+    // Platform filter
+    if (platformFilter !== "all") {
+      result = result.filter((p) => {
+        const plat = getProductPlatform(p);
+        if (platformFilter === "salla") return plat === "salla";
+        if (platformFilter === "zid") return plat === "zid";
+        return true;
+      });
+    }
+
     return result;
-  }, [products, searchQuery, statusFilter, sourceFilter]);
+  }, [products, searchQuery, statusFilter, sourceFilter, platformFilter, getProductPlatform]);
 
   // ---------- Action Handlers ----------
 
@@ -173,22 +210,26 @@ export default function MyProductsPage() {
     setEditPriceValue("");
   };
 
-  const handleSyncFromSalla = async () => {
+  const handleSyncFromStore = async (platform: "salla" | "zid") => {
+    const setSyncing = platform === "salla" ? setSyncingSalla : setSyncingZid;
+    const endpoint = platform === "salla" ? "/api/salla/products" : "/api/zid/products";
+    const label = platform === "salla" ? "Salla" : "Zid";
     setSyncing(true);
     try {
-      const response = await fetch("/api/salla/products", { method: "POST" });
+      const response = await fetch(endpoint, { method: "POST" });
       const data = await response.json();
       if (response.ok && data.success) {
         setToast({
           type: data.errors > 0 ? "error" : "success",
-          message: `Synced ${data.synced} products (${data.created} new, ${data.updated} updated${data.errors ? `, ${data.errors} errors` : ""})`,
+          message: `${label}: Synced ${data.synced} products (${data.created} new, ${data.updated} updated${data.errors ? `, ${data.errors} errors` : ""})`,
         });
         refetch();
+        fetchStores();
       } else {
-        setToast({ type: "error", message: data.error || "Sync failed" });
+        setToast({ type: "error", message: data.error || `${label} sync failed` });
       }
     } catch {
-      setToast({ type: "error", message: "Sync failed" });
+      setToast({ type: "error", message: `${label} sync failed` });
     } finally {
       setSyncing(false);
     }
@@ -245,8 +286,14 @@ export default function MyProductsPage() {
             </div>
             <p className="text-sm text-text-secondary mb-4">
               The product will be removed from your catalog.
-              {products.find((p) => p.id === deleteConfirmId)?.store_product_id &&
-                " It will also be removed from your Salla store."}
+              {(() => {
+                const dp = products.find((p) => p.id === deleteConfirmId);
+                if (dp?.store_product_id) {
+                  const plat = getProductPlatform(dp);
+                  return ` It will also be removed from your ${plat === "zid" ? "Zid" : "Salla"} store.`;
+                }
+                return null;
+              })()}
             </p>
             <div className="flex gap-2 justify-end">
               <Button variant="secondary" size="sm" onClick={() => setDeleteConfirmId(null)}>
@@ -271,15 +318,24 @@ export default function MyProductsPage() {
           <h1 className="text-xl font-semibold text-text">My Products</h1>
           <p className="text-sm text-text-secondary">Manage your imported product inventory</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleSyncFromSalla}
-            disabled={syncing}
+            onClick={() => handleSyncFromStore("salla")}
+            disabled={syncingSalla}
           >
             <Icon name="cloud_download" className="text-sm" />
-            {syncing ? "Syncing..." : "Sync from Salla"}
+            {syncingSalla ? "Syncing..." : "Import from Salla"}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleSyncFromStore("zid")}
+            disabled={syncingZid}
+          >
+            <Icon name="cloud_download" className="text-sm" />
+            {syncingZid ? "Syncing..." : "Import from Zid"}
           </Button>
           <Button variant="secondary" size="sm" onClick={refetch}>
             <Icon name="sync" className="text-sm" />
@@ -335,7 +391,7 @@ export default function MyProductsPage() {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
           <option value="out_of_stock">Out of Stock</option>
-          <option value="synced">✅ Synced to Salla</option>
+          <option value="synced">✅ Synced to Store</option>
           <option value="not_synced">⏳ Not Synced</option>
         </select>
         <select
@@ -345,9 +401,18 @@ export default function MyProductsPage() {
         >
           <option value="all">All Sources ({total})</option>
           <option value="aliexpress">🔗 DropLinker ({droplinkerCount})</option>
-          <option value="direct">🏪 Direct / Salla ({directCount})</option>
+          <option value="direct">🏪 Direct ({directCount})</option>
         </select>
-        {(searchQuery || statusFilter !== "all" || sourceFilter !== "all") && (
+        <select
+          value={platformFilter}
+          onChange={(e) => setPlatformFilter(e.target.value as PlatformFilter)}
+          className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none cursor-pointer"
+        >
+          <option value="all">All Platforms</option>
+          <option value="salla">🟢 Salla Only</option>
+          <option value="zid">🔵 Zid Only</option>
+        </select>
+        {(searchQuery || statusFilter !== "all" || sourceFilter !== "all" || platformFilter !== "all") && (
           <Badge variant="accent" icon="filter_list">
             {filteredProducts.length} of {total}
           </Badge>
@@ -527,7 +592,9 @@ export default function MyProductsPage() {
                       {/* Store Sync Status */}
                       <td className="px-4 py-3">
                         {p.store_product_id ? (
-                          <Badge variant="success" icon="cloud_done">Synced</Badge>
+                          <Badge variant="success" icon="cloud_done">
+                            {getProductPlatform(p) === "zid" ? "Zid" : "Salla"}
+                          </Badge>
                         ) : (
                           <button
                             onClick={() => handlePushToStore(p.id)}
