@@ -211,12 +211,12 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
     ar: (product.title_ar || product.title_en || "منتج بدون عنوان").slice(0, 250),
   };
 
-  // Description (bilingual if available)
+  // Description (bilingual if available) — Zid max 250 chars
   const short_description: ZidLocalizedString | undefined =
     product.description_en || product.description_ar
       ? {
-          en: (product.description_en || product.description_ar || "").slice(0, 500),
-          ar: (product.description_ar || product.description_en || "").slice(0, 500),
+          en: (product.description_en || product.description_ar || "").replace(/<[^>]*>/g, "").slice(0, 250),
+          ar: (product.description_ar || product.description_en || "").replace(/<[^>]*>/g, "").slice(0, 250),
         }
       : undefined;
 
@@ -238,7 +238,7 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
     requires_shipping: true,
     is_taxable: true,
     short_description,
-    weight: 0.5, // Default weight in kg
+    weight: "0.5", // Zid expects weight as string
   };
 }
 

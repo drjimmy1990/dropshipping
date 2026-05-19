@@ -34,7 +34,7 @@ export interface ZidCreateProductPayload {
   requires_shipping?: boolean;
   is_taxable?: boolean;
   short_description?: ZidLocalizedString;
-  weight?: number;
+  weight?: string;
 }
 
 export interface ZidProductResponse {
