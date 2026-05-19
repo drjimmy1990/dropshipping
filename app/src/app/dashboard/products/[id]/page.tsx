@@ -57,6 +57,18 @@ export default function ProductEditorPage() {
   const hasSallaStore = connectedStores.some(s => s.platform === "salla");
   const hasZidStore = connectedStores.some(s => s.platform === "zid");
 
+  const isSallaSynced = useCallback(() => {
+    return (product as any)?.listings?.some((l: any) => connectedStores.find(s => s.id === l.store_id)?.platform === "salla");
+  }, [(product as any)?.listings, connectedStores]);
+
+  const isZidSynced = useCallback(() => {
+    return (product as any)?.listings?.some((l: any) => connectedStores.find(s => s.id === l.store_id)?.platform === "zid");
+  }, [(product as any)?.listings, connectedStores]);
+
+  const isStoreSynced = useCallback((platform: string) => {
+    return (product as any)?.listings?.some((l: any) => connectedStores.find(s => s.id === l.store_id)?.platform === platform);
+  }, [(product as any)?.listings, connectedStores]);
+
   // Unsaved changes tracking
   const hasChanges = useMemo(() => {
     if (!product) return false;
@@ -94,7 +106,7 @@ export default function ProductEditorPage() {
 
     const { data } = await supabase
       .from("products")
-      .select("*")
+      .select("*, listings:product_listings(*)")
       .eq("id", id)
       .eq("merchant_id", user.id)
       .single();
@@ -340,13 +352,13 @@ export default function ProductEditorPage() {
               <Badge variant={product.supplier === "direct" ? "info" : "accent"} icon={product.supplier === "direct" ? "storefront" : "link"}>
                 {product.supplier === "direct" ? "Direct" : "AliExpress"}
               </Badge>
-              {product.salla_product_id && (
+              {isSallaSynced() && (
                 <Badge variant="success" icon="cloud_done">Salla ✓</Badge>
               )}
-              {product.zid_product_id && (
+              {isZidSynced() && (
                 <Badge variant="success" icon="cloud_done">Zid ✓</Badge>
               )}
-              {!product.salla_product_id && !product.zid_product_id && (
+              {!isSallaSynced() && !isZidSynced() && (
                 <Badge variant="warning" icon="cloud_off">Not Synced</Badge>
               )}
               <Badge variant={isActive ? "success" : "neutral"}>
@@ -361,8 +373,7 @@ export default function ProductEditorPage() {
               {connectedStores
                 .filter((store) => {
                   // Show push button only if product is NOT yet pushed to this platform
-                  if (store.platform === "salla" && product.salla_product_id) return false;
-                  if (store.platform === "zid" && product.zid_product_id) return false;
+                  if (isStoreSynced(store.platform)) return false;
                   return true;
                 })
                 .map((store) => (
@@ -758,7 +769,7 @@ export default function ProductEditorPage() {
                       </div>
                       <span className="font-medium text-text">Salla</span>
                     </div>
-                    {product.salla_product_id
+                    {isSallaSynced()
                       ? <Badge variant="success">Synced</Badge>
                       : <Badge variant="warning">Not Pushed</Badge>
                     }
@@ -820,7 +831,7 @@ export default function ProductEditorPage() {
                       </div>
                       <span className="font-medium text-text">Zid</span>
                     </div>
-                    {product.zid_product_id
+                    {isZidSynced()
                       ? <Badge variant="success">Synced</Badge>
                       : <Badge variant="warning">Not Pushed</Badge>
                     }
@@ -912,10 +923,10 @@ export default function ProductEditorPage() {
                 <span className="text-text-secondary">Created</span>
                 <span className="text-text text-xs">{new Date(product.created_at).toLocaleDateString()}</span>
               </div>
-              {product.store_product_id && (
+              {((product as any)?.listings?.[0]?.store_product_id) && (
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Store ID</span>
-                  <span className="text-text font-mono text-xs">{product.store_product_id}</span>
+                  <span className="text-text font-mono text-xs">{((product as any)?.listings?.[0]?.store_product_id)}</span>
                 </div>
               )}
             </div>
@@ -929,14 +940,12 @@ export default function ProductEditorPage() {
                 <Icon name="save" className="text-sm" /> {saving ? "Saving..." : "Save Changes"}
               </Button>
               {connectedStores.filter((store) => {
-                if (store.platform === "salla" && product.salla_product_id) return false;
-                if (store.platform === "zid" && product.zid_product_id) return false;
+                if (isStoreSynced(store.platform)) return false;
                 return true;
               }).length > 0 && (
                 <>
                   {connectedStores.filter((store) => {
-                    if (store.platform === "salla" && product.salla_product_id) return false;
-                    if (store.platform === "zid" && product.zid_product_id) return false;
+                    if (isStoreSynced(store.platform)) return false;
                     return true;
                   }).map((store) => (
                     <Button key={store.id} variant="secondary" className="w-full justify-start" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>

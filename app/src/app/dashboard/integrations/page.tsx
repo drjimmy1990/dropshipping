@@ -261,9 +261,8 @@ function IntegrationsContent() {
                 </Card>
               ))}
 
-            {/* Salla connect card (if not connected) */}
-            {!hasSallaStore && (
-              <Card className="p-5 border-dashed">
+            {/* Salla connect card */}
+            <Card className="p-5 border-dashed">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-accent-subtle flex items-center justify-center">
@@ -272,11 +271,11 @@ function IntegrationsContent() {
                     <div>
                       <div className="font-medium text-text text-sm">Salla</div>
                       <div className="text-xs text-text-secondary">
-                        Connect your Salla store
+                        {hasSallaStore ? "Connect another Salla store" : "Connect your Salla store"}
                       </div>
                     </div>
                   </div>
-                  <Badge variant="neutral">not connected</Badge>
+                  <Badge variant="neutral">{hasSallaStore ? "optional" : "not connected"}</Badge>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
                   Link your Salla store to automatically sync orders, products, and inventory.
@@ -357,9 +356,8 @@ function IntegrationsContent() {
                 </Card>
               ))}
 
-            {/* Zid connect card (if not connected) */}
-            {!hasZidStore && (
-              <Card className="p-5 border-dashed">
+            {/* Zid connect card */}
+            <Card className="p-5 border-dashed">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-surface-sunken flex items-center justify-center">
@@ -367,10 +365,12 @@ function IntegrationsContent() {
                     </div>
                     <div>
                       <div className="font-medium text-text text-sm">Zid</div>
-                      <div className="text-xs text-text-secondary">Not connected</div>
+                      <div className="text-xs text-text-secondary">
+                        {hasZidStore ? "Connect another Zid store" : "Not connected"}
+                      </div>
                     </div>
                   </div>
-                  <Badge variant="neutral">new</Badge>
+                  <Badge variant="neutral">{hasZidStore ? "optional" : "new"}</Badge>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
                   Connect your Zid store to import and manage products.
@@ -394,8 +394,7 @@ function IntegrationsContent() {
                     OAuth
                   </Button>
                 </div>
-              </Card>
-            )}
+            </Card>
           </>
         )}
       </div>

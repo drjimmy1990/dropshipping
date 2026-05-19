@@ -98,10 +98,10 @@ export default function MyProductsPage() {
         result = result.filter((p) => !p.in_stock);
         break;
       case "synced":
-        result = result.filter((p) => p.store_product_id);
+        result = result.filter((p) => (p as any).listings && (p as any).listings.length > 0);
         break;
       case "not_synced":
-        result = result.filter((p) => !p.store_product_id);
+        result = result.filter((p) => !(p as any).listings || (p as any).listings.length === 0);
         break;
     }
 

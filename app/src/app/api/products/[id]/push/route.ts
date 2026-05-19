@@ -4,22 +4,6 @@ import { pushProductToSalla, SallaApiError } from "@/lib/salla/client";
 import { pushProductToZid, ZidApiError } from "@/lib/zid/client";
 import type { Product } from "@/lib/supabase/types";
 
-/**
- * POST /api/products/:id/push
- *
- * Pushes an existing product from the DropLinker catalog to the merchant's store.
- * Supports both Salla and Zid stores — auto-detects the platform.
- * Used for products that were imported without auto-push, or for retrying failed pushes.
- *
- * Optional body:
- *  - targetStoreId: specific store UUID to push to
- *  - targetPlatform: "salla" | "zid" — filter by platform
- *
- * Requirements:
- * - Product must exist and belong to the authenticated merchant
- * - Merchant must have an active store connected (Salla or Zid)
- * - Product must not already be synced (store_product_id must be null)
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -37,15 +21,15 @@ export async function POST(
     const { id } = await params;
     const adminClient = createAdminClient();
 
-    // Parse optional body
-    let targetStoreId: string | null = null;
-    let targetPlatform: string | null = null;
+    // Parse body for an array of store_ids
+    let storeIds: string[] = [];
     try {
       const body = await request.json();
-      targetStoreId = body.targetStoreId || null;
-      targetPlatform = body.targetPlatform || null;
+      if (Array.isArray(body.storeIds)) {
+        storeIds = body.storeIds;
+      }
     } catch {
-      // No body provided — that's fine
+      // Ignore JSON parse errors
     }
 
     // 1. Fetch the product
@@ -57,176 +41,145 @@ export async function POST(
       .single();
 
     if (fetchError || !product) {
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // 2. Check if already synced to the TARGET platform (not just any platform)
-    const typedProduct = product as Product & { salla_product_id?: string; zid_product_id?: string };
-    
-    if (targetPlatform === "salla" && typedProduct.salla_product_id) {
-      return NextResponse.json(
-        { error: "Product is already synced to Salla.", store_product_id: typedProduct.salla_product_id },
-        { status: 409 }
-      );
-    }
-    if (targetPlatform === "zid" && typedProduct.zid_product_id) {
-      return NextResponse.json(
-        { error: "Product is already synced to Zid.", store_product_id: typedProduct.zid_product_id },
-        { status: 409 }
-      );
-    }
-    // If no target platform specified, check if synced to ALL available platforms
-    if (!targetPlatform && !targetStoreId && typedProduct.salla_product_id && typedProduct.zid_product_id) {
-      return NextResponse.json(
-        { error: "Product is already synced to all available platforms." },
-        { status: 409 }
-      );
-    }
-
-    // 3. Get merchant's active store (Salla or Zid)
+    // 2. Fetch the stores to push to
     let storeQuery = adminClient
       .from("stores")
       .select("id, access_token, refresh_token, platform, partner_token, platform_store_id")
       .eq("merchant_id", user.id)
       .eq("is_active", true);
 
-    if (targetStoreId) {
-      storeQuery = storeQuery.eq("id", targetStoreId);
-    } else if (targetPlatform) {
-      storeQuery = storeQuery.eq("platform", targetPlatform);
+    if (storeIds.length > 0) {
+      storeQuery = storeQuery.in("id", storeIds);
     }
 
-    const { data: store, error: storeError } = await storeQuery.maybeSingle();
+    const { data: stores, error: storeError } = await storeQuery;
 
-    if (storeError || !store) {
+    if (storeError || !stores || stores.length === 0) {
       return NextResponse.json(
-        { error: "No active store connected. Please connect your Salla or Zid store first." },
+        { error: "No active stores found to push to." },
         { status: 400 }
       );
     }
 
-    if (!store.access_token || !store.refresh_token) {
-      return NextResponse.json(
-        { error: "Store authentication expired. Please reconnect your store." },
-        { status: 401 }
-      );
-    }
+    // 3. Fetch existing listings to avoid duplicates
+    const { data: existingListings } = await adminClient
+      .from("product_listings")
+      .select("store_id")
+      .eq("product_id", id);
 
-    // 4. Push to the appropriate platform
-    let storeProductId: string;
-    let storeUrl: string | undefined;
-    const storePlatform = (store as { platform?: string }).platform;
+    const existingStoreIds = new Set(existingListings?.map((l) => l.store_id) || []);
 
-    if (storePlatform === "zid") {
-      // ---- Push to Zid ----
-      const result = await pushProductToZid(
-        {
-          accessToken: store.access_token,
-          refreshToken: store.refresh_token,
-          partnerToken: (store as { partner_token?: string }).partner_token || store.access_token,
-          storeId: (store as { platform_store_id?: string }).platform_store_id || store.id,
-          onTokenRefresh: async (storeId, newAccess, newRefresh, newPartner) => {
-            await adminClient
-              .from("stores")
-              .update({
-                access_token: newAccess,
-                refresh_token: newRefresh,
-                ...(newPartner ? { partner_token: newPartner } : {}),
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", storeId);
-          },
-        },
-        product as Product
-      );
+    const results = [];
+    const errors = [];
 
-      storeProductId = result.zidProductId;
-      storeUrl = result.zidUrl;
-    } else {
-      // ---- Push to Salla (default) ----
-      const result = await pushProductToSalla(
-        {
-          accessToken: store.access_token,
-          refreshToken: store.refresh_token,
-          storeId: store.id,
-          onTokenRefresh: async (storeId, newAccess, newRefresh) => {
-            await adminClient
-              .from("stores")
-              .update({
-                access_token: newAccess,
-                refresh_token: newRefresh,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", storeId);
-          },
-        },
-        product as Product
-      );
+    // 4. Push to each store
+    for (const store of stores) {
+      if (existingStoreIds.has(store.id)) {
+        errors.push({ storeId: store.id, error: "Product is already synced to this store." });
+        continue;
+      }
 
-      storeProductId = String(result.sallaProductId);
-      storeUrl = result.sallaUrl;
-    }
+      if (!store.access_token || !store.refresh_token) {
+        errors.push({ storeId: store.id, error: "Store authentication expired." });
+        continue;
+      }
 
-    // 5. Save the store product ID back to our DB (platform-specific + legacy)
-    const platformUpdate: Record<string, unknown> = {
-      store_product_id: storeProductId,
-      store_id: store.id,
-      updated_at: new Date().toISOString(),
-    };
+      try {
+        let storeProductId: string;
+        let storeUrl: string | undefined;
 
-    // Save to platform-specific fields for dual-platform support
-    if (storePlatform === "zid") {
-      platformUpdate.zid_product_id = storeProductId;
-      platformUpdate.zid_store_id = store.id;
-    } else {
-      platformUpdate.salla_product_id = storeProductId;
-      platformUpdate.salla_store_id = store.id;
-    }
+        if (store.platform === "zid") {
+          const result = await pushProductToZid(
+            {
+              accessToken: store.access_token,
+              refreshToken: store.refresh_token,
+              partnerToken: store.partner_token || store.access_token,
+              storeId: store.platform_store_id || store.id,
+              onTokenRefresh: async (storeId, newAccess, newRefresh, newPartner) => {
+                await adminClient
+                  .from("stores")
+                  .update({
+                    access_token: newAccess,
+                    refresh_token: newRefresh,
+                    ...(newPartner ? { partner_token: newPartner } : {}),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", storeId);
+              },
+            },
+            product as Product
+          );
 
-    const { error: updateError } = await adminClient
-      .from("products")
-      .update(platformUpdate)
-      .eq("id", id);
+          storeProductId = result.zidProductId;
+          storeUrl = result.zidUrl;
+        } else {
+          const result = await pushProductToSalla(
+            {
+              accessToken: store.access_token,
+              refreshToken: store.refresh_token,
+              storeId: store.id,
+              onTokenRefresh: async (storeId, newAccess, newRefresh) => {
+                await adminClient
+                  .from("stores")
+                  .update({
+                    access_token: newAccess,
+                    refresh_token: newRefresh,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", storeId);
+              },
+            },
+            product as Product
+          );
 
-    if (updateError) {
-      console.error("[Push] ⚠️ Product pushed but failed to save ID:", updateError);
+          storeProductId = String(result.sallaProductId);
+          storeUrl = result.sallaUrl;
+        }
+
+        // 5. Insert into product_listings
+        const { error: insertError } = await adminClient
+          .from("product_listings")
+          .insert({
+            product_id: product.id,
+            store_id: store.id,
+            merchant_id: user.id,
+            store_product_id: storeProductId,
+            margin_type: product.margin_type,
+            margin_value: product.margin_value,
+            retail_price: product.retail_price,
+            is_active: true,
+          });
+
+        if (insertError) {
+          console.error("[Push] ⚠️ Product pushed but failed to save listing:", insertError);
+          errors.push({ storeId: store.id, error: "Pushed to store but failed to save listing record." });
+        } else {
+          results.push({
+            storeId: store.id,
+            platform: store.platform,
+            storeProductId,
+            storeUrl,
+          });
+        }
+      } catch (err: any) {
+        console.error(`[Push] Failed for store ${store.id}:`, err);
+        let msg = err.message || "Failed to push";
+        if (err instanceof SallaApiError) msg = err.sallaMessage || msg;
+        if (err instanceof ZidApiError) msg = err.zidMessage || msg;
+        errors.push({ storeId: store.id, error: msg });
+      }
     }
 
     return NextResponse.json({
-      success: true,
-      storeProductId,
-      storeId: store.id,
-      storeUrl,
-      platform: storePlatform,
+      success: results.length > 0,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
     console.error("[Push] Unexpected error:", error);
-
-    if (error instanceof SallaApiError) {
-      return NextResponse.json(
-        {
-          error: `Salla API error: ${error.sallaMessage}`,
-          fields: error.fields,
-        },
-        { status: error.status >= 400 && error.status < 600 ? error.status : 502 }
-      );
-    }
-
-    if (error instanceof ZidApiError) {
-      return NextResponse.json(
-        {
-          error: `Zid API error: ${error.zidMessage}`,
-          fields: error.fields,
-        },
-        { status: error.status >= 400 && error.status < 600 ? error.status : 502 }
-      );
-    }
-
-    const message =
-      error instanceof Error ? error.message : "Push to store failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Unexpected error during push" }, { status: 500 });
   }
 }

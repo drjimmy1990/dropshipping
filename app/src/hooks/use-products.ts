@@ -37,7 +37,7 @@ export function useProducts(): ProductsState {
 
     const { data, error: err } = await supabase
       .from("products")
-      .select("*")
+      .select("*, listings:product_listings(*)")
       .eq("merchant_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -140,37 +140,21 @@ export function useProducts(): ProductsState {
         return { success: false, error: data.error || "Push to store failed" };
       }
 
-      // Update local state with platform-specific IDs
-      setProducts((prev) =>
-        prev.map((p) => {
-          if (p.id !== id) return p;
-          const updates: Partial<Product> = {
-            store_product_id: String(data.storeProductId),
-            store_id: data.storeId || p.store_id,
-            updated_at: new Date().toISOString(),
-          };
-          if (data.platform === "salla") {
-            updates.salla_product_id = String(data.storeProductId);
-            updates.salla_store_id = data.storeId || p.store_id;
-          } else if (data.platform === "zid") {
-            updates.zid_product_id = String(data.storeProductId);
-            updates.zid_store_id = data.storeId || p.store_id;
-          }
-          return { ...p, ...updates };
-        })
-      );
+      // Update local state by refetching products to get updated listings
+      // Or minimally pushing a dummy listing to state
+      fetchProducts();
 
-      return { success: true, storeProductId: data.storeProductId, platform: data.platform };
+      return { success: true, storeProductId: data.results?.[0]?.storeProductId, platform: data.results?.[0]?.platform };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : "Push failed" };
     }
-  }, []);
+  }, [fetchProducts]);
 
   // ---------- Computed Stats ----------
 
   const activeCount = products.filter((p) => p.is_active).length;
   const outOfStockCount = products.filter((p) => !p.in_stock).length;
-  const syncedCount = products.filter((p) => p.salla_product_id || p.zid_product_id || p.store_product_id).length;
+  const syncedCount = products.filter((p) => (p as any).listings && (p as any).listings.length > 0).length;
 
   return {
     products,

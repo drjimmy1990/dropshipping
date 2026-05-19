@@ -95,7 +95,6 @@ export interface Product {
   id: string;
   merchant_id: string;
   supplier_account_id: string | null;
-  store_id: string | null;
   supplier: SupplierType;
   supplier_product_id: string;
   supplier_url: string | null;
@@ -118,12 +117,6 @@ export interface Product {
   category: string | null;
   salla_category_id: number | null;
   tags: string[] | null;
-  store_product_id: string | null;
-  // Platform-specific sync IDs (dual-platform support)
-  salla_product_id: string | null;
-  salla_store_id: string | null;
-  zid_product_id: string | null;
-  zid_store_id: string | null;
   // SEO & platform-specific settings
   metadata_title: string | null;
   metadata_description: string | null;
@@ -136,6 +129,26 @@ export interface Product {
   last_stock_check: string | null;
   created_at: string;
   updated_at: string;
+  // Joined
+  listings?: ProductListing[];
+}
+
+export interface ProductListing {
+  id: string;
+  product_id: string;
+  store_id: string;
+  merchant_id: string;
+  store_product_id: string;
+  margin_type: MarginType;
+  margin_value: number;
+  retail_price: number;
+  is_active: boolean;
+  last_sync_at: string | null;
+  sync_error: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  store?: Store | null;
 }
 
 export interface Order {

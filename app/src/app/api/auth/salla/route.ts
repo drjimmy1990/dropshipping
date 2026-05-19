@@ -19,6 +19,34 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
+  // 1.5. Validate subscription limits
+  const { data: merchantData } = await supabase
+    .from("merchants")
+    .select("plan")
+    .eq("id", user.id)
+    .single();
+
+  const planName = merchantData?.plan || "free";
+  const { data: tierData } = await supabase
+    .from("subscription_tiers")
+    .select("max_stores")
+    .ilike("name", planName)
+    .single();
+
+  const maxStores = tierData?.max_stores || 1;
+
+  const { count: currentStoreCount } = await supabase
+    .from("stores")
+    .select("*", { count: "exact", head: true })
+    .eq("merchant_id", user.id);
+
+  if (currentStoreCount !== null && currentStoreCount >= maxStores) {
+    console.error(`[Salla OAuth] Merchant ${user.id} reached max stores (${maxStores})`);
+    return NextResponse.redirect(
+      new URL("/dashboard/integrations?error=max_stores_reached", request.url)
+    );
+  }
+
   // 2. Validate Salla credentials are configured
   const clientId = process.env.SALLA_CLIENT_ID;
   if (!clientId) {

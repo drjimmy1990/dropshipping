@@ -23,6 +23,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // 1.5. Validate subscription limits
+  const { data: merchantData } = await supabase
+    .from("merchants")
+    .select("plan")
+    .eq("id", user.id)
+    .single();
+
+  const planName = merchantData?.plan || "free";
+  const { data: tierData } = await supabase
+    .from("subscription_tiers")
+    .select("max_stores")
+    .ilike("name", planName)
+    .single();
+
+  const maxStores = tierData?.max_stores || 1;
+
+  const { count: currentStoreCount } = await supabase
+    .from("stores")
+    .select("*", { count: "exact", head: true })
+    .eq("merchant_id", user.id);
+
+  if (currentStoreCount !== null && currentStoreCount >= maxStores) {
+    console.error(`[Zid Manual] Merchant ${user.id} reached max stores (${maxStores})`);
+    return NextResponse.json(
+      { error: `You have reached the maximum number of stores allowed for your plan (${maxStores}).` },
+      { status: 403 }
+    );
+  }
+
   // 2. Parse the body
   let body: {
     accessToken?: string;
