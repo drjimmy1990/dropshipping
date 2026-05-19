@@ -238,7 +238,6 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
     requires_shipping: true,
     is_taxable: true,
     short_description,
-    weight: "0.5", // Zid expects weight as string
   };
 }
 
