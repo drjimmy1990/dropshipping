@@ -358,9 +358,16 @@ export async function getZidProductImages(
     }
 
     const urls = rawImages
-      .map((img: ZidProductImage & { image_url?: string; original?: string; src?: string }) =>
-        img.url || img.image_url || img.original || img.src || img.thumbnail_url
-      )
+      .map((img: ZidProductImage) => {
+        // Priority 1: nested image object with size variants (actual Zid format)
+        if (img.image && typeof img.image === "object") {
+          return img.image.full_size || img.image.large || img.image.medium || img.image.small || img.image.thumbnail;
+        }
+        // Priority 2: image as direct URL string
+        if (img.image && typeof img.image === "string") return img.image;
+        // Priority 3: flat URL fields (fallbacks)
+        return img.url || img.image_url || img.original || img.src || img.thumbnail_url;
+      })
       .filter((url): url is string => !!url);
 
     console.log(`[Zid] Found ${urls.length} images for product ${zidProductId}`);

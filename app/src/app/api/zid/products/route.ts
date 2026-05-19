@@ -295,9 +295,18 @@ function normalizeZidProduct(zidProduct: ZidProductListItem) {
     description = zidProduct.short_description;
   }
 
-  // Images
+  // Images — Zid returns: { image: { large, full_size, medium, small, thumbnail } }
   const images = (zidProduct.images || [])
-    .map((img) => img.url || img.image_url || img.original || img.src || img.image || img.thumbnail_url)
+    .map((img) => {
+      // Priority 1: nested image object with size variants (actual Zid format)
+      if (img.image && typeof img.image === "object") {
+        return img.image.full_size || img.image.large || img.image.medium || img.image.small || img.image.thumbnail;
+      }
+      // Priority 2: image as direct URL string
+      if (img.image && typeof img.image === "string") return img.image;
+      // Priority 3: flat URL fields (fallbacks)
+      return img.url || img.image_url || img.original || img.src || img.thumbnail_url;
+    })
     .filter((url): url is string => !!url);
 
   // Category

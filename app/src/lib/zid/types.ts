@@ -81,10 +81,19 @@ export interface ZidProductImage {
   image_url?: string;
   original?: string;
   src?: string;
-  image?: string;
+  /** Zid returns image as a nested object with size variants */
+  image?: string | {
+    large?: string;
+    full_size?: string;
+    medium?: string;
+    small?: string;
+    thumbnail?: string;
+  };
   thumbnail_url?: string;
   alt?: string;
+  alt_text?: string;
   sort_order?: number;
+  display_order?: number;
   is_default?: boolean;
 }
 
