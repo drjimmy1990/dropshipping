@@ -328,9 +328,9 @@ export default function ProductEditorPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          {!product.store_product_id && connectedStores.length > 0 && (
+          {connectedStores.length > 0 && (
             <div className="flex gap-1">
-              {connectedStores.map((store) => (
+              {connectedStores.filter((store) => store.id !== product.store_id).map((store) => (
                 <Button key={store.id} variant="secondary" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>
                   <Icon name="cloud_upload" className="text-sm" /> Push to {store.platform === "zid" ? "Zid" : "Salla"}
                 </Button>
@@ -780,9 +780,9 @@ export default function ProductEditorPage() {
               <Button className="w-full justify-start" size="sm" onClick={handleSave} disabled={saving}>
                 <Icon name="save" className="text-sm" /> {saving ? "Saving..." : "Save Changes"}
               </Button>
-              {!product.store_product_id && connectedStores.length > 0 && (
+              {connectedStores.filter((store) => store.id !== product.store_id).length > 0 && (
                 <>
-                  {connectedStores.map((store) => (
+                  {connectedStores.filter((store) => store.id !== product.store_id).map((store) => (
                     <Button key={store.id} variant="secondary" className="w-full justify-start" size="sm" onClick={() => handlePush(store.platform)} disabled={saving}>
                       <Icon name="cloud_upload" className="text-sm" /> Push to {store.platform === "zid" ? "Zid" : "Salla"}
                     </Button>
