@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, Button, Badge, Icon } from "@/components/shared";
 import { useSallaCategories } from "@/hooks/use-salla-categories";
+import { useZidCategories } from "@/hooks/use-zid-categories";
 import type { Product } from "@/lib/supabase/types";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,7 +15,8 @@ type Tab = "general" | "images" | "pricing" | "store";
 export default function ProductEditorPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { categories } = useSallaCategories();
+  const { categories: sallaCategories } = useSallaCategories();
+  const { categories: zidCategories } = useZidCategories();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ export default function ProductEditorPage() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [selectedShippingIdx, setSelectedShippingIdx] = useState<number>(-1);
   const [categoryId, setCategoryId] = useState("");
+  const [zidCategoryId, setZidCategoryId] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDesc, setMetaDesc] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -68,9 +71,11 @@ export default function ProductEditorPage() {
       JSON.stringify(localImages) !== JSON.stringify(product.images || []) ||
       metaTitle !== (product.metadata_title || (product.title_en || "").slice(0, 70)) ||
       metaDesc !== (product.metadata_description || (product.description_en || "").slice(0, 160)) ||
-      zidKeywords !== (product.zid_keywords || []).join(", ")
+      zidKeywords !== (product.zid_keywords || []).join(", ") ||
+      categoryId !== (product.salla_category_id ? String(product.salla_category_id) : "") ||
+      zidCategoryId !== (product.zid_category_id || "")
     );
-  }, [product, titleEn, titleAr, descEn, descAr, retailPrice, stockQty, isActive, localImages, metaTitle, metaDesc, zidKeywords]);
+  }, [product, titleEn, titleAr, descEn, descAr, retailPrice, stockQty, isActive, localImages, metaTitle, metaDesc, zidKeywords, categoryId, zidCategoryId]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -107,6 +112,7 @@ export default function ProductEditorPage() {
       setMetaTitle(p.metadata_title || (p.title_en || "").slice(0, 70));
       setMetaDesc(p.metadata_description || (p.description_en || "").slice(0, 160));
       setZidKeywords((p.zid_keywords || []).join(", "));
+      setZidCategoryId(p.zid_category_id || "");
       setIsActive(p.is_active);
       setLocalImages(p.images || []);
       setShippingCostInput(String(p.shipping_cost || 0));
@@ -153,6 +159,7 @@ export default function ProductEditorPage() {
         metadata_title: metaTitle || null,
         metadata_description: metaDesc || null,
         zid_keywords: zidKeywords ? zidKeywords.split(",").map(s => s.trim()).filter(Boolean) : null,
+        zid_category_id: zidCategoryId || null,
       };
 
       const res = await fetch(`/api/products/${product.id}`, {
@@ -421,16 +428,7 @@ export default function ProductEditorPage() {
                   <textarea value={descAr} onChange={(e) => setDescAr(e.target.value)} rows={3} dir="rtl"
                     className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent resize-y" />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-text-secondary mb-1">Category</label>
-                  <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent">
-                    <option value="">No category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
+
                 <div className="flex items-center gap-3 pt-2">
                   <label className="text-sm text-text-secondary">Active</label>
                   <button
@@ -735,6 +733,7 @@ export default function ProductEditorPage() {
                     { field: "Stock", salla: true, zid: true },
                     { field: "Images", salla: true, zid: true },
                     { field: "Status", salla: true, zid: true },
+                    { field: "Category", salla: true, zid: true },
                   ].map(({ field, salla, zid }) => (
                     <div key={field} className="flex items-center justify-between py-1">
                       <span className="text-text-secondary">{field}</span>
@@ -794,6 +793,19 @@ export default function ProductEditorPage() {
                     <button disabled className="flex items-center gap-2 text-xs text-text-muted px-3 py-2 rounded-md bg-surface-sunken cursor-not-allowed opacity-60">
                       <Icon name="auto_awesome" className="text-sm" /> Auto-Generate SEO with AI (Coming Soon)
                     </button>
+
+                    {/* Salla Category */}
+                    <div className="pt-3 border-t border-emerald-100">
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Salla Category</label>
+                      <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent">
+                        <option value="">No category</option>
+                        {sallaCategories.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-text-muted mt-1">Category displayed in your Salla storefront.</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -826,6 +838,19 @@ export default function ProductEditorPage() {
                     <button disabled className="flex items-center gap-2 text-xs text-text-muted px-3 py-2 rounded-md bg-surface-sunken cursor-not-allowed opacity-60">
                       <Icon name="auto_awesome" className="text-sm" /> Auto-Generate Keywords with AI (Coming Soon)
                     </button>
+
+                    {/* Zid Category */}
+                    <div className="pt-3 border-t border-blue-100">
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Zid Category</label>
+                      <select value={zidCategoryId} onChange={(e) => setZidCategoryId(e.target.value)}
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text outline-none focus:border-accent">
+                        <option value="">No category</option>
+                        {zidCategories.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name.en}</option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-text-muted mt-1">Category displayed in your Zid storefront.</p>
+                    </div>
                   </div>
                 </div>
               )}

@@ -52,6 +52,7 @@ export async function PATCH(
       "metadata_title",
       "metadata_description",
       "zid_keywords",
+      "zid_category_id",
     ];
 
     const updates: Record<string, unknown> = {};
@@ -223,6 +224,10 @@ export async function PATCH(
           // Status sync
           if (updates.is_active !== undefined) {
             zidPayload.is_draft = !updates.is_active;
+          }
+          // Category sync
+          if (updates.zid_category_id) {
+            zidPayload.categories = [{ id: String(updates.zid_category_id) }];
           }
 
           if (Object.keys(zidPayload).length > 0) {

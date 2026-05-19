@@ -128,6 +128,7 @@ export interface Product {
   metadata_title: string | null;
   metadata_description: string | null;
   zid_keywords: string[] | null;
+  zid_category_id: string | null;
   shipping_cost: number;
   shipping_method: string | null;
   estimated_delivery: string | null;

@@ -35,6 +35,7 @@ export interface ZidCreateProductPayload {
   is_taxable?: boolean;
   short_description?: ZidLocalizedString;
   weight?: string;
+  categories?: { id: string; name?: ZidLocalizedString }[];
 }
 
 export interface ZidProductResponse {

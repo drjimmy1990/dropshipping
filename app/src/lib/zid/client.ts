@@ -239,6 +239,7 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
     requires_shipping: true,
     is_taxable: true,
     short_description,
+    ...(product.zid_category_id ? { categories: [{ id: product.zid_category_id }] } : {}),
   };
 }
 
@@ -570,6 +571,7 @@ export async function updateZidProduct(
     quantity?: number;
     keywords?: string[];
     is_draft?: boolean;
+    categories?: { id: string; name?: ZidLocalizedString }[];
   }
 ): Promise<void> {
   console.log(`[Zid] Updating product ${zidProductId} on store ${tokens.storeId}`);
