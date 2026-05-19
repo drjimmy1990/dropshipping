@@ -148,6 +148,11 @@ export async function POST() {
           const processed = normalizeZidProduct(zidProduct);
 
           // Images: try inline first (from extended=true), then fetch separately
+          // Debug: dump raw image data for first product to see actual Zid field names
+          if (zidProduct.images && zidProduct.images.length > 0) {
+            console.log(`[Zid Sync] RAW inline images for "${processed.title_en}":`, JSON.stringify(zidProduct.images[0]));
+          }
+
           let productImages = processed.images;
           if (productImages.length === 0) {
             console.log(`[Zid Sync] No inline images for "${processed.title_en}", fetching separately...`);
@@ -156,7 +161,7 @@ export async function POST() {
               productImages = fetchedImages;
             }
           }
-          console.log(`[Zid Sync] Product "${processed.title_en}": ${productImages.length} images`);
+          console.log(`[Zid Sync] Product "${processed.title_en}": ${productImages.length} images, URLs: ${JSON.stringify(productImages.slice(0, 2))}`);
 
           // Check if product already exists in our DB
           const { data: existing } = await adminClient
