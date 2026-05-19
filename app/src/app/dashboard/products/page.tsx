@@ -591,32 +591,45 @@ export default function MyProductsPage() {
 
                       {/* Store Sync Status */}
                       <td className="px-4 py-3">
-                        {p.store_product_id ? (
-                          <Badge variant="success" icon="cloud_done">
-                            {getProductPlatform(p) === "zid" ? "Zid" : "Salla"}
-                          </Badge>
-                        ) : (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handlePushToStore(p.id, "salla")}
-                              disabled={isLoading}
-                              className="group"
-                            >
-                              <Badge variant="warning" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80 text-[10px]">
-                                {loadingAction === "push" ? "..." : "Salla"}
-                              </Badge>
-                            </button>
-                            <button
-                              onClick={() => handlePushToStore(p.id, "zid")}
-                              disabled={isLoading}
-                              className="group"
-                            >
-                              <Badge variant="info" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80 text-[10px]">
-                                {loadingAction === "push" ? "..." : "Zid"}
-                              </Badge>
-                            </button>
-                          </div>
-                        )}
+                        {(() => {
+                          const plat = getProductPlatform(p);
+                          const isSalla = plat === "salla" && !!p.store_product_id;
+                          const isZid = plat === "zid" && !!p.store_product_id;
+                          return (
+                            <div className="flex gap-1">
+                              {isSalla ? (
+                                <Badge variant="success" icon="check_circle" className="text-[10px]">
+                                  Salla
+                                </Badge>
+                              ) : (
+                                <button
+                                  onClick={() => handlePushToStore(p.id, "salla")}
+                                  disabled={isLoading}
+                                  className="group"
+                                >
+                                  <Badge variant="warning" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80 text-[10px]">
+                                    {loadingAction === "push" ? "..." : "→ Salla"}
+                                  </Badge>
+                                </button>
+                              )}
+                              {isZid ? (
+                                <Badge variant="success" icon="check_circle" className="text-[10px]">
+                                  Zid
+                                </Badge>
+                              ) : (
+                                <button
+                                  onClick={() => handlePushToStore(p.id, "zid")}
+                                  disabled={isLoading}
+                                  className="group"
+                                >
+                                  <Badge variant="info" icon="cloud_upload" className="cursor-pointer group-hover:opacity-80 text-[10px]">
+                                    {loadingAction === "push" ? "..." : "→ Zid"}
+                                  </Badge>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Status */}

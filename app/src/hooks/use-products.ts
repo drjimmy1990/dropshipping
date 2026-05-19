@@ -140,11 +140,11 @@ export function useProducts(): ProductsState {
         return { success: false, error: data.error || "Push to store failed" };
       }
 
-      // Update local state with the store product ID
+      // Update local state with the store product ID and store
       setProducts((prev) =>
         prev.map((p) =>
           p.id === id
-            ? { ...p, store_product_id: String(data.storeProductId), updated_at: new Date().toISOString() }
+            ? { ...p, store_product_id: String(data.storeProductId), store_id: data.storeId || p.store_id, updated_at: new Date().toISOString() }
             : p
         )
       );

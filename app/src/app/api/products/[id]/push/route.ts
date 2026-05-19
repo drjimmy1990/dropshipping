@@ -178,6 +178,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       storeProductId,
+      storeId: store.id,
       storeUrl,
       platform: storePlatform,
     });

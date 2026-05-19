@@ -161,18 +161,23 @@ export async function POST() {
 
           if (existing) {
             // Update existing product (sync latest data from Zid)
+            // Only update images if we actually got some — avoid wiping existing ones
+            const updatePayload: Record<string, unknown> = {
+              title_en: processed.title_en,
+              title_ar: processed.title_ar,
+              retail_price: processed.price,
+              description_en: processed.description || null,
+              is_active: !zidProduct.is_draft,
+              in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
+              updated_at: new Date().toISOString(),
+            };
+            if (productImages.length > 0) {
+              updatePayload.images = productImages;
+            }
+
             const { error: updateErr } = await adminClient
               .from("products")
-              .update({
-                title_en: processed.title_en,
-                title_ar: processed.title_ar,
-                retail_price: processed.price,
-                description_en: processed.description || null,
-                is_active: !zidProduct.is_draft,
-                in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
-                images: productImages,
-                updated_at: new Date().toISOString(),
-              })
+              .update(updatePayload)
               .eq("id", existing.id);
 
             if (updateErr) {
