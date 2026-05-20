@@ -71,7 +71,7 @@ export function useAdminTransfers() {
     const supabase = createClient();
     const { data, error: err } = await supabase
       .from("bank_transfers")
-      .select("*, merchant:merchants(id, email, business_name)")
+      .select("*, merchant:merchants!bank_transfers_merchant_id_fkey(id, email, business_name)")
       .order("created_at", { ascending: false });
 
     if (err) setError(err.message);
