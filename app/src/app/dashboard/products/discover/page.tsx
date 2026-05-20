@@ -972,7 +972,7 @@ export default function ProductDiscoveryPage() {
               }}
               className={`text-sm font-medium rounded-lg px-3 py-2 border outline-none transition-all cursor-pointer ${
                 activeSupplier === "cj"
-                  ? "bg-[#1a1a2e] text-[#e94560] border-[#e94560]/40"
+                  ? "bg-[#e94560]/5 text-[#e94560] border-[#e94560]/30"
                   : "bg-[#e8400a]/5 text-[#e8400a] border-[#e8400a]/30"
               }`}
             >

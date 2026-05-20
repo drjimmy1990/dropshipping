@@ -126,3 +126,9 @@ git pull origin main
 cd app && npm run build
 pm2 restart droplinker
 rm -rf /www/server/nginx/proxy_cache_dir/*
+
+cd /www/wwwroot/dropshipping
+git pull origin main
+cd app && npm run build
+pm2 restart droplinker
+rm -rf /www/server/nginx/proxy_cache_dir/*
