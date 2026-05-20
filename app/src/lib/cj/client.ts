@@ -271,8 +271,8 @@ export async function searchCJProducts(
   query.set("size", String(params.size || 20));
   if (params.categoryId) query.set("categoryId", params.categoryId);
   if (params.countryCode) query.set("countryCode", params.countryCode);
-  if (params.startSellPrice) query.set("startSellPrice", String(params.startSellPrice));
-  if (params.endSellPrice) query.set("endSellPrice", String(params.endSellPrice));
+  if (params.startSellPrice) query.set("startSellPrice", String(params.startSellPrice / 3.75));
+  if (params.endSellPrice) query.set("endSellPrice", String(params.endSellPrice / 3.75));
   if (params.productFlag !== undefined) query.set("productFlag", String(params.productFlag));
   if (params.sort) query.set("sort", params.sort);
   if (params.orderBy !== undefined) query.set("orderBy", String(params.orderBy));
@@ -381,8 +381,8 @@ export async function getCJFreight(
 
     const options = data.map((opt) => ({
       name: opt.logisticName || "Standard Shipping",
-      price: parseFloat(String(opt.logisticPrice || 0)) || 0,
-      currency: "USD",
+      price: (parseFloat(String(opt.logisticPrice || 0)) || 0) * 3.75, // Convert USD shipping fee to SAR
+      currency: "SAR",
       estimatedDays: opt.logisticAging ? `${opt.logisticAging} days` : "N/A",
       trackingAvailable: true,
       serviceCode: opt.logisticKey,
@@ -434,8 +434,8 @@ export async function getCJOrderDetail(
  * CJ prices are always in USD.
  */
 function normalizeCJProduct(raw: import("./types").CJProductV2): NormalizedProduct {
-  const sellPrice = parseFloat(raw.sellPrice || "0");
-  const discountPrice = parseFloat(raw.discountPrice || raw.nowPrice || raw.sellPrice || "0");
+  const sellPrice = parseFloat(raw.sellPrice || "0") * 3.75; // Convert sellPrice to SAR
+  const discountPrice = parseFloat(raw.discountPrice || raw.nowPrice || raw.sellPrice || "0") * 3.75; // Convert discountPrice to SAR
   const discount = sellPrice > 0 && discountPrice < sellPrice
     ? Math.round((1 - discountPrice / sellPrice) * 100)
     : 0;
@@ -447,7 +447,7 @@ function normalizeCJProduct(raw: import("./types").CJProductV2): NormalizedProdu
     images: [raw.bigImage].filter(Boolean),
     price: discountPrice || sellPrice,
     originalPrice: sellPrice,
-    currency: "USD",
+    currency: "SAR",
     discount,
     rating: 0, // CJ doesn't provide ratings in search
     orders: raw.listedNum || 0,
@@ -471,7 +471,7 @@ function normalizeCJProductDetail(
 ): NormalizedProductDetail {
   const images = raw.productImageSet || [raw.bigImage].filter(Boolean);
 
-  // Normalize variants — ensure all prices are numbers
+  // Normalize variants — ensure all prices are numbers and convert USD to SAR
   const variants: NormalizedVariant[] = (raw.variants || []).map((v: CJVariant) => {
     // Parse variant options from variantKey (e.g. "Black-XXL")
     const keyParts = (raw.productKeyEn || "").split("-");
@@ -490,7 +490,7 @@ function normalizeCJProductDetail(
 
     return {
       skuId: v.vid,
-      price: parseFloat(String(v.variantSellPrice || raw.sellPrice || 0)) || 0,
+      price: (parseFloat(String(v.variantSellPrice || raw.sellPrice || 0)) || 0) * 3.75, // Convert variantPrice to SAR
       // If no inventory data, assume in-stock (CJ only lists available products)
       stock: totalStock === -1 ? true : totalStock > 0,
       stockQuantity: totalStock === -1 ? 100 : totalStock,
@@ -500,7 +500,7 @@ function normalizeCJProductDetail(
 
   // Price range from variants
   const prices = variants.map((v) => v.price).filter((p) => p > 0);
-  const rawSellPrice = parseFloat(String(raw.sellPrice || 0)) || 0;
+  const rawSellPrice = (parseFloat(String(raw.sellPrice || 0)) || 0) * 3.75; // Convert base price to SAR
   const minPrice = prices.length > 0 ? Math.min(...prices) : rawSellPrice;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : rawSellPrice;
 
@@ -517,12 +517,12 @@ function normalizeCJProductDetail(
     images,
     price: minPrice,
     originalPrice: maxPrice > minPrice ? maxPrice : minPrice,
-    currency: "USD",
+    currency: "SAR",
     discount: 0,
     rating: 0,
     orders: parseInt(String(raw.listedNum || 0)) || 0,
     shipping: shippingOptions.length > 0
-      ? `From $${shippingOptions[0].price.toFixed(2)}`
+      ? `From SAR ${shippingOptions[0].price.toFixed(2)}`
       : raw.addMarkStatus === 1
         ? "Free Shipping"
         : "Calculate at checkout",

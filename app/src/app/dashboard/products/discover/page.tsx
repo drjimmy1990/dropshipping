@@ -88,7 +88,6 @@ function SearchFilters({
   };
 
   const isCJ = supplier === "cj";
-  const priceCurrency = isCJ ? "USD" : "SAR";
 
   return (
     <div className="mb-6">
@@ -150,14 +149,14 @@ function SearchFilters({
         )}
         <input
           type="number"
-          placeholder={`Min Price (${priceCurrency})`}
+          placeholder="Min Price (SAR)"
           value={minPrice}
           onChange={(e) => setMinPrice(e.target.value)}
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none w-36"
         />
         <input
           type="number"
-          placeholder={`Max Price (${priceCurrency})`}
+          placeholder="Max Price (SAR)"
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none w-36"

@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       description_en: product.description || null,
       description_ar: null,
       supplier_cost: supplierCost,
-      supplier_currency: "USD", // CJ is always USD
+      supplier_currency: "SAR", // Normalized to SAR
       retail_price: Math.round(finalRetailPrice * 100) / 100,
       margin_type: marginType,
       margin_value: marginValue,
