@@ -69,13 +69,37 @@ export function useAdminTransfers() {
   const fetch = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
-    const { data, error: err } = await supabase
+    
+    // Fetch transfers without joining (avoids FK ambiguity with approved_by)
+    const { data: transferData, error: err } = await supabase
       .from("bank_transfers")
-      .select("*, merchant:merchants!bank_transfers_merchant_id_fkey(id, email, business_name)")
+      .select("*")
       .order("created_at", { ascending: false });
 
-    if (err) setError(err.message);
-    else setTransfers(data as BankTransfer[]);
+    if (err) { setError(err.message); setLoading(false); return; }
+    
+    // Fetch merchant info for each unique merchant_id
+    const merchantIds = [...new Set((transferData || []).map((t: any) => t.merchant_id).filter(Boolean))];
+    let merchantMap: Record<string, { id: string; email: string; business_name: string }> = {};
+    
+    if (merchantIds.length > 0) {
+      const { data: merchants } = await supabase
+        .from("merchants")
+        .select("id, email, business_name")
+        .in("id", merchantIds);
+      
+      if (merchants) {
+        merchantMap = Object.fromEntries(merchants.map((m: any) => [m.id, m]));
+      }
+    }
+    
+    // Attach merchant info to each transfer
+    const enriched = (transferData || []).map((t: any) => ({
+      ...t,
+      merchant: merchantMap[t.merchant_id] || null,
+    }));
+    
+    setTransfers(enriched as BankTransfer[]);
     setLoading(false);
   }, []);
 
