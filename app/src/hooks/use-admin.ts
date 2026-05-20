@@ -186,8 +186,10 @@ export function usePlatformConfig() {
     const supabase = createClient();
     const { error } = await supabase
       .from("platform_config")
-      .update({ value: JSON.stringify(value), updated_at: new Date().toISOString() })
-      .eq("key", key);
+      .upsert(
+        { key, value: JSON.stringify(value), updated_at: new Date().toISOString() },
+        { onConflict: "key" }
+      );
 
     setSaving(false);
     if (error) { setError(error.message); return false; }
