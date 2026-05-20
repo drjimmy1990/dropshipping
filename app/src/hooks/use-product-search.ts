@@ -120,7 +120,7 @@ export function useProductSearch(supplier: "aliexpress" | "cj" = "aliexpress") {
         }));
       }
     },
-    []
+    [supplier]
   );
 
   /**
@@ -166,7 +166,7 @@ export function useProductSearch(supplier: "aliexpress" | "cj" = "aliexpress") {
         error: err instanceof Error ? err.message : "Failed to fetch product",
       });
     }
-  }, []);
+  }, [supplier]);
 
   const clearDetail = useCallback(() => {
     setDetail({ product: null, loading: false, error: null });
@@ -232,7 +232,7 @@ export function useProductSearch(supplier: "aliexpress" | "cj" = "aliexpress") {
         return { success: false, error: errorMsg };
       }
     },
-    []
+    [supplier]
   );
 
   const clearImportState = useCallback(() => {
