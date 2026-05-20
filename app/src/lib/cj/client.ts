@@ -362,7 +362,7 @@ export async function getCJFreight(
 
   return data.map((opt) => ({
     name: opt.logisticName || "Standard Shipping",
-    price: opt.logisticPrice || 0,
+    price: parseFloat(String(opt.logisticPrice || 0)) || 0,
     currency: "USD",
     estimatedDays: opt.logisticAging ? `${opt.logisticAging} days` : "N/A",
     trackingAvailable: true,
@@ -445,7 +445,7 @@ function normalizeCJProductDetail(
 ): NormalizedProductDetail {
   const images = raw.productImageSet || [raw.bigImage].filter(Boolean);
 
-  // Normalize variants
+  // Normalize variants — ensure all prices are numbers
   const variants: NormalizedVariant[] = (raw.variants || []).map((v: CJVariant) => {
     // Parse variant options from variantKey (e.g. "Black-XXL")
     const keyParts = (raw.productKeyEn || "").split("-");
@@ -463,7 +463,7 @@ function normalizeCJProductDetail(
 
     return {
       skuId: v.vid,
-      price: v.variantSellPrice || raw.sellPrice || 0,
+      price: parseFloat(String(v.variantSellPrice || raw.sellPrice || 0)) || 0,
       stock: totalStock > 0,
       stockQuantity: totalStock,
       properties,
@@ -472,8 +472,9 @@ function normalizeCJProductDetail(
 
   // Price range from variants
   const prices = variants.map((v) => v.price).filter((p) => p > 0);
-  const minPrice = prices.length > 0 ? Math.min(...prices) : raw.sellPrice || 0;
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : raw.sellPrice || 0;
+  const rawSellPrice = parseFloat(String(raw.sellPrice || 0)) || 0;
+  const minPrice = prices.length > 0 ? Math.min(...prices) : rawSellPrice;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : rawSellPrice;
 
   return {
     id: raw.pid as unknown as number,
@@ -486,7 +487,7 @@ function normalizeCJProductDetail(
     currency: "USD",
     discount: 0,
     rating: 0,
-    orders: raw.listedNum || 0,
+    orders: parseInt(String(raw.listedNum || 0)) || 0,
     shipping: shippingOptions.length > 0
       ? `From $${shippingOptions[0].price.toFixed(2)}`
       : raw.addMarkStatus === 1
