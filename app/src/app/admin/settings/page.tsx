@@ -7,6 +7,44 @@ const inputClass = "w-full bg-surface rounded-md px-3 py-2.5 text-text text-sm b
 
 export default function PlatformSettingsPage() {
   const { config, loading, saving, updateConfig } = usePlatformConfig();
+  const [showCJModal, setShowCJModal] = useState(false);
+  const [cjToken, setCjToken] = useState("");
+  const [cjConnecting, setCjConnecting] = useState(false);
+  const [cjError, setCjError] = useState("");
+  const [cjSuccess, setCjSuccess] = useState("");
+
+  const handleCJConnect = async () => {
+    if (!cjToken.trim()) {
+      setCjError("CJ Access Token is required.");
+      return;
+    }
+    setCjConnecting(true);
+    setCjError("");
+    setCjSuccess("");
+    try {
+      const res = await fetch("/api/auth/cj/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: cjToken.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCjSuccess("✅ CJ token saved! All merchants can now browse CJ products.");
+        setCjToken("");
+        setTimeout(() => {
+          setShowCJModal(false);
+          setCjSuccess("");
+          window.location.reload();
+        }, 2000);
+      } else {
+        setCjError(data.error || "Failed to save CJ token.");
+      }
+    } catch {
+      setCjError("Network error. Please try again.");
+    } finally {
+      setCjConnecting(false);
+    }
+  };
 
   return (
     <>
@@ -56,8 +94,8 @@ export default function PlatformSettingsPage() {
 
           {/* Supplier API Keys */}
           <Card className="p-6">
-            <h3 className="text-base font-semibold text-text mb-2">Supplier API Keys (Platform Defaults)</h3>
-            <p className="text-xs text-text-muted mb-4">Used when merchants haven&apos;t connected their own accounts.</p>
+            <h3 className="text-base font-semibold text-text mb-2">Supplier API Keys (Platform-Level)</h3>
+            <p className="text-xs text-text-muted mb-4">These API keys are shared across all merchants. One key serves everyone.</p>
             <div className="space-y-4">
               <GatewaySection 
                 name="AliExpress Open Platform" 
@@ -73,10 +111,19 @@ export default function PlatformSettingsPage() {
                   { label: "App Secret", value: "****...f3c2", secret: true },
                 ]} 
               />
-              <GatewaySection name="CJDropshipping" icon="local_shipping" connected={false} fields={[
-                { label: "API Key", value: "" },
-                { label: "Email", value: "" },
-              ]} />
+              <GatewaySection 
+                name="CJDropshipping" 
+                icon="local_shipping" 
+                connected={!!config.cj_access_token}
+                onConnect={() => {
+                  setCjError("");
+                  setCjSuccess("");
+                  setShowCJModal(true);
+                }}
+                fields={[
+                  { label: "Access Token", value: config.cj_access_token ? "****...saved" : "(not set)" },
+                ]} 
+              />
             </div>
           </Card>
 
@@ -99,6 +146,85 @@ export default function PlatformSettingsPage() {
           <div className="flex justify-end">
             <Button disabled={saving}>{saving ? "Saving…" : "Save All Settings"}</Button>
           </div>
+        </div>
+      )}
+
+      {/* CJ Connect Modal */}
+      {showCJModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowCJModal(false)}
+          />
+          <Card className="relative z-10 w-full max-w-md p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-text">Connect CJDropshipping</h3>
+              <button
+                onClick={() => setShowCJModal(false)}
+                className="p-1 rounded-md hover:bg-surface-sunken text-text-muted"
+              >
+                <Icon name="close" className="text-lg" />
+              </button>
+            </div>
+
+            <div className="bg-surface-sunken rounded-lg p-3 mb-4">
+              <p className="text-xs font-medium text-text-secondary mb-1">
+                How to get your CJ API Key:
+              </p>
+              <ol className="text-xs text-text-muted space-y-1 list-decimal list-inside">
+                <li>Log in to <a href="https://developers.cjdropshipping.com" target="_blank" rel="noopener noreferrer" className="underline text-accent">CJ Developer Portal</a></li>
+                <li>Go to <strong>API Management</strong> → get your <strong>Access Token</strong></li>
+                <li>Paste it below — this token serves <strong>all merchants</strong></li>
+              </ol>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-text-secondary mb-1">
+                  CJ Access Token <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={cjToken}
+                  onChange={(e) => setCjToken(e.target.value)}
+                  placeholder="Paste your CJ Access Token here..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent/50 font-mono resize-none"
+                />
+              </div>
+
+              {cjError && (
+                <div className="p-2 rounded-md bg-red-500/10 border border-red-500/20">
+                  <p className="text-xs text-red-400">{cjError}</p>
+                </div>
+              )}
+
+              {cjSuccess && (
+                <div className="p-2 rounded-md bg-green-500/10 border border-green-500/20">
+                  <p className="text-xs text-green-400">{cjSuccess}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2 mt-5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1"
+                onClick={() => setShowCJModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                onClick={handleCJConnect}
+                disabled={cjConnecting || !cjToken.trim()}
+              >
+                {cjConnecting ? "Validating & Saving..." : "Connect CJ"}
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
     </>
