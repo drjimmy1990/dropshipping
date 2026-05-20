@@ -8,6 +8,19 @@ import type { NormalizedProduct, NormalizedProductDetail } from "@/lib/aliexpres
 
 type SupplierSource = "aliexpress" | "cj";
 
+// CJ feed type (extended from AliExpress feed)
+interface CJFeed {
+  id: string;
+  name: string;
+  displayName: string;
+  type: "all" | "productFlag" | "category";
+  productFlag?: number;
+  categoryIds?: string[];
+  firstCategoryId?: string;
+  productCount: number;
+  sortOrder: number;
+}
+
 // ---------- Feed Type ----------
 interface Feed {
   id: string;
@@ -24,6 +37,7 @@ interface Feed {
 function SearchFilters({
   onSearch,
   loading,
+  supplier,
 }: {
   onSearch: (params: {
     keyword?: string;
@@ -34,12 +48,18 @@ function SearchFilters({
     shipTo?: string;
   }) => void;
   loading: boolean;
+  supplier: SupplierSource;
 }) {
   const [keyword, setKeyword] = useState("");
   const [sort, setSort] = useState("");
   const [shipTo, setShipTo] = useState("SA");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+
+  // Reset sort when supplier changes
+  useEffect(() => {
+    setSort("");
+  }, [supplier]);
 
   const fireSearch = useCallback((overrides: Record<string, any> = {}) => {
     const params = {
@@ -57,17 +77,18 @@ function SearchFilters({
     if (e.key === "Enter") fireSearch();
   };
 
-  // Sort change → immediately search
   const handleSortChange = (newSort: string) => {
     setSort(newSort);
     fireSearch({ sort: newSort || undefined });
   };
 
-  // Ship-to change → immediately search
   const handleShipToChange = (newShipTo: string) => {
     setShipTo(newShipTo);
     fireSearch({ shipTo: newShipTo });
   };
+
+  const isCJ = supplier === "cj";
+  const priceCurrency = isCJ ? "USD" : "SAR";
 
   return (
     <div className="mb-6">
@@ -75,7 +96,7 @@ function SearchFilters({
         <Icon name="search" className="text-text-muted text-base" />
         <input
           type="text"
-          placeholder={`Search products by keyword...`}
+          placeholder={`Search ${isCJ ? 'CJ' : 'AliExpress'} products by keyword...`}
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -95,33 +116,48 @@ function SearchFilters({
               : "border-border text-text-secondary"
           }`}
         >
-          <option value="">Sort: Default</option>
-          <option value="SALE_PRICE_ASC">💰 Price: Low → High</option>
-          <option value="SALE_PRICE_DESC">💰 Price: High → Low</option>
-          <option value="LAST_VOLUME_DESC">🔥 Best Selling</option>
+          {isCJ ? (
+            <>
+              <option value="">Sort: Best Match</option>
+              <option value="CJ_POPULAR">🔥 Most Popular</option>
+              <option value="CJ_PRICE_ASC">💰 Price: Low → High</option>
+              <option value="CJ_PRICE_DESC">💰 Price: High → Low</option>
+              <option value="CJ_NEWEST">🆕 Newest</option>
+              <option value="CJ_MOST_STOCK">📦 Most Stock</option>
+            </>
+          ) : (
+            <>
+              <option value="">Sort: Default</option>
+              <option value="SALE_PRICE_ASC">💰 Price: Low → High</option>
+              <option value="SALE_PRICE_DESC">💰 Price: High → Low</option>
+              <option value="LAST_VOLUME_DESC">🔥 Best Selling</option>
+            </>
+          )}
         </select>
-        <select
-          value={shipTo}
-          onChange={(e) => handleShipToChange(e.target.value)}
-          className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none"
-        >
-          <option value="SA">Ship To: Saudi Arabia</option>
-          <option value="AE">Ship To: UAE</option>
-          <option value="KW">Ship To: Kuwait</option>
-          <option value="BH">Ship To: Bahrain</option>
-          <option value="QA">Ship To: Qatar</option>
-          <option value="OM">Ship To: Oman</option>
-        </select>
+        {!isCJ && (
+          <select
+            value={shipTo}
+            onChange={(e) => handleShipToChange(e.target.value)}
+            className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none"
+          >
+            <option value="SA">Ship To: Saudi Arabia</option>
+            <option value="AE">Ship To: UAE</option>
+            <option value="KW">Ship To: Kuwait</option>
+            <option value="BH">Ship To: Bahrain</option>
+            <option value="QA">Ship To: Qatar</option>
+            <option value="OM">Ship To: Oman</option>
+          </select>
+        )}
         <input
           type="number"
-          placeholder="Min Price (SAR)"
+          placeholder={`Min Price (${priceCurrency})`}
           value={minPrice}
           onChange={(e) => setMinPrice(e.target.value)}
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none w-36"
         />
         <input
           type="number"
-          placeholder="Max Price (SAR)"
+          placeholder={`Max Price (${priceCurrency})`}
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none w-36"
@@ -762,31 +798,42 @@ export default function ProductDiscoveryPage() {
     const sorted = [...search.products];
     switch (clientSort) {
       case "SALE_PRICE_ASC":
+      case "CJ_PRICE_ASC":
         sorted.sort((a, b) => a.price - b.price);
         break;
       case "SALE_PRICE_DESC":
+      case "CJ_PRICE_DESC":
         sorted.sort((a, b) => b.price - a.price);
         break;
       case "LAST_VOLUME_DESC":
+      case "CJ_POPULAR":
         sorted.sort((a, b) => (b.orders || 0) - (a.orders || 0));
         break;
+      // CJ_BEST_MATCH, CJ_NEWEST, CJ_MOST_STOCK — trust API ordering
     }
     return sorted;
   }, [search.products, clientSort]);
 
-  // Fetch available feeds on mount (AliExpress only)
+  // CJ feeds state
+  const [cjFeeds, setCjFeeds] = useState<CJFeed[]>([]);
+
+  // Fetch available feeds on mount
   useEffect(() => {
-    if (activeSupplier === "aliexpress") {
-      fetch("/api/suppliers/aliexpress/feeds")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.feeds) setFeeds(data.feeds);
-        })
-        .catch(console.error);
-    } else {
-      setFeeds([]); // CJ doesn't have feed tabs
-      setActiveFeed("all");
-    }
+    const feedUrl = activeSupplier === "cj"
+      ? "/api/suppliers/cj/feeds"
+      : "/api/suppliers/aliexpress/feeds";
+
+    fetch(feedUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.feeds) {
+          setFeeds(data.feeds);
+          if (activeSupplier === "cj") {
+            setCjFeeds(data.feeds);
+          }
+        }
+      })
+      .catch(console.error);
   }, [activeSupplier]);
 
   // Re-search when supplier changes
@@ -836,26 +883,45 @@ export default function ProductDiscoveryPage() {
   const handleFeedChange = useCallback(
     (feedName: string) => {
       setActiveFeed(feedName);
-      setSearchFeedNotice(null); // Clear notice on manual feed switch
+      setSearchFeedNotice(null);
 
-      // If there's a keyword active, switching feeds clears it (feeds and keyword are exclusive)
       const keyword = currentFilters.keyword;
-      const params = {
+      const params: any = {
         ...currentFilters,
-        feedName: feedName !== "all" ? feedName : undefined,
         page: 1,
+        // Clear old feed/category params
+        feedName: undefined,
+        productFlag: undefined,
+        categoryId: undefined,
       };
 
-      if (keyword && feedName !== "all") {
-        // User picked a feed while keyword is active — feed browsing takes over
-        params.keyword = undefined;
-        params.feedName = feedName;
+      if (activeSupplier === "cj") {
+        // CJ: map feed to productFlag or categoryId
+        const cjFeed = cjFeeds.find((f) => f.name === feedName);
+        if (cjFeed) {
+          if (cjFeed.type === "productFlag" && cjFeed.productFlag !== undefined) {
+            params.productFlag = cjFeed.productFlag;
+          } else if (cjFeed.type === "category" && cjFeed.firstCategoryId) {
+            params.categoryId = cjFeed.firstCategoryId;
+          }
+        }
+        // Clear keyword when switching feeds
+        if (keyword && feedName !== "all") {
+          params.keyword = undefined;
+        }
+      } else {
+        // AliExpress: use feedName
+        params.feedName = feedName !== "all" ? feedName : undefined;
+        if (keyword && feedName !== "all") {
+          params.keyword = undefined;
+          params.feedName = feedName;
+        }
       }
 
       setCurrentFilters(params);
       searchProducts(params);
     },
-    [searchProducts, currentFilters]
+    [searchProducts, currentFilters, activeSupplier, cjFeeds]
   );
 
   const handlePageChange = useCallback(
@@ -924,7 +990,7 @@ export default function ProductDiscoveryPage() {
         </p>
       </div>
 
-      <SearchFilters onSearch={handleSearch} loading={search.loading} />
+      <SearchFilters onSearch={handleSearch} loading={search.loading} supplier={activeSupplier} />
 
       {/* Info banner: keyword search resets feed */}
       {searchFeedNotice && (
@@ -964,7 +1030,13 @@ export default function ProductDiscoveryPage() {
           {clientSort && (
             <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-accent/10 px-2.5 py-1 rounded-full border border-accent/20">
               <Icon name="sort" className="text-xs" />
-              Sorted by {clientSort === "SALE_PRICE_ASC" ? "Price ↑" : clientSort === "SALE_PRICE_DESC" ? "Price ↓" : "Best Selling"}
+              Sorted by {
+                {
+                  "SALE_PRICE_ASC": "Price ↑", "SALE_PRICE_DESC": "Price ↓", "LAST_VOLUME_DESC": "Best Selling",
+                  "CJ_BEST_MATCH": "Best Match", "CJ_POPULAR": "Most Popular", "CJ_PRICE_ASC": "Price ↑",
+                  "CJ_PRICE_DESC": "Price ↓", "CJ_NEWEST": "Newest", "CJ_MOST_STOCK": "Most Stock",
+                }[clientSort] || clientSort
+              }
             </span>
           )}
         </div>

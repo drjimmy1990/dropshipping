@@ -75,19 +75,48 @@ export function useProductSearch(supplier: "aliexpress" | "cj" = "aliexpress") {
       minPrice?: number;
       maxPrice?: number;
       shipTo?: string;
+      // CJ-specific params
+      productFlag?: number;
+      categoryId?: string;
+      orderBy?: number;
     }) => {
       setSearch((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
         const query = new URLSearchParams();
         if (params.keyword) query.set("keyword", params.keyword);
-        if (params.feedName) query.set("feedName", params.feedName);
-        if (params.category) query.set("category", params.category);
         if (params.page) query.set("page", String(params.page));
-        if (params.sort) query.set("sort", params.sort);
         if (params.minPrice) query.set("minPrice", String(params.minPrice));
         if (params.maxPrice) query.set("maxPrice", String(params.maxPrice));
-        if (params.shipTo) query.set("shipTo", params.shipTo);
+
+        if (supplier === "cj") {
+          // CJ-specific param mapping
+          if (params.productFlag !== undefined) query.set("productFlag", String(params.productFlag));
+          if (params.categoryId) query.set("categoryId", params.categoryId);
+
+          // CJ sort: map combined value to orderBy + sort direction
+          if (params.sort) {
+            const sortMap: Record<string, { orderBy: number; sort: string }> = {
+              "CJ_BEST_MATCH": { orderBy: 0, sort: "desc" },
+              "CJ_POPULAR": { orderBy: 1, sort: "desc" },
+              "CJ_PRICE_ASC": { orderBy: 2, sort: "asc" },
+              "CJ_PRICE_DESC": { orderBy: 2, sort: "desc" },
+              "CJ_NEWEST": { orderBy: 3, sort: "desc" },
+              "CJ_MOST_STOCK": { orderBy: 4, sort: "desc" },
+            };
+            const mapped = sortMap[params.sort];
+            if (mapped) {
+              query.set("orderBy", String(mapped.orderBy));
+              query.set("sort", mapped.sort);
+            }
+          }
+        } else {
+          // AliExpress params
+          if (params.feedName) query.set("feedName", params.feedName);
+          if (params.category) query.set("category", params.category);
+          if (params.sort) query.set("sort", params.sort);
+          if (params.shipTo) query.set("shipTo", params.shipTo);
+        }
 
         const apiBase = supplier === "cj"
           ? `/api/suppliers/cj/search`
