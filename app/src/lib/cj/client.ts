@@ -72,8 +72,13 @@ export async function getCJPlatformToken(): Promise<string | null> {
  */
 async function refreshCJToken(refreshToken: string): Promise<CJTokenData | null> {
   try {
-    const url = `${CJ_BASE_URL}/authentication/refreshAccessToken?refreshToken=${encodeURIComponent(refreshToken)}`;
-    const response = await fetch(url, { method: "GET" });
+    // CJ docs say POST for refresh
+    const url = `${CJ_BASE_URL}/authentication/refreshAccessToken`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
     const data: CJResponse<CJTokenData> = await response.json();
 
     if (data.code === 200 && data.data?.accessToken) {
@@ -89,22 +94,68 @@ async function refreshCJToken(refreshToken: string): Promise<CJTokenData | null>
 }
 
 /**
+ * Re-generate CJ tokens from the saved API key (fallback when refresh token also expired).
+ */
+async function regenCJTokenFromApiKey(): Promise<CJTokenData | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data: apiKeyRow } = await supabase
+      .from("platform_config")
+      .select("value")
+      .eq("key", "cj_api_key")
+      .single();
+
+    if (!apiKeyRow?.value) {
+      console.error("[CJ] No cj_api_key found in platform_config");
+      return null;
+    }
+
+    const apiKey = apiKeyRow.value as string;
+    console.log("[CJ] Attempting token re-generation from API key...");
+
+    const response = await fetch(
+      `${CJ_BASE_URL}/authentication/getAccessToken`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey }),
+      }
+    );
+    const data: CJResponse<CJTokenData> = await response.json();
+
+    if (data.code === 200 && data.data?.accessToken) {
+      console.log("[CJ] ✅ Token re-generated from API key");
+      return data.data;
+    }
+
+    console.error("[CJ] Token re-generation failed:", data.message);
+    return null;
+  } catch (err) {
+    console.error("[CJ] Token re-generation error:", err);
+    return null;
+  }
+}
+
+/**
  * Save refreshed CJ tokens to platform_config.
  */
 async function saveCJTokens(tokens: CJTokenData): Promise<void> {
   const supabase = createAdminClient();
-  await supabase.from("platform_config").upsert({
-    key: "cj_access_token",
-    value: tokens.accessToken,
-    updated_at: new Date().toISOString(),
-  });
-  if (tokens.refreshToken) {
-    await supabase.from("platform_config").upsert({
-      key: "cj_refresh_token",
-      value: tokens.refreshToken,
-      updated_at: new Date().toISOString(),
-    });
-  }
+  const now = new Date().toISOString();
+  await Promise.all([
+    supabase.from("platform_config").upsert({
+      key: "cj_access_token",
+      value: tokens.accessToken,
+      updated_at: now,
+    }),
+    tokens.refreshToken
+      ? supabase.from("platform_config").upsert({
+          key: "cj_refresh_token",
+          value: tokens.refreshToken,
+          updated_at: now,
+        })
+      : Promise.resolve(),
+  ]);
 }
 
 // ---------- Core API Request ----------
@@ -148,9 +199,9 @@ async function cjRequest<T>(
 
   console.log(`[CJ] Response: code=${data.code}, msg=${data.message}, requestId=${data.requestId}`);
 
-  // Token expired — try refresh using platform_config refresh token
-  if (data.code === 1600200 && !_isRetry) {
-    console.warn("[CJ] Token expired — attempting refresh...");
+  // Token expired or auth failed — try refresh, then fallback to API key re-gen
+  if ((data.code === 1600200 || data.code === 1600001) && !_isRetry) {
+    console.warn(`[CJ] Token expired/invalid (code=${data.code}) — attempting refresh...`);
     try {
       const supabase = createAdminClient();
       const { data: refreshData } = await supabase
@@ -165,6 +216,14 @@ async function cjRequest<T>(
           await saveCJTokens(newTokens);
           return cjRequest<T>(endpoint, method, newTokens.accessToken, body, true);
         }
+      }
+
+      // Refresh token also failed — try re-generating from API key
+      console.warn("[CJ] Refresh failed — trying API key fallback...");
+      const regenTokens = await regenCJTokenFromApiKey();
+      if (regenTokens) {
+        await saveCJTokens(regenTokens);
+        return cjRequest<T>(endpoint, method, regenTokens.accessToken, body, true);
       }
     } catch (err) {
       console.error("[CJ] Auto-refresh failed:", err);
