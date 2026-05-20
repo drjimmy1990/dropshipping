@@ -305,10 +305,12 @@ export async function searchCJProducts(
 export async function getCJProductDetail(
   pid: string,
   token: string,
-  countryCode?: string,
+  destinationCountry?: string,
 ): Promise<NormalizedProductDetail> {
+  // DON'T pass countryCode to /product/query — it filters variants by WAREHOUSE country.
+  // CJ products are in CN/US/EU warehouses, not SA. Passing SA = 0 variants returned.
+  // We pass the destination country to the freight calculation instead.
   const query = new URLSearchParams({ pid });
-  if (countryCode) query.set("countryCode", countryCode);
 
   const product = await cjRequest<CJProductDetail>(
     `/product/query?${query.toString()}`,
@@ -324,12 +326,13 @@ export async function getCJProductDetail(
   let shippingOptions: NormalizedShippingOption[] = [];
   if (product.variants?.length > 0) {
     const firstVid = product.variants[0].vid;
-    console.log(`[CJ Detail] Product ${pid}: fetching freight for vid=${firstVid}, destination=${countryCode || "SA"}`);
+    const dest = destinationCountry || "SA";
+    console.log(`[CJ Detail] Product ${pid}: ${product.variants.length} variants found, fetching freight for vid=${firstVid}, destination=${dest}`);
     try {
       shippingOptions = await getCJFreight(
         {
           startCountryCode: "CN",
-          endCountryCode: countryCode || "SA",
+          endCountryCode: dest,
           products: [{ vid: firstVid, quantity: 1 }],
         },
         token,
