@@ -672,7 +672,7 @@ export async function getZidCategories(
   const result = await withAutoRefresh(tokens, (accessToken, partnerToken) =>
     zidRequest<{ results?: ZidCategoryItem[] }>({
       method: "GET",
-      path: "/products/categories",
+      path: "/managers/store/categories",
       accessToken,
       partnerToken,
       storeId: tokens.storeId,

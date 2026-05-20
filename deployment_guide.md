@@ -152,14 +152,17 @@ export PM2_HOME=/root/.pm2
 cd /www/wwwroot/dropshipping
 git pull origin main
 
-# 2. Build the Next.js app
+# 2. Stop PM2 BEFORE building (prevents restart during .next rebuild)
+/usr/local/bin/pm2 stop droplinker 2>/dev/null || true
+
+# 3. Build the Next.js app
 cd app
 npm run build
 
-# 3. Restart PM2 process
-/usr/local/bin/pm2 restart droplinker || pm2 restart droplinker
+# 4. Restart PM2 (start if stopped, restart if running)
+/usr/local/bin/pm2 start droplinker 2>/dev/null || /usr/local/bin/pm2 restart droplinker
 
-# 4. Clear NGINX Cache
+# 5. Clear NGINX Cache
 rm -rf /www/server/nginx/proxy_cache_dir/*
 
 echo "Deployment Successful!"
@@ -209,7 +212,8 @@ ssh root@82.208.21.164
 # Deploy
 cd /www/wwwroot/dropshipping
 git pull origin main
+pm2 stop droplinker
 cd app && npm run build
-pm2 restart droplinker
+pm2 start droplinker
 rm -rf /www/server/nginx/proxy_cache_dir/*
 ```
