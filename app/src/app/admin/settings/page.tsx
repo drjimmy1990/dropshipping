@@ -127,18 +127,129 @@ export default function PlatformSettingsPage() {
             </div>
           </Card>
 
-          {/* n8n Config */}
+          {/* AI Content Engine */}
           <Card className="p-6">
-            <h3 className="text-base font-semibold text-text mb-4">n8n Workflow Engine</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <InputField label="n8n Base URL" value={(config.n8n_base_url as string) || "https://n8n.droplinker.com"} />
-              <InputField label="Webhook Base URL" value={(config.n8n_webhook_url as string) || "https://n8n.droplinker.com/webhook"} />
-            </div>
-            <div className="mt-4 p-3 rounded-md bg-success/10 flex items-center gap-3">
-              <Icon name="check_circle" className="text-success text-base" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <Icon name="auto_awesome" className="text-purple-500 text-base" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-text">System connected</p>
-                <p className="text-xs text-text-secondary">Ready for workflow integration</p>
+                <h3 className="text-base font-semibold text-text">AI Content Engine</h3>
+                <p className="text-xs text-text-muted">Configure AI-powered content generation workflows</p>
+              </div>
+            </div>
+
+            {/* Webhook URLs */}
+            <div className="mb-5">
+              <h4 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-1.5">
+                <Icon name="webhook" className="text-sm" /> n8n Webhook URLs
+              </h4>
+              <div className="grid md:grid-cols-2 gap-3">
+                <InputField 
+                  label="WF5: Description Generator" 
+                  value={((config.n8n_webhooks as Record<string, string>)?.wf5_description) || ""} 
+                />
+                <InputField 
+                  label="WF8: Social Content Generator" 
+                  value={((config.n8n_webhooks as Record<string, string>)?.wf8_social_content) || ""} 
+                />
+                <InputField 
+                  label="WF9: Auto-Publisher (Cron)" 
+                  value={((config.n8n_webhooks as Record<string, string>)?.wf9_auto_publish) || ""} 
+                />
+                <InputField 
+                  label="WF10: Image Generator" 
+                  value={((config.n8n_webhooks as Record<string, string>)?.wf10_image_generate) || ""} 
+                />
+              </div>
+              <p className="text-[10px] text-text-muted mt-2">
+                <Icon name="info" className="text-xs align-middle mr-0.5" />
+                Paste n8n webhook URLs here after building your workflows. See <code className="text-accent">n8n_content_workflows_guide.md</code> for setup instructions.
+              </p>
+            </div>
+
+            {/* Default AI Settings */}
+            <div className="mb-5 border-t border-border-subtle pt-4">
+              <h4 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-1.5">
+                <Icon name="smart_toy" className="text-sm" /> Default AI Settings
+              </h4>
+              <div className="grid md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Default Provider</label>
+                  <select 
+                    defaultValue={((config.ai_content_settings as Record<string, string>)?.default_provider) || "gemini"}
+                    className={inputClass}
+                  >
+                    <option value="gemini">Google Gemini</option>
+                    <option value="gpt4o">OpenAI GPT-4o</option>
+                    <option value="claude">Anthropic Claude</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Default Model</label>
+                  <input 
+                    type="text"
+                    defaultValue={((config.ai_content_settings as Record<string, string>)?.default_model) || "gemini-2.0-flash"}
+                    placeholder="e.g. gemini-2.0-flash"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Default Language</label>
+                  <select 
+                    defaultValue={((config.ai_content_settings as Record<string, string>)?.default_language) || "both"}
+                    className={inputClass}
+                  >
+                    <option value="both">Both (AR + EN)</option>
+                    <option value="ar">Arabic Only</option>
+                    <option value="en">English Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Image Generation */}
+            <div className="border-t border-border-subtle pt-4">
+              <h4 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-1.5">
+                <Icon name="image" className="text-sm" /> Image Generation
+              </h4>
+              <div className="grid md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Image Provider</label>
+                  <select 
+                    defaultValue={((config.ai_content_settings as Record<string, string>)?.image_provider) || "dall-e"}
+                    className={inputClass}
+                  >
+                    <option value="dall-e">OpenAI DALL-E 3</option>
+                    <option value="imagen">Google Imagen</option>
+                    <option value="midjourney">Midjourney (via API)</option>
+                    <option value="flux">Flux</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Default Style</label>
+                  <select 
+                    defaultValue={((config.ai_content_settings as Record<string, string>)?.default_image_style) || "product_clean"}
+                    className={inputClass}
+                  >
+                    <option value="product_clean">Clean Product Shot</option>
+                    <option value="lifestyle">Lifestyle Scene</option>
+                    <option value="comparison">Before/After</option>
+                    <option value="ad_creative">Ad Creative</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1.5">Default Size</label>
+                  <select 
+                    defaultValue={((config.ai_content_settings as Record<string, string>)?.default_image_size) || "1024x1024"}
+                    className={inputClass}
+                  >
+                    <option value="1024x1024">1024×1024 (Square)</option>
+                    <option value="1080x1080">1080×1080 (Instagram)</option>
+                    <option value="1080x1920">1080×1920 (Story/Reel)</option>
+                    <option value="1920x1080">1920×1080 (Landscape)</option>
+                  </select>
+                </div>
               </div>
             </div>
           </Card>

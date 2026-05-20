@@ -176,13 +176,14 @@ export async function POST(
           updateData.hashtags = result.hashtags || [...(result.hashtags_en || []), ...(result.hashtags_ar || [])];
         }
         if (result.caption) updateData.caption = result.caption;
-        if (result.seo_keywords_en) {
-          updateData.generation_params = {
-            ...asset.generation_params,
-            seo_keywords_en: result.seo_keywords_en,
-            seo_keywords_ar: result.seo_keywords_ar,
-          };
-        }
+
+        // Store SEO + generation metadata
+        const genParams: Record<string, unknown> = { ...((asset.generation_params as Record<string, unknown>) || {}) };
+        if (result.seo_keywords_en) genParams.seo_keywords_en = result.seo_keywords_en;
+        if (result.seo_keywords_ar) genParams.seo_keywords_ar = result.seo_keywords_ar;
+        if (result.metadata_title) genParams.metadata_title = result.metadata_title;
+        if (result.metadata_description) genParams.metadata_description = result.metadata_description;
+        updateData.generation_params = genParams;
 
         const { data: updated } = await supabase
           .from("content_assets")
@@ -190,6 +191,21 @@ export async function POST(
           .eq("id", asset.id)
           .select()
           .single();
+
+        // For description type: also write SEO metadata back to the products table
+        if (contentType === "description") {
+          const productUpdates: Record<string, unknown> = {};
+          if (result.metadata_title) productUpdates.metadata_title = String(result.metadata_title).slice(0, 70);
+          if (result.metadata_description) productUpdates.metadata_description = String(result.metadata_description).slice(0, 160);
+          
+          if (Object.keys(productUpdates).length > 0) {
+            await supabase
+              .from("products")
+              .update(productUpdates)
+              .eq("id", id)
+              .eq("merchant_id", user.id);
+          }
+        }
 
         return NextResponse.json({
           asset: updated || asset,
@@ -256,22 +272,70 @@ function buildPrompt(
 
   // Default prompts by content type
   if (contentType === "description") {
+    // Build supplier-specific context
+    let supplierContext = "";
+    const supplier = (product.supplier as string) || "unknown";
+    
+    if (supplier === "cj" || supplier === "cjdropshipping") {
+      supplierContext = `
+## Supplier Context (CJ Warehouse)
+- Ships from: CJ regional warehouse (faster than direct China)
+- Estimated delivery to Saudi Arabia: 5-10 business days
+- Quality: Pre-checked by CJ quality team before shipping
+- Returns: 30-day return supported
+${product.weight ? `- Product Weight: ${product.weight}g` : ""}
+${product.cj_category_name ? `- Category: ${product.cj_category_name}` : ""}
+${(product.variants as unknown[])?.length ? `- Variants: ${(product.variants as unknown[]).length} options available` : ""}
+
+## CJ-Specific Rules
+- Highlight faster delivery (5-10 days vs typical 15-30 days from China)
+- Mention quality inspection before shipping
+- NEVER mention "CJ" or "CJDropshipping" in the output — write as your own brand`;
+    } else if (supplier === "aliexpress") {
+      supplierContext = `
+## Supplier Context (AliExpress)
+- Ships from: China (various sellers)
+- Estimated delivery to Saudi Arabia: 7-20 business days (varies by shipping method)
+- Note: Product titles from AliExpress often contain spam keywords — clean them up
+
+## AliExpress-Specific Rules
+- REMOVE spam keywords: "hot sale", "free shipping", "best price", "2024 new", "dropshipping"
+- Rewrite the title to be natural and SEO-friendly
+- Do NOT copy AliExpress descriptions — write original content
+- NEVER mention "AliExpress" in the output — write as your own brand
+- Convert any Chinese sizing to international/Saudi standards`;
+    }
+
+    const originalDesc = product.description_en
+      ? `- Original Description: ${(product.description_en as string).slice(0, 500)}`
+      : "";
+
+    const brandSection = branding
+      ? `
+## Brand Context
+- Brand: ${branding.brand_name || "N/A"}
+- Tone: ${branding.tone || "professional"}
+- Tagline: ${branding.tagline || ""}
+- Target Audience: ${branding.target_audience || "Saudi consumers"}`
+      : "";
+
+    const langInstruction = language === "both"
+      ? "BOTH Arabic and English"
+      : language === "ar" ? "Arabic" : "English";
+
     return `You are an expert Saudi Arabian e-commerce copywriter. You write compelling product descriptions optimized for Salla and Zid stores, targeting Saudi consumers.
 
 ## Product Information
 - Name: ${product.title_en || product.title_ar || "Unknown"}
 - Category: ${product.category || "General"}
 - Price: SAR ${product.retail_price || "N/A"}
-- Supplier: ${product.supplier || "Unknown"}
-${branding ? `
-## Brand Context
-- Brand: ${branding.brand_name || "N/A"}
-- Tone: ${branding.tone || "professional"}
-- Tagline: ${branding.tagline || ""}
-- Target Audience: ${branding.target_audience || "Saudi consumers"}` : ""}
+- Tags: ${((product.tags as string[]) || []).join(", ") || "None"}
+${originalDesc}
+${supplierContext}
+${brandSection}
 
 ## Instructions
-Write the following in ${language === "both" ? "BOTH Arabic and English" : language === "ar" ? "Arabic" : "English"}:
+Write the following in ${langInstruction}:
 
 1. **Product Title** (max 80 characters, SEO-optimized, include key feature)
 2. **Product Description** (150-300 words):
@@ -280,8 +344,10 @@ Write the following in ${language === "both" ? "BOTH Arabic and English" : langu
    - Material/specification details
    - Call-to-action
    - Natural keyword integration
-3. **Hashtags** (5 relevant hashtags per language)
-4. **SEO Keywords** (5 comma-separated keywords per language)
+3. **SEO Meta Title** (max 70 characters — concise, keyword-rich, for Google search results)
+4. **SEO Meta Description** (max 160 characters — compelling snippet with CTA for search engines)
+5. **Hashtags** (5 relevant hashtags per language)
+6. **SEO Keywords** (5 comma-separated keywords per language)
 
 ## Rules
 - Arabic must be natural Saudi dialect-friendly (Modern Standard Arabic with Saudi flavor)
@@ -290,6 +356,8 @@ Write the following in ${language === "both" ? "BOTH Arabic and English" : langu
 - Mention fast shipping to Saudi Arabia
 - Use emojis sparingly (max 3 per description)
 - Convert any imperial measurements to metric
+- metadata_title MUST be ≤70 characters
+- metadata_description MUST be ≤160 characters
 
 ## Output Format
 Return ONLY valid JSON:
@@ -298,6 +366,8 @@ Return ONLY valid JSON:
   "title_en": "...",
   "description_ar": "...",
   "description_en": "...",
+  "metadata_title": "SEO title ≤70 chars",
+  "metadata_description": "SEO description ≤160 chars with CTA",
   "hashtags_ar": ["...", "..."],
   "hashtags_en": ["...", "..."],
   "seo_keywords_ar": "...",

@@ -453,11 +453,20 @@ export default function ProductEditorPage() {
                     }`} />
                   </button>
                 </div>
-                {/* AI Generate button (disabled stub) */}
+                {/* AI Generate */}
                 <div className="pt-2 border-t border-border">
-                  <Button variant="secondary" size="sm" disabled title="Coming soon — AI content generation">
-                    <Icon name="auto_awesome" className="text-sm" /> ✨ Generate with AI (Coming Soon)
-                  </Button>
+                  <AIGenerateSection
+                    productId={product.id}
+                    onApply={(result) => {
+                      if (result.title_en) setTitleEn(result.title_en);
+                      if (result.title_ar) setTitleAr(result.title_ar);
+                      if (result.description_en) setDescEn(result.description_en);
+                      if (result.description_ar) setDescAr(result.description_ar);
+                      if (result.metadata_title) setMetaTitle(result.metadata_title);
+                      if (result.metadata_description) setMetaDesc(result.metadata_description);
+                      setToast({ type: "success", message: "AI content applied! Review and save." });
+                    }}
+                  />
                 </div>
               </div>
             </Card>
@@ -961,6 +970,274 @@ export default function ProductEditorPage() {
           </Card>
         </div>
       </div>
+    </>
+  );
+}
+
+// ─── AI Generate Section Component ───
+interface AIResult {
+  title_en?: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
+  metadata_title?: string;
+  metadata_description?: string;
+  hashtags_en?: string[];
+  hashtags_ar?: string[];
+  seo_keywords_en?: string;
+  seo_keywords_ar?: string;
+}
+
+function AIGenerateSection({
+  productId,
+  onApply,
+}: {
+  productId: string;
+  onApply: (result: AIResult) => void;
+}) {
+  const [contentType, setContentType] = useState<string>("description");
+  const [generating, setGenerating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [result, setResult] = useState<AIResult | null>(null);
+  const [prompt, setPrompt] = useState<string>("");
+  const [error, setError] = useState("");
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setError("");
+    setResult(null);
+
+    try {
+      const res = await fetch(`/api/products/${productId}/ai-generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: contentType, language: "both" }),
+      });
+
+      const data = await res.json();
+
+      if (data.generated) {
+        setResult(data.generated);
+        setShowPreview(true);
+      } else if (data.prompt) {
+        setPrompt(data.prompt);
+        setShowPreview(true);
+      } else if (data.error) {
+        setError(data.error);
+      }
+    } catch {
+      setError("Failed to connect. Check n8n configuration.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <select
+          value={contentType}
+          onChange={(e) => setContentType(e.target.value)}
+          className="px-2 py-1.5 bg-surface border border-border rounded-md text-xs text-text outline-none focus:border-accent"
+        >
+          <option value="description">📝 Description + SEO</option>
+          <option value="social_post">📱 Social Post</option>
+          <option value="carousel">🎠 Carousel</option>
+          <option value="reel">🎬 Reel Script</option>
+        </select>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleGenerate}
+          disabled={generating}
+        >
+          {generating ? (
+            <>
+              <span className="w-3 h-3 border border-accent/30 border-t-accent rounded-full animate-spin inline-block" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Icon name="auto_awesome" className="text-sm" /> ✨ Generate with AI
+            </>
+          )}
+        </Button>
+      </div>
+
+      {error && (
+        <p className="text-xs text-error mt-2">{error}</p>
+      )}
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Icon name="auto_awesome" className="text-accent text-lg" />
+                <h3 className="text-lg font-semibold text-text">AI Generated Content</h3>
+              </div>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="p-1 rounded-md hover:bg-surface-sunken text-text-muted"
+              >
+                <Icon name="close" className="text-lg" />
+              </button>
+            </div>
+
+            {result ? (
+              <div className="space-y-4">
+                {/* Titles */}
+                {(result.title_en || result.title_ar) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {result.title_en && (
+                      <div>
+                        <label className="text-xs font-medium text-text-muted uppercase mb-1 block">Title (English)</label>
+                        <p className="text-sm text-text bg-surface-sunken rounded-lg p-3">{result.title_en}</p>
+                      </div>
+                    )}
+                    {result.title_ar && (
+                      <div>
+                        <label className="text-xs font-medium text-text-muted uppercase mb-1 block">Title (Arabic)</label>
+                        <p className="text-sm text-text bg-surface-sunken rounded-lg p-3" dir="rtl">{result.title_ar}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Descriptions */}
+                {(result.description_en || result.description_ar) && (
+                  <div className="space-y-3">
+                    {result.description_en && (
+                      <div>
+                        <label className="text-xs font-medium text-text-muted uppercase mb-1 block">Description (English)</label>
+                        <div className="text-sm text-text bg-surface-sunken rounded-lg p-3 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                          {result.description_en}
+                        </div>
+                      </div>
+                    )}
+                    {result.description_ar && (
+                      <div>
+                        <label className="text-xs font-medium text-text-muted uppercase mb-1 block">Description (Arabic)</label>
+                        <div className="text-sm text-text bg-surface-sunken rounded-lg p-3 whitespace-pre-wrap max-h-40 overflow-y-auto" dir="rtl">
+                          {result.description_ar}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* SEO Metadata */}
+                {(result.metadata_title || result.metadata_description) && (
+                  <div className="border border-accent/20 rounded-lg p-4 bg-accent/5">
+                    <h4 className="text-xs font-medium text-accent uppercase mb-3 flex items-center gap-1">
+                      <Icon name="search" className="text-xs" /> SEO Metadata
+                    </h4>
+                    {result.metadata_title && (
+                      <div className="mb-2">
+                        <label className="text-[10px] text-text-muted block">Meta Title ({result.metadata_title.length}/70)</label>
+                        <p className="text-sm text-text font-medium">{result.metadata_title}</p>
+                      </div>
+                    )}
+                    {result.metadata_description && (
+                      <div>
+                        <label className="text-[10px] text-text-muted block">Meta Description ({result.metadata_description.length}/160)</label>
+                        <p className="text-xs text-text-secondary">{result.metadata_description}</p>
+                      </div>
+                    )}
+
+                    {/* SERP Preview */}
+                    <div className="mt-3 bg-white dark:bg-gray-900 rounded-lg p-3 border border-border">
+                      <p className="text-[10px] text-text-muted mb-1 uppercase font-medium">Google Preview</p>
+                      <div className="text-[#1a0dab] dark:text-blue-400 text-sm font-medium truncate">{result.metadata_title || "Product Title"}</div>
+                      <div className="text-[#006621] dark:text-green-400 text-xs truncate mt-0.5">store.salla.sa › products</div>
+                      <div className="text-xs text-[#545454] dark:text-gray-400 mt-0.5 line-clamp-2">{result.metadata_description}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Hashtags */}
+                {(result.hashtags_en?.length || result.hashtags_ar?.length) ? (
+                  <div>
+                    <label className="text-xs font-medium text-text-muted uppercase mb-2 block">Hashtags</label>
+                    <div className="flex flex-wrap gap-1">
+                      {(result.hashtags_en || []).map((tag, i) => (
+                        <span key={`en-${i}`} className="px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full text-xs">
+                          {tag.startsWith("#") ? tag : `#${tag}`}
+                        </span>
+                      ))}
+                      {(result.hashtags_ar || []).map((tag, i) => (
+                        <span key={`ar-${i}`} className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-full text-xs" dir="rtl">
+                          {tag.startsWith("#") ? tag : `#${tag}`}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-3 border-t border-border">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      onApply(result);
+                      setShowPreview(false);
+                    }}
+                    className="flex-1"
+                  >
+                    <Icon name="check" className="text-sm" /> Apply to Product
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setShowPreview(false);
+                      handleGenerate();
+                    }}
+                  >
+                    <Icon name="refresh" className="text-sm" /> Regenerate
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPreview(false)}
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            ) : prompt ? (
+              <div className="space-y-4">
+                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                  <p className="text-sm text-yellow-500 font-medium mb-1">⚠️ n8n Not Configured</p>
+                  <p className="text-xs text-text-secondary">
+                    Configure your n8n webhook URLs in Admin → Settings → AI Content Engine.
+                    Below is the prompt that will be sent:
+                  </p>
+                </div>
+                <div className="bg-surface-sunken rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <pre className="text-xs text-text-secondary whitespace-pre-wrap font-mono">{prompt}</pre>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(prompt);
+                    }}
+                    className="flex-1"
+                  >
+                    <Icon name="content_copy" className="text-sm" /> Copy Prompt
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </Card>
+        </div>
+      )}
     </>
   );
 }

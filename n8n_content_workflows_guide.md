@@ -16,10 +16,18 @@
 
 ---
 
-## Setup: Configure Webhook URLs in DropLinker
+## Setup: Configure Webhook URLs
 
-After building each workflow, copy the webhook URL and save it in your DropLinker database:
+There are **two ways** to configure your webhook URLs:
 
+### Option 1: Admin Panel (Recommended)
+Go to **Admin → Settings → AI Content Engine** and paste your webhook URLs into:
+- WF5: Description Generator
+- WF8: Social Content Generator
+- WF9: Auto-Publisher (Cron)
+- WF10: Image Generator
+
+### Option 2: SQL (Manual)
 ```sql
 -- Run in Supabase SQL Editor
 INSERT INTO platform_config (key, value, description)
@@ -38,10 +46,26 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
 
 ---
 
+## SQL Migrations
+
+| Migration File | When to Run | What It Does |
+|---|---|---|
+| `phase_content_automation.sql` | First | Creates all tables, enums, RLS, and 7 text templates |
+| `phase_content_image_templates.sql` | After the above | Adds 5 image generation template presets |
+
+---
+
 ## WF5: AI Product Description Generator
 
 ### What It Does
-Takes a product and generates bilingual (Arabic + English) title, description, hashtags, and SEO keywords using your chosen LLM.
+Takes a product and generates bilingual (Arabic + English) title, description, SEO metadata, hashtags, and SEO keywords using your chosen LLM.
+
+### Supplier-Aware Prompts
+The API automatically builds supplier-specific prompts:
+- **CJDropshipping products:** Prompt includes CJ warehouse context (5-10 day shipping, quality inspection, weight/dimensions)
+- **AliExpress products:** Prompt includes spam-keyword removal rules, title rewriting guidance, sizing conversion
+
+> ⚠️ Both prompt variants include: "NEVER mention the supplier name in the output"
 
 ### Trigger
 **Webhook** — receives POST from DropLinker at `/webhook/wf5-description`
@@ -148,6 +172,8 @@ Return the parsed result to DropLinker:
   "title_ar": "{{ $json.title_ar }}",
   "description_en": "{{ $json.description_en }}",
   "description_ar": "{{ $json.description_ar }}",
+  "metadata_title": "{{ $json.metadata_title }}",
+  "metadata_description": "{{ $json.metadata_description }}",
   "hashtags_en": {{ $json.hashtags_en }},
   "hashtags_ar": {{ $json.hashtags_ar }},
   "seo_keywords_en": "{{ $json.seo_keywords_en }}",
@@ -156,6 +182,8 @@ Return the parsed result to DropLinker:
   "model": "{{ $json.model }}"
 }
 ```
+
+> **Important:** The DropLinker API will automatically write `metadata_title` and `metadata_description` back to the `products` table for Salla/Zid SEO sync.
 
 ---
 
@@ -278,54 +306,129 @@ POST https://graph.facebook.com/v18.0/{{ page_id }}/media_publish
 
 ---
 
-## WF10: AI Image Generator (Optional)
+## WF10: AI Image Generator
 
 ### What It Does
-Generates marketing images using AI (Gemini Imagen, DALL-E, etc.) and uploads to Supabase Storage.
+Generates marketing images using AI (DALL-E, Gemini Imagen, etc.) from pre-built prompt templates and uploads to Supabase Storage.
 
 ### Trigger
 **Webhook** — POST at `/webhook/wf10-image-generate`
+
+### Available Image Templates
+Run `phase_content_image_templates.sql` to seed these presets:
+
+| Template | Category | Prompt Pattern |
+|---|---|---|
+| Clean Product Shot | `product_photo` | White bg, studio lighting, e-commerce style |
+| Lifestyle Scene | `lifestyle` | Saudi home, natural lighting, editorial |
+| Before/After Comparison | `comparison` | Split image, problem vs solution |
+| Instagram Story Ad | `ad_creative` | 9:16 ratio, typography, gradient, urgency |
+| Carousel Slide Design | `carousel_slide` | 1:1 ratio, feature focus, minimal |
 
 ### Flow
 ```
 [Webhook] → [Build Image Prompt] → [Image API] → [Upload to Supabase Storage] → [Save asset URL] → [Respond]
 ```
 
-### Image API Options
+### Step 1: Build Image Prompt (Code Node)
+```javascript
+const body = $input.first().json;
+let prompt = body.image_prompt_template || body.prompt;
 
-**Option A: OpenAI DALL-E**
+// Fill placeholders
+if (body.product) {
+  prompt = prompt.replace(/\{\{product_name\}\}/g, body.product.title_en || '');
+  prompt = prompt.replace(/\{\{price\}\}/g, String(body.product.retail_price || ''));
+  prompt = prompt.replace(/\{\{category\}\}/g, body.product.category || '');
+}
+
+// Append brand context if available
+if (body.branding?.brand_colors?.length) {
+  prompt += `, brand colors: ${body.branding.brand_colors.join(', ')}`;
+}
+
+return [{ json: { prompt, size: body.size || '1024x1024' } }];
+```
+
+### Step 2: Image API Options
+
+**Option A: OpenAI DALL-E 3**
 ```
 POST https://api.openai.com/v1/images/generations
 {
   "model": "dall-e-3",
   "prompt": "{{ $json.prompt }}",
   "n": 1,
-  "size": "1024x1024",
+  "size": "{{ $json.size }}",
   "quality": "standard"
 }
 ```
 
 **Option B: Google Imagen (via Vertex AI)**
 - Use HTTP Request to call Vertex AI Imagen endpoint
+- Requires Google Cloud credentials
 
-### Upload to Supabase Storage
+**Option C: Flux (via Replicate)**
+```
+POST https://api.replicate.com/v1/predictions
+{
+  "model": "black-forest-labs/flux-schnell",
+  "input": { "prompt": "{{ $json.prompt }}" }
+}
+```
+
+### Step 3: Upload to Supabase Storage
 ```
 POST https://YOUR-SUPABASE-URL.supabase.co/storage/v1/object/content-assets/{{ filename }}
 Headers: Authorization: Bearer SERVICE_ROLE_KEY
 Body: binary image data
 ```
 
+### Step 4: Respond with URL
+```json
+{
+  "image_url": "https://YOUR-SUPABASE-URL.supabase.co/storage/v1/object/public/content-assets/{{ filename }}",
+  "provider": "dall-e",
+  "model": "dall-e-3",
+  "prompt_used": "{{ $json.prompt }}"
+}
+```
+
+---
+
+## Admin Panel Settings Reference
+
+The AI Content Engine settings in **Admin → Settings** control:
+
+| Setting | Key | Default | Description |
+|---|---|---|---|
+| WF5 URL | `n8n_webhooks.wf5_description` | — | Description generator webhook |
+| WF8 URL | `n8n_webhooks.wf8_social_content` | — | Social content generator webhook |
+| WF9 URL | `n8n_webhooks.wf9_auto_publish` | — | Auto-publisher cron webhook |
+| WF10 URL | `n8n_webhooks.wf10_image_generate` | — | Image generator webhook |
+| AI Provider | `ai_content_settings.default_provider` | `gemini` | Default LLM provider |
+| AI Model | `ai_content_settings.default_model` | `gemini-2.0-flash` | Default model name |
+| Language | `ai_content_settings.default_language` | `both` | `both`, `ar`, or `en` |
+| Image Provider | `ai_content_settings.image_provider` | `dall-e` | Image generation provider |
+| Image Style | `ai_content_settings.default_image_style` | `product_clean` | Default template style |
+| Image Size | `ai_content_settings.default_image_size` | `1024x1024` | Default output dimensions |
+
 ---
 
 ## Testing Checklist
 
 - [ ] WF5: Send test webhook with product data → verify JSON response with bilingual content
-- [ ] WF5: Check content_assets table updated with generated content
+- [ ] WF5: Verify response includes `metadata_title` (≤70 chars) and `metadata_description` (≤160 chars)
+- [ ] WF5: Test with CJ product → verify prompt mentions CJ warehouse, fast shipping
+- [ ] WF5: Test with AliExpress product → verify prompt removes spam keywords
+- [ ] WF5: Check `products` table updated with SEO metadata after generation
 - [ ] WF8: Test social_post type → verify caption + hashtags
 - [ ] WF8: Test carousel type → verify 5 slides returned
 - [ ] WF8: Test reel type → verify script + voiceover
 - [ ] WF9: Insert a test scheduled_post with `scheduled_at = NOW()` → verify cron picks it up
+- [ ] WF10: Test with "Clean Product Shot" template → verify image prompt filled correctly
 - [ ] WF10: Send image prompt → verify image URL returned + stored in Supabase
+- [ ] Admin: Verify all settings editable in Admin → Settings → AI Content Engine
 
 ---
 
@@ -347,7 +450,8 @@ Body: binary image data
     "supplier": "aliexpress",
     "retail_price": 89.99,
     "supplier_cost": 35.00,
-    "images": ["https://..."]
+    "images": ["https://..."],
+    "description_en": "Original description from supplier..."
   },
   "branding": {
     "brand_name": "TechZone",
@@ -369,11 +473,45 @@ Body: binary image data
   "title_ar": "سماعات لاسلكية مميزة مع إلغاء الضوضاء",
   "description_en": "Experience crystal-clear audio...",
   "description_ar": "استمتع بصوت نقي وواضح...",
+  "metadata_title": "Premium ANC Wireless Earbuds | Fast Shipping to KSA",
+  "metadata_description": "Shop premium noise-cancelling wireless earbuds with 5-day delivery to Saudi Arabia. Crystal-clear sound, 30-hour battery. Order now!",
   "hashtags_en": ["#WirelessEarbuds", "#SaudiTech", "#FreeShipping"],
   "hashtags_ar": ["#سماعات_لاسلكية", "#تقنية", "#شحن_مجاني"],
   "seo_keywords_en": "wireless earbuds, bluetooth earphones, ANC headphones",
   "seo_keywords_ar": "سماعات لاسلكية, سماعات بلوتوث, إلغاء الضوضاء",
   "provider": "gemini",
   "model": "gemini-2.0-flash"
+}
+```
+
+### WF10 Incoming Payload
+```json
+{
+  "asset_id": "uuid",
+  "product_id": "uuid",
+  "merchant_id": "uuid",
+  "content_type": "image",
+  "product": {
+    "title_en": "Wireless Earbuds",
+    "retail_price": 89.99,
+    "category": "Electronics"
+  },
+  "branding": {
+    "brand_name": "TechZone",
+    "brand_colors": ["#1a1a2e", "#e94560"]
+  },
+  "image_prompt_template": "Professional product photography of {{product_name}}, centered on pure white background...",
+  "size": "1024x1024",
+  "prompt": "Professional product photography of Wireless Earbuds, centered on pure white background..."
+}
+```
+
+### WF10 Expected Response
+```json
+{
+  "image_url": "https://your-supabase.supabase.co/storage/v1/object/public/content-assets/gen_abc123.png",
+  "provider": "dall-e",
+  "model": "dall-e-3",
+  "prompt_used": "Professional product photography of Wireless Earbuds..."
 }
 ```
