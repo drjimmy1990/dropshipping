@@ -323,18 +323,23 @@ export async function getCJProductDetail(
   // Fetch shipping options (if variants exist)
   let shippingOptions: NormalizedShippingOption[] = [];
   if (product.variants?.length > 0) {
+    const firstVid = product.variants[0].vid;
+    console.log(`[CJ Detail] Product ${pid}: fetching freight for vid=${firstVid}, destination=${countryCode || "SA"}`);
     try {
       shippingOptions = await getCJFreight(
         {
           startCountryCode: "CN",
           endCountryCode: countryCode || "SA",
-          products: [{ vid: product.variants[0].vid, quantity: 1 }],
+          products: [{ vid: firstVid, quantity: 1 }],
         },
         token,
       );
-    } catch (err) {
-      console.warn(`[CJ] Failed to fetch freight for ${pid}:`, err);
+      console.log(`[CJ Detail] Freight result: ${shippingOptions.length} options`);
+    } catch (err: any) {
+      console.warn(`[CJ Detail] ❌ Freight failed for ${pid}:`, err.message);
     }
+  } else {
+    console.warn(`[CJ Detail] Product ${pid}: no variants found, skipping freight calc`);
   }
 
   return normalizeCJProductDetail(product, shippingOptions);
@@ -349,25 +354,43 @@ export async function getCJFreight(
   request: CJFreightRequest,
   token: string,
 ): Promise<NormalizedShippingOption[]> {
-  const data = await cjRequest<CJFreightOption[]>(
-    "/logistic/freightCalculate",
-    "POST",
-    token,
-    request as unknown as Record<string, unknown>,
-  );
+  console.log(`[CJ Freight] Calculating: ${request.startCountryCode} → ${request.endCountryCode}, products:`, JSON.stringify(request.products));
 
-  if (!Array.isArray(data) || data.length === 0) {
+  try {
+    const data = await cjRequest<CJFreightOption[]>(
+      "/logistic/freightCalculate",
+      "POST",
+      token,
+      request as unknown as Record<string, unknown>,
+    );
+
+    console.log(`[CJ Freight] Response type: ${typeof data}, isArray: ${Array.isArray(data)}, length: ${Array.isArray(data) ? data.length : 'N/A'}`);
+
+    if (!data) {
+      console.warn("[CJ Freight] No data returned (null/undefined)");
+      return [];
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn("[CJ Freight] Empty or non-array data:", JSON.stringify(data).substring(0, 500));
+      return [];
+    }
+
+    const options = data.map((opt) => ({
+      name: opt.logisticName || "Standard Shipping",
+      price: parseFloat(String(opt.logisticPrice || 0)) || 0,
+      currency: "USD",
+      estimatedDays: opt.logisticAging ? `${opt.logisticAging} days` : "N/A",
+      trackingAvailable: true,
+      serviceCode: opt.logisticKey,
+    }));
+
+    console.log(`[CJ Freight] ✅ Found ${options.length} shipping options:`, options.map(o => `${o.name}: $${o.price}`).join(", "));
+    return options;
+  } catch (err: any) {
+    console.error(`[CJ Freight] ❌ Error calculating freight:`, err.message);
     return [];
   }
-
-  return data.map((opt) => ({
-    name: opt.logisticName || "Standard Shipping",
-    price: parseFloat(String(opt.logisticPrice || 0)) || 0,
-    currency: "USD",
-    estimatedDays: opt.logisticAging ? `${opt.logisticAging} days` : "N/A",
-    trackingAvailable: true,
-    serviceCode: opt.logisticKey,
-  }));
 }
 
 // ---------- Orders ----------
