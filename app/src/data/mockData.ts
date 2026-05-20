@@ -21,6 +21,7 @@ export const DASHBOARD_NAV_ITEMS: readonly NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
   { label: "Product Discovery", href: "/dashboard/products/discover", icon: "explore" },
   { label: "My Products", href: "/dashboard/products", icon: "inventory_2" },
+  { label: "Content Hub", href: "/dashboard/content", icon: "auto_awesome" },
   { label: "Orders", href: "/dashboard/orders", icon: "receipt_long" },
   { label: "Wallet", href: "/dashboard/wallet", icon: "account_balance_wallet" },
   { label: "Integrations", href: "/dashboard/integrations", icon: "hub" },
