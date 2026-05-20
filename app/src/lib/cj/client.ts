@@ -457,15 +457,17 @@ function normalizeCJProductDetail(
     }));
 
     // Sum inventory across all warehouses
-    const totalStock = v.inventories?.reduce(
-      (sum, inv) => sum + (inv.totalInventory || 0), 0
-    ) || 0;
+    const hasInventoryData = v.inventories && v.inventories.length > 0;
+    const totalStock = hasInventoryData
+      ? v.inventories!.reduce((sum, inv) => sum + (inv.totalInventory || 0), 0)
+      : -1; // -1 means "unknown" — CJ often doesn't return inventory in detail endpoint
 
     return {
       skuId: v.vid,
       price: parseFloat(String(v.variantSellPrice || raw.sellPrice || 0)) || 0,
-      stock: totalStock > 0,
-      stockQuantity: totalStock,
+      // If no inventory data, assume in-stock (CJ only lists available products)
+      stock: totalStock === -1 ? true : totalStock > 0,
+      stockQuantity: totalStock === -1 ? 100 : totalStock,
       properties,
     };
   });
@@ -475,6 +477,11 @@ function normalizeCJProductDetail(
   const rawSellPrice = parseFloat(String(raw.sellPrice || 0)) || 0;
   const minPrice = prices.length > 0 ? Math.min(...prices) : rawSellPrice;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : rawSellPrice;
+
+  // Determine stock: if any variant has stock OR if there are no variants but product exists
+  const hasStock = variants.length > 0
+    ? variants.some((v) => v.stock)
+    : true; // Product exists = assume in stock
 
   return {
     id: raw.pid as unknown as number,
@@ -499,6 +506,6 @@ function normalizeCJProductDetail(
     variants,
     properties: [],
     shippingOptions,
-    stock: variants.some((v) => v.stock),
+    stock: hasStock,
   };
 }
