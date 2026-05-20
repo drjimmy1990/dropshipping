@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
-> **Last Updated:** 2026-05-20
-> **Current Phase:** Phase 7A ✅ (CJDropshipping Integration — Search ✅, Import ✅, Categories ✅, Freight ✅, Auth Connect ✅, Discovery UI ✅)
+> **Last Updated:** 2026-05-20 (Session 15)
+> **Current Phase:** Phase 7A ✅ (CJDropshipping Integration — Search ✅, Import ✅, Categories ✅, Freight ✅, Auth Connect ✅, Discovery UI ✅, SAR Currency ✅, Feed Tabs ✅, Auto-Deploy ✅)
 
 ---
 
@@ -455,24 +455,29 @@
 
 ## 📋 Phase 7 — Expand (CJ + Zid)
 
-### CJDropshipping ✅ (Session 14)
+### CJDropshipping ✅ (Session 14 + 15)
 - [x] CJ API v2.0 documentation scraped and saved (`lib/cj/API_REFERENCE.md`)
 - [x] CJ TypeScript type definitions (`lib/cj/types.ts`)
 - [x] CJ API client with token management, search, detail, freight, normalization (`lib/cj/client.ts`)
 - [x] CJ product search route (`GET /api/suppliers/cj/search`)
 - [x] CJ product detail route (`GET /api/suppliers/cj/product`)
 - [x] CJ product import route (`POST /api/suppliers/cj/import`) — mirrors AliExpress pattern
-- [x] CJ categories route (`GET /api/suppliers/cj/categories`)
+- [x] CJ categories route (`GET /api/suppliers/cj/categories`) — 3-level tree with 24h cache
+- [x] CJ feed tabs route (`GET /api/suppliers/cj/feeds`) — Trending, New, Video + API-derived category tabs
 - [x] CJ freight calculator route (`POST /api/suppliers/cj/freight`)
 - [x] CJ auth connect endpoint (`POST /api/auth/cj/connect`) — validates token + saves to supplier_accounts
 - [x] `NormalizedProduct.supplier` widened to `"aliexpress" | "cj"`
-- [x] `useProductSearch` hook updated with supplier-aware routing
+- [x] `useProductSearch` hook updated with supplier-aware routing + CJ-specific params
 - [x] Discovery page supplier dropdown (AliExpress / CJDropshipping toggle)
+- [x] CJ-specific sort dropdown (Best Match, Most Popular, Price ASC/DESC, Newest, Most Stock)
 - [x] Product cards show dynamic supplier badge
 - [x] AliExpress feed tabs only show when AliExpress selected
+- [x] CJ feed tabs show when CJ selected (Trending, New Arrivals, Video, category-based)
 - [x] Integrations page CJ connect card + modal
-- [x] CJ Price Normalization (Enforced SAR conversion ×3.75 everywhere)
-- [x] Automated VPS Deployment Webhook (aaPanel + PM2 + GitHub)
+- [x] **USD → SAR price normalization** — All CJ prices multiplied by 3.75 at the normalization layer
+- [x] **Search filter conversion** — Min/max price inputs (SAR) divided by 3.75 before CJ API call
+- [x] **Shipping costs in SAR** — `getCJFreight` returns SAR values
+- [x] **Import stores SAR** — `supplier_currency: "SAR"` in CJ import route
 - [ ] CJ order creation API (Phase 6 — auto-fulfillment engine)
 - [ ] CJ webhook listener
 - [ ] Supplier fallback logic (AliExpress → CJ)
@@ -539,6 +544,15 @@
 
 ---
 
+## ✅ DevOps — Auto-Deployment (Session 15)
+
+- [x] **aaPanel WebHook plugin** installed and configured for auto-deployment
+- [x] **GitHub Webhook** configured on `drjimmy1990/dropshipping` repo → triggers aaPanel hook on push
+- [x] **Deployment script** pulls latest code, builds Next.js, restarts PM2, clears Nginx cache
+- [x] **PM2 environment fix** — `HOME=/root` + `PM2_HOME=/root/.pm2` added to webhook script
+
+---
+
 ## Blockers & Notes
 
 > [!WARNING]
@@ -557,4 +571,7 @@
 > **Admin Panel Security:** All `/admin/*` routes protected by auth guard (checks login + `merchants.role = 'admin'`). Feed sync API requires admin role. Sign out uses full page reload to clear client state.
 
 > [!NOTE]
-> **CJDropshipping fully integrated.** API client supports product search, detail, import, categories, and freight calculation. Discovery page has a supplier dropdown to switch between AliExpress and CJ. CJ products normalize to the same `NormalizedProduct` interface, so all existing product management flows work automatically. See `app/src/lib/cj/API_REFERENCE.md` for full endpoint documentation.
+> **CJDropshipping fully integrated.** API client supports product search, detail, import, categories, and freight calculation. All CJ prices are normalized to SAR (×3.75) at the client layer. Discovery page has a supplier dropdown to switch between AliExpress and CJ. CJ products normalize to the same `NormalizedProduct` interface, so all existing product management flows work automatically. See `app/src/lib/cj/API_REFERENCE.md` for full endpoint documentation.
+
+> [!NOTE]
+> **Auto-Deployment:** Every `git push origin main` triggers an aaPanel webhook that automatically pulls code, builds the Next.js app, restarts PM2, and clears the Nginx cache. See `deployment_guide.md` for the full setup.

@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
 > **Date:** 2026-05-20  
-> **Status:** Phase 7A, 7B, 4E-Store & Multi-Store Complete ✅ — CJDropshipping Integration (API Client ✅, Search ✅, Import ✅, Categories ✅, Freight ✅, Discovery UI ✅, Auth Connect ✅) + Zid Platform + Store Settings + Multi-Store Support
+> **Status:** Phase 7A, 7B, 4E-Store, Multi-Store & DevOps Complete ✅ — CJDropshipping Integration (API Client ✅, Search ✅, Import ✅, Categories ✅, Freight ✅, Discovery UI ✅, Auth Connect ✅, SAR Normalization ✅, Feed Tabs ✅) + Zid Platform + Store Settings + Multi-Store + Auto-Deployment
 
 ---
 
@@ -50,8 +50,12 @@
 | **CJ auth connect** | ✅ Working — `POST /api/auth/cj/connect` validates token + saves to supplier_accounts |
 | **Dual-supplier Discovery UI** | ✅ Working — Dropdown switcher (AliExpress / CJDropshipping) with independent search flows |
 | **Dynamic supplier badges** | ✅ Working — Product cards show "AliExpress" or "CJDropshipping" badge |
-| **CJ Price Normalization** | ✅ Working — Enforced SAR conversion (×3.75) for all prices, variants, shipping, and search filters |
-| **Automated VPS Deployment** | ✅ Working — aaPanel Webhook integration with PM2 auto-restart and NGINX cache clearing |
+| **CJ SAR currency normalization** | ✅ Working — All CJ prices ×3.75 (USD→SAR) at normalization layer |
+| **CJ search filter conversion** | ✅ Working — SAR price inputs ÷3.75 before CJ API call |
+| **CJ shipping in SAR** | ✅ Working — `getCJFreight` returns SAR-converted values |
+| **CJ feed tabs** | ✅ Working — Trending, New Arrivals, Video + category-based tabs |
+| **CJ-specific sorting** | ✅ Working — Best Match, Most Popular, Price ASC/DESC, Newest, Most Stock |
+| **Auto-deployment (CI/CD)** | ✅ Working — aaPanel webhook triggers on `git push` → pull, build, restart PM2, clear cache |
 
 ---
 

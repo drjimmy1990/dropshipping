@@ -1,10 +1,10 @@
 # DropLinker — Project Status
 
-> **Last Updated:** 2026-05-20 (Session 14 — CJDropshipping Integration)
+> **Last Updated:** 2026-05-20 (Session 15 — CJ SAR Normalization + Auto-Deployment)
 
 ## Executive Summary
 
-**What exists:** A fully functional Next.js 16 platform with Supabase backend (21 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, **CJDropshipping API integration with full search/import pipeline**, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, **automatic AliExpress token refresh** when tokens expire, and a **dual-supplier Product Discovery UI** with an AliExpress/CJ dropdown switcher. Merchants can sign up, connect their Salla or Zid store (or multiple stores!), **connect their CJDropshipping account**, receive orders via webhooks, browse products from **both AliExpress and CJDropshipping**, **select shipping methods, import products with accurate cost tracking, change shipping carriers post-import, push them to Salla or Zid, and manage everything including images and pricing**. All prices are enforced in SAR.
+**What exists:** A fully functional Next.js 16 platform with Supabase backend (21 tables, RLS, wallet functions), Salla OAuth integration, **Zid OAuth integration**, order webhook processing, a complete AliExpress API integration with full Discovery UI, **CJDropshipping API integration with full search/import pipeline and SAR currency normalization**, a **production-ready push-to-store pipeline for both Salla and Zid**, **2-way Salla product/category sync**, a **full product management hub** with interactive image management, a **shipping-inclusive import wizard** with selectable shipping methods, an **interactive shipping editor on the product detail page** for post-import carrier changes, **automatic AliExpress token refresh** when tokens expire, a **dual-supplier Product Discovery UI** with an AliExpress/CJ dropdown switcher with CJ-specific feed tabs, categories, and sorting, and **automated CI/CD via aaPanel webhook** triggered on every `git push`. All prices across both suppliers are enforced in SAR.
 
 **What's next:** AI content generation (bilingual descriptions), trending products & smart discovery, CJ order fulfillment engine, Zid webhooks. Payment gateways (Phase 5) are **blocked** pending Moyasar/Stripe access — all other phases proceed in parallel.
 
@@ -185,7 +185,7 @@
 | n8n WF3: Tracking sync (poll → push to Salla) | 🟡 P1 |
 | n8n WF4: Stock sync (cron every 6h) | 🟡 P1 |
 
-### ✅ Phase 7A: CJDropshipping Integration (Session 14)
+### ✅ Phase 7A: CJDropshipping Integration (Session 14 + 15)
 
 | Task | Status | Notes |
 |---|---|---|
@@ -195,18 +195,23 @@
 | CJ product search API | ✅ | `GET /api/suppliers/cj/search` |
 | CJ product detail API | ✅ | `GET /api/suppliers/cj/product` |
 | CJ product import | ✅ | `POST /api/suppliers/cj/import` — mirrors AliExpress pattern, pushes to Salla/Zid |
-| CJ categories API | ✅ | `GET /api/suppliers/cj/categories` — flat + tree output |
+| CJ categories API | ✅ | `GET /api/suppliers/cj/categories` — 3-level tree with 24h cache |
+| CJ feed tabs API | ✅ | `GET /api/suppliers/cj/feeds` — Trending, New, Video + category tabs |
 | CJ freight calculator | ✅ | `POST /api/suppliers/cj/freight` |
 | CJ auth connect endpoint | ✅ | `POST /api/auth/cj/connect` — validates token, saves to supplier_accounts |
 | `NormalizedProduct.supplier` widened | ✅ | Now supports `"aliexpress" \| "cj"` |
 | `useProductSearch` supplier routing | ✅ | Routes search/detail/import to correct supplier API |
 | Discovery page supplier dropdown | ✅ | AliExpress/CJ switcher with independent search flows |
+| CJ-specific sort options | ✅ | Best Match, Most Popular, Price ASC/DESC, Newest, Most Stock |
+| CJ feed tabs in Discovery | ✅ | Trending, New Arrivals, Video, category-based |
 | Product card dynamic badge | ✅ | Shows "AliExpress" or "CJDropshipping" per product |
 | Integrations page CJ connect card | ✅ | CJ account connection modal with token validation |
+| **USD → SAR normalization** | ✅ | All CJ prices ×3.75 at normalization layer |
+| **Search filter SAR→USD conversion** | ✅ | Min/max inputs (SAR) ÷3.75 before CJ API call |
+| **Shipping in SAR** | ✅ | `getCJFreight` returns SAR-converted values |
+| **Import stores SAR** | ✅ | `supplier_currency: "SAR"` in CJ import route |
 | CJ order creation API | 📋 | Phase 3 — order fulfillment engine |
 | CJ webhooks | 📋 | Phase 4 — webhook event listener |
-| **CJ Price Normalization** | ✅ | Enforced SAR conversion (×3.75) for all prices, variants, shipping, and search filters |
-| **Automated Deployment** | ✅ | aaPanel Webhook integration with PM2 auto-restart and NGINX cache clearing |
 
 ### ✅ Phase 7B: Zid Platform Integration (Session 10 & 12)
 
@@ -247,6 +252,15 @@
 | **API Refactoring** | ✅ | Push, Edit, Delete ops iterate over `product_listings` |
 | **Frontend Updates** | ✅ | Product list and details use `product_listings` for sync status |
 | **Database Migration** | ✅ | `phase13_multi_store.sql` executed |
+
+### ✅ DevOps: Auto-Deployment (Session 15)
+
+| Task | Status | Notes |
+|---|---|---|
+| aaPanel WebHook plugin | ✅ | Installed and configured for `Deploy_Dropshipping` hook |
+| GitHub Webhook | ✅ | `drjimmy1990/dropshipping` → triggers aaPanel on push |
+| Deployment script | ✅ | `git pull` → `npm run build` → `pm2 restart` → clear Nginx cache |
+| PM2 environment fix | ✅ | `HOME=/root` + `PM2_HOME=/root/.pm2` in webhook script |
 
 ---
 
@@ -328,6 +342,6 @@ The following E2E checklist covers the entire merchant workflow across Salla & Z
 | `aliexpress_api_reference.md` | All 47 feeds, tested filters, field mappings |
 | `PRODUCT.md` | Brand personality, design principles |
 | `DESIGN.md` | Design system tokens |
-| `deployment_guide.md` | VPS deployment instructions |
+| `deployment_guide.md` | VPS deployment + auto-deploy webhook instructions |
 | `supabase/schema.sql` | Complete database schema (21 tables) |
 | `app/src/lib/cj/API_REFERENCE.md` | CJ API v2.0 endpoint reference |

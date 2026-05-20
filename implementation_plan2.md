@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-20 (Session 14 — CJDropshipping Integration)
+> **Last Updated:** 2026-05-20 (Session 15 — CJ SAR Normalization + Auto-Deployment)
 
 ## 1. Business Concept
 
@@ -27,8 +27,7 @@ graph LR
 | **Payment Gateways** | Moyasar + Stripe + Manual Bank Transfer |
 | **Language** | Bilingual (Arabic + English) with switcher |
 | **Target Market** | Saudi merchants initially, architecture ready for Gulf-wide expansion |
-| **Supplier Priority** | AliExpress first, then CJDropshipping (Both Integrated ✅) |
-| **Base Currency** | SAR (Saudi Riyal) is strictly enforced. All USD supplier prices (e.g., CJDropshipping) are auto-converted to SAR (×3.75) via the normalization layer. |
+| **Supplier Priority** | AliExpress first (developer account exists), then CJDropshipping |
 | **Commission** | Configurable from admin panel (commission % per tier OR subscription-only) |
 | **Backend Logic** | n8n workflows (replaces BullMQ + Redis) |
 | **AliExpress Status** | ✅ Developer account already exists |
@@ -661,20 +660,27 @@ sequenceDiagram
 ### Phase 7 — Expand (CJ + Zid)
 > Second supplier + second platform
 
-- [x] CJDropshipping API v2.0 documentation scraped ✅ (Session 14)
+- [x] CJ API v2.0 documentation scraped ✅ (Session 14)
 - [x] CJ TypeScript types (`lib/cj/types.ts`) ✅
 - [x] CJ API client (`lib/cj/client.ts`) — token mgmt, search, detail, freight, normalization ✅
 - [x] CJ product search route (`GET /api/suppliers/cj/search`) ✅
 - [x] CJ product detail route (`GET /api/suppliers/cj/product`) ✅
 - [x] CJ product import route (`POST /api/suppliers/cj/import`) — mirrors AliExpress pattern ✅
-- [x] CJ categories route (`GET /api/suppliers/cj/categories`) ✅
+- [x] CJ categories route (`GET /api/suppliers/cj/categories`) — 3-level tree with 24h cache ✅
+- [x] CJ feed tabs route (`GET /api/suppliers/cj/feeds`) — Trending, New, Video + category tabs ✅
 - [x] CJ freight calculator route (`POST /api/suppliers/cj/freight`) ✅
 - [x] CJ auth connect endpoint (`POST /api/auth/cj/connect`) — validates token + saves ✅
 - [x] `NormalizedProduct.supplier` widened to `"aliexpress" | "cj"` ✅
-- [x] `useProductSearch` hook updated with supplier-aware routing ✅
+- [x] `useProductSearch` hook updated with supplier-aware routing + CJ-specific params ✅
 - [x] Discovery page supplier dropdown (AliExpress / CJDropshipping toggle) ✅
+- [x] CJ-specific sort options (Best Match, Most Popular, Price ASC/DESC, Newest, Most Stock) ✅
+- [x] CJ feed tabs in Discovery (Trending, New Arrivals, Video, category-based) ✅
 - [x] Product cards show dynamic supplier badge ✅
 - [x] Integrations page CJ connect card + modal ✅
+- [x] **USD → SAR price normalization** — All CJ prices ×3.75 at normalization layer ✅ (Session 15)
+- [x] **Search filter conversion** — Min/max inputs (SAR) ÷3.75 before CJ API call ✅
+- [x] **Shipping in SAR** — `getCJFreight` returns SAR values ✅
+- [x] **Import stores SAR** — `supplier_currency: "SAR"` in CJ import route ✅
 - [x] Zid OAuth 2.0 flow + dual-header API client ✅ (Session 10)
 - [x] Product push to Zid (bilingual name, images, variants) ✅
 - [x] Import + push routes updated for dual-platform support ✅
@@ -684,6 +690,14 @@ sequenceDiagram
 - [ ] Zid webhook integration (blocked: app not selectable in dashboard)
 - [ ] Multi-store selector UI
 - [ ] Supplier fallback logic (AE → CJ)
+
+### Phase 7C — DevOps: Auto-Deployment (✅ COMPLETE)
+> Automated CI/CD pipeline via aaPanel webhook
+
+- [x] aaPanel WebHook plugin installed and configured (`Deploy_Dropshipping`)
+- [x] GitHub Webhook configured on `drjimmy1990/dropshipping` — triggers on every push
+- [x] Deployment script: `git pull` → `npm run build` → `pm2 restart` → clear Nginx cache
+- [x] PM2 environment fix: `HOME=/root` + `PM2_HOME=/root/.pm2` in webhook script
 
 ### Phase 8 — i18n + Polish
 > Bilingual + production readiness
