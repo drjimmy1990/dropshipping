@@ -1,7 +1,7 @@
 # DropLinker — Development TODO
 
-> **Last Updated:** 2026-05-20 (Session 15)
-> **Current Phase:** Phase 7A ✅ (CJDropshipping Integration — Search ✅, Import ✅, Categories ✅, Freight ✅, Auth Connect ✅, Discovery UI ✅, SAR Currency ✅, Feed Tabs ✅, Auto-Deploy ✅)
+> **Last Updated:** 2026-05-20 (Session 17)
+> **Current Phase:** Phase 4C-AI ✅ (AI Content Engine — Admin UI ✅, Webhook Config ✅, Content Automation DB ✅, n8n Guide ✅) + Bugfixes (Zid Categories ✅, Bank Transfers FK ✅, Deploy Script ✅)
 
 ---
 
@@ -71,6 +71,7 @@
 - [x] Approve button → calls `wallet_credit()` RPC (atomic balance + transaction)
 - [x] Reject button → updates transfer status + admin notes
 - [x] Rollback on RPC failure (reverts to `pending`)
+- [x] **Fixed FK ambiguity** — separate query pattern instead of merchants join (Session 17)
 
 ---
 
@@ -168,37 +169,20 @@
 - [x] "Feeds" nav item in admin sidebar
 - [x] `platform_feeds` table SQL migration created (`supabase/migrations/platform_feeds.sql`)
 - [x] **Live sync from AliExpress API** (`POST /api/suppliers/aliexpress/feeds/sync`)
-  - Calls `aliexpress.ds.feedname.get` to pull all live feeds with product counts
-  - Auto-categorizes and assigns emojis to new feeds
-  - Merges with existing config (preserves admin edits)
 - [x] **Inline emoji editor** per feed (39 emoji options in dropdown)
 - [x] **Editable display names** (English + Arabic) + category per feed
 - [x] **Enable All / Disable All** quick action buttons
 - [x] **Search bar** to filter admin feed table
 - [x] **Save to database** — admin saves persist to `platform_config` table (key: `feed_config`)
-  - `PUT /api/suppliers/aliexpress/feeds` — admin-only save endpoint
-  - `GET /api/suppliers/aliexpress/feeds` — reads from DB, falls back to defaults
-  - Merchant discovery page now reflects admin-configured feeds
 
 ### Auth & Security
 - [x] **Admin auth guard** on `/admin/*` layout
-  - Checks Supabase auth + `merchants.role = 'admin'`
-  - Unauthenticated users → redirect to `/auth/login`
-  - Non-admin merchants → redirect to `/dashboard`
-  - Loading spinner while verifying
-- [x] **Role-based login redirect**
-  - `signIn()` checks merchant role after authentication
-  - `role = 'admin'` → redirect to `/admin`
-  - `role = 'merchant'` → redirect to `/dashboard`
-- [x] **Feed sync route protected** — requires `role = 'admin'` (POST `/api/suppliers/aliexpress/feeds/sync`)
+- [x] **Role-based login redirect** (admin → `/admin`, merchant → `/dashboard`)
+- [x] **Feed sync route protected** — requires `role = 'admin'`
 - [x] **Sign Out** uses `window.location.href` (full page reload clears Supabase client state)
 
 ### Landing Page Fixes
-- [x] **Fixed "Get Started" 404** — all buttons linked to `/auth/register` (doesn't exist), now link to `/auth/login`
-  - Landing page navbar "Get Started" button
-  - Landing page CTA "Get Started Now" banner
-  - Features page navbar + CTA button
-  - Pricing page navbar
+- [x] **Fixed "Get Started" 404** — all buttons linked to `/auth/login`
 
 ### API Routes
 - [x] `GET /api/suppliers/aliexpress/feeds` — returns admin-configured feeds from DB
@@ -219,7 +203,7 @@
 
 ## ✅/📋 Phase 4C — Product Import & My Products
 
-> **Goal:** Import products to merchant stores — Salla pipeline complete, AI content next
+> **Goal:** Import products to merchant stores — Salla pipeline complete, AI content partially done
 
 ### Salla Push-to-Store Pipeline ✅
 - [x] Salla API client (`lib/salla/client.ts`) with OAuth2 auto-refresh
@@ -238,11 +222,21 @@
 - [ ] Multi-step import wizard: select variants → set retail price → generate description
 - [ ] Choose target store (multi-store support)
 
-### AI Content (n8n WF5 — Next Priority)
-- [ ] Product title + images → GPT/Gemini → bilingual description
+### AI Content Engine (Session 16-17) ✅ Infrastructure
+- [x] Content automation DB schema (`phase_content_automation.sql`) — 7 new tables
+- [x] Image generation templates DB (`phase_content_image_templates.sql`)
+- [x] Admin AI Content Engine settings card (`AIContentEngineCard` in admin settings)
+- [x] Editable n8n webhook URLs (masked secret inputs) stored in `platform_config`
+- [x] LLM API key management (Gemini, OpenAI, Claude) in admin panel
+- [x] n8n workflow guide for content generation (`n8n_content_workflows_guide.md`)
+- [x] Supplier-aware prompt templates (CJ vs AliExpress differences)
+- [x] SEO metadata generation logic (meta_title, meta_description, url_slug)
+- [x] Product editor "Generate with AI" button (UI ready, needs n8n WF backend)
+- [ ] **n8n WF5 build & test** — product → GPT/Gemini → bilingual AR/EN descriptions
+- [ ] **Social media post generation** — Instagram carousels, UGC-style content
+- [ ] **Auto-scheduling to social media** — Blotato or direct API tokens
 - [ ] Product inbox: AI-generated → pending_review → approved → published
 - [ ] Unit conversion (inch → cm, lb → kg)
-- [ ] SEO tag generation
 
 ### My Products Page ✅
 - [x] List products from `products` table with images
@@ -285,7 +279,7 @@
 - [x] Delete with Salla cleanup
 
 ### Image Management ✅
-- [x] Full interactive Images tab (was read-only, now fully interactive)
+- [x] Full interactive Images tab
 - [x] Delete individual images with hover overlay
 - [x] Set any image as main (move to position [0])
 - [x] Reorder images (move left/right buttons)
@@ -296,36 +290,19 @@
 - [x] Sidebar enhancements: AliExpress source link, image count
 
 ### Import Wizard with Shipping ✅
-- [x] DB columns added: `shipping_cost`, `shipping_method`, `estimated_delivery` on products table
-- [x] `Product` TypeScript interface updated with shipping fields
-- [x] AliExpress shipping options displayed as **selectable radio buttons** with cost + delivery estimates
-- [x] Merchant selects shipping method before import (first option auto-selected)
+- [x] DB columns added: `shipping_cost`, `shipping_method`, `estimated_delivery`
+- [x] AliExpress shipping options displayed as selectable radio buttons
+- [x] Merchant selects shipping method before import
 - [x] Cost summary breakdown: product cost + shipping = total landed cost
 - [x] Shipping cost saved to DB via import API route
-- [x] Profit calculation includes shipping cost (retail − supplier − shipping = profit)
-- [x] Retail price auto-suggestion factors in shipping (30% markup on landed cost)
+- [x] Profit calculation includes shipping cost
+- [x] Retail price auto-suggestion factors in shipping (30% markup)
 - [x] "Below cost" warning when retail price < landed cost
-- [x] Product Editor pricing tab shows: supplier cost, shipping cost, total landed cost, retail price
-- [x] Full data chain: modal → hook → API → DB (shipping_cost, shipping_method, estimated_delivery)
-
-### Product Editor — Shipping Options ✅
-- [x] **"AliExpress Shipping Options" section** in Pricing tab of product editor
-- [x] **"Refresh Options" button** fetches live freight data from AliExpress
-- [x] **Radio-button shipping selector** with carrier name, cost, delivery estimate, tracking status
-- [x] Selecting a shipping method auto-updates shipping cost, method, and estimated delivery
-- [x] Auto-suggest retail price adjustment when shipping cost significantly increases landed cost
-- [x] **New API route:** `GET /api/products/[id]/shipping` — fetches live AliExpress shipping options
-- [x] `shipping_cost`, `shipping_method`, `estimated_delivery` added to PATCH whitelist
-- [x] Error toast feedback when shipping fetch fails (token expired, unavailable delivery)
 
 ### AliExpress Token Auto-Refresh ✅
-- [x] **Automatic token refresh** when `IllegalAccessToken` error detected
+- [x] Automatic token refresh when `IllegalAccessToken` error detected
 - [x] `refreshAccessToken()` function in `lib/aliexpress/client.ts`
-- [x] Uses stored `aliexpress_refresh_token` from `platform_config` table
-- [x] Calls AliExpress `/rest/auth/token/refresh` endpoint with HMAC-SHA256 signing
-- [x] Auto-saves new access_token + refresh_token to `platform_config`
 - [x] Retry logic in `apiRequest()` — transparent single retry on token expiry
-- [x] Non-retryable if using a provider-supplied token (prevents infinite loops)
 - [ ] Local-first import (save as draft, push to Salla later) — **Phase 5 enhancement**
 
 ---
@@ -341,9 +318,6 @@
 - [x] Extend whitelisted fields list in PATCH API router
 - [x] Salla update synchronization: categories, SEO title & description, status
 - [x] Zid update synchronization: categories, keywords, stock, status
-- [x] Sync category list payload mapping on Zid create (`mapDroplinkerToZid`)
-- [x] Sync category updates payload mapping on Zid edit (`updateZidProduct`)
-- [x] Clear and comprehensive E2E Verification Flow documented and validated
 
 ---
 
@@ -363,13 +337,8 @@
 - [ ] n8n cron job (daily): query AliExpress `DS_BestSelling` + `DS_HotProduct` feeds
 - [ ] Track order volume changes day-over-day for trend detection
 - [ ] Store curated products in `trend_reports` table with trend metadata
-- [ ] CJDropshipping bestseller integration (when CJ is ready)
+- [ ] CJDropshipping bestseller integration
 - [ ] Combine data from multiple suppliers for cross-supplier trending
-
-### Trending Badges in Discovery
-- [ ] "🔥 Trending" badge on products in Discovery page that match trending criteria
-- [ ] "📈 Rising" badge for products with accelerating sales velocity
-- [ ] Sort option: "Trending" in Discovery page sort dropdown
 
 ### Weekly Trend Reports
 - [ ] n8n cron job (weekly): compile trending categories + products → `trend_reports`
@@ -381,7 +350,6 @@
 - [ ] Track which products Saudi merchants import most → feed recommendations
 - [ ] Category performance by country (SA focus)
 - [ ] Seasonal trend detection (Ramadan, Eid, Saudi National Day, Back-to-School)
-- [ ] Competitor-aware suggestions (what's selling on other SA Salla stores)
 
 ---
 
@@ -390,10 +358,10 @@
 > **Goal:** Real money flow
 
 ### Bank Transfer
-- [ ] Upload receipt to Supabase Storage
-- [ ] Insert `bank_transfers` record (status: pending)
-- [ ] Admin approval → `wallet_credit()` call
-- [ ] Admin rejection → update status + notes
+- [x] Upload receipt to Supabase Storage
+- [x] Insert `bank_transfers` record (status: pending)
+- [x] Admin approval → `wallet_credit()` call
+- [x] Admin rejection → update status + notes
 - [ ] n8n WF7: Notify merchant on approval/rejection
 
 ### Moyasar Integration
@@ -440,7 +408,6 @@
 - [ ] Update `fulfillments` table with tracking_number + carrier
 - [ ] Push tracking to Salla/Zid store via API
 - [ ] Update order status → "shipped"
-- [ ] Notify merchant (optional)
 
 ### Stock Sync (n8n WF4)
 - [ ] Cron: check stock every 6h
@@ -449,7 +416,6 @@
 - [ ] If out-of-stock + `auto_hide_when_low`: mark inactive
 - [ ] Update Salla store listing (hide/show)
 - [ ] Log to `stock_sync_logs`
-- [ ] Notify merchant on stock alerts
 
 ---
 
@@ -493,6 +459,7 @@
 - [x] DB migration: `platform_store_id` + `partner_token` columns
 - [x] `.env.local` — ZID_CLIENT_ID, ZID_CLIENT_SECRET, ZID_OAUTH_URL
 - [x] Zid category sync route (`GET /api/zid/categories` + `useZidCategories`)
+- [x] **Fixed:** Zid categories endpoint `/products/categories` → `/managers/store/categories` (Session 17)
 - [ ] Webhook registration (order.created, order.updated) — ⏸️ blocked: app not selectable in Zid partner dashboard
 - [ ] Tracking push to Zid
 
@@ -544,12 +511,13 @@
 
 ---
 
-## ✅ DevOps — Auto-Deployment (Session 15)
+## ✅ DevOps — Auto-Deployment (Session 15 + 17)
 
 - [x] **aaPanel WebHook plugin** installed and configured for auto-deployment
 - [x] **GitHub Webhook** configured on `drjimmy1990/dropshipping` repo → triggers aaPanel hook on push
 - [x] **Deployment script** pulls latest code, builds Next.js, restarts PM2, clears Nginx cache
 - [x] **PM2 environment fix** — `HOME=/root` + `PM2_HOME=/root/.pm2` added to webhook script
+- [x] **Fixed race condition** — PM2 now stops before build, starts after (prevents middleware-manifest.json crash) (Session 17)
 
 ---
 
@@ -559,19 +527,16 @@
 > **Cannot test `order.created` webhooks from Salla test store.** The test store doesn't trigger real order webhooks. Build the n8n branches with pinned test data and validate when a real merchant installs the app.
 
 > [!NOTE]
-> **Salla Postman collections available** for API reference:
-> - `Merchant APIs V2.7.6.postman_collection.json`
-> - `Store APIs 1.0.postman_collection.json`
-> - `Shipments APIs V2.0.6.postman_collection.json`
+> **AliExpress API fully operational.** 47 feeds available with 500K+ products. Text search, feed browse, product detail, and freight calculation all tested and working. Auto-refresh on token expiry is now built-in.
 
 > [!NOTE]
-> **AliExpress API fully operational.** 47 feeds available with 500K+ products. Text search, feed browse, product detail, and freight calculation all tested and working. Auto-refresh on token expiry is now built-in. See `aliexpress_api_reference.md` for full filter/feed documentation.
+> **CJDropshipping fully integrated.** API client supports product search, detail, import, categories, and freight calculation. All CJ prices are normalized to SAR (×3.75) at the client layer. See `app/src/lib/cj/API_REFERENCE.md` for full endpoint documentation.
 
 > [!NOTE]
-> **Admin Panel Security:** All `/admin/*` routes protected by auth guard (checks login + `merchants.role = 'admin'`). Feed sync API requires admin role. Sign out uses full page reload to clear client state.
+> **Admin Panel Security:** All `/admin/*` routes protected by auth guard (checks login + `merchants.role = 'admin'`). Feed sync API requires admin role.
 
 > [!NOTE]
-> **CJDropshipping fully integrated.** API client supports product search, detail, import, categories, and freight calculation. All CJ prices are normalized to SAR (×3.75) at the client layer. Discovery page has a supplier dropdown to switch between AliExpress and CJ. CJ products normalize to the same `NormalizedProduct` interface, so all existing product management flows work automatically. See `app/src/lib/cj/API_REFERENCE.md` for full endpoint documentation.
+> **AI Content Engine Infrastructure:** Admin panel has full webhook URL + API key management. DB schema supports content automation (7 tables), image templates, social media scheduling. n8n workflow guide written (`n8n_content_workflows_guide.md`). Actual n8n WF5 workflow still needs to be built and tested.
 
 > [!NOTE]
-> **Auto-Deployment:** Every `git push origin main` triggers an aaPanel webhook that automatically pulls code, builds the Next.js app, restarts PM2, and clears the Nginx cache. See `deployment_guide.md` for the full setup.
+> **Auto-Deployment:** Every `git push origin main` triggers an aaPanel webhook. Deploy script now uses stop-before-build pattern to prevent PM2 race conditions. See `deployment_guide.md` for setup.

@@ -1,7 +1,7 @@
 # DropLinker — Implementation Plan (v2)
 
 > **Temporary Name:** DropLinker (until domain is finalized)
-> **Last Updated:** 2026-05-20 (Session 15 — CJ SAR Normalization + Auto-Deployment)
+> **Last Updated:** 2026-05-20 (Session 17 — AI Content Engine + Admin Webhooks + Bugfixes)
 
 ## 1. Business Concept
 
@@ -284,14 +284,25 @@ Steps:
 5. Optionally update store listing via Salla/Zid API
 ```
 
-### WF5: AI Product Description
+### WF5: AI Content Generation Engine (Session 16-17 — Infrastructure ✅, n8n Workflow 📋)
 ```
-Trigger: HTTP Request from Next.js (POST /n8n/ai-describe)
+Trigger: HTTP Request from Next.js (POST to configurable webhook URL)
 Steps:
-1. Receive product title, images, category
-2. Call GPT-4o / Gemini with prompt: "Write SEO product description in [AR/EN]"
-3. Return generated title + description
-4. (Optional) Also generate SEO keywords
+1. Receive product title, images, category, supplier_type (aliexpress/cj)
+2. Select supplier-aware prompt template (CJ vs AliExpress differences)
+3. Call GPT-4o / Gemini / Claude with bilingual prompt:
+   - Arabic: Saudi-market optimized, SAR pricing, local shipping context
+   - English: SEO-optimized, professional product copy
+4. Generate SEO metadata: meta_title, meta_description, url_slug
+5. Return generated content + SEO data + quality score
+6. (Optional) Generate social media posts (Instagram carousels, UGC)
+
+Infrastructure Ready:
+- Admin UI: AIContentEngineCard with webhook URL management + LLM key storage
+- DB Schema: phase_content_automation.sql (7 tables) + phase_content_image_templates.sql
+- Guide: n8n_content_workflows_guide.md with full workflow specs
+- Product Editor: "Generate with AI" button ready to call webhook
+Pending: Actual n8n workflow build + test
 ```
 
 ### WF6: Notification Dispatcher
@@ -321,7 +332,7 @@ Steps:
 
 ## 7. Database Schema
 
-> ✅ **IMPLEMENTED** — 21 tables deployed to Supabase (including `platform_feeds` and `product_listings`). Products table extended with SEO + category columns.
+> ✅ **IMPLEMENTED** — 21+ tables deployed to Supabase (including `platform_feeds`, `product_listings`, and content automation tables). Products table extended with SEO + category columns. Content automation schema adds 7 new tables for AI content generation.
 
 ```mermaid
 erDiagram
@@ -364,6 +375,13 @@ erDiagram
 | 19 | `notifications` | In-app, email, SMS notification records | ✅ |
 | 20 | `platform_feeds` | Curated AliExpress feeds with enable/disable + bilingual names | ✅ |
 | 21 | `product_listings` | Maps products to stores (1:N) with store-specific pricing | ✅ |
+| 22 | `content_generation_queue` | AI content generation job queue | ✅ |
+| 23 | `content_generation_results` | Generated content versions with approval workflow | ✅ |
+| 24 | `social_media_posts` | Scheduled social media posts | ✅ |
+| 25 | `social_media_accounts` | Connected social media platform credentials | ✅ |
+| 26 | `seo_metadata` | Generated SEO metadata per product | ✅ |
+| 27 | `image_generation_templates` | Prompt presets for product image generation | ✅ |
+| 28 | `content_schedules` | Recurring content automation schedules | ✅ |
 
 ### Key Functions
 
@@ -639,12 +657,30 @@ sequenceDiagram
 - [ ] **SA Market Intelligence** — seasonal trends (Ramadan, Eid), category performance
 - [ ] **One-click import** from trending page (reuses existing import wizard)
 
+### Phase 4C-AI — AI Content Engine (✅ Infrastructure COMPLETE, 📋 n8n Workflow Pending)
+> Bilingual AI content generation + social media automation
+
+- [x] Content automation DB schema (`phase_content_automation.sql`) — 7 new tables ✅ (Session 16)
+- [x] Image generation templates DB (`phase_content_image_templates.sql`) ✅ (Session 16)
+- [x] Admin AI Content Engine card (`AIContentEngineCard`) ✅ (Session 16-17)
+- [x] Editable n8n webhook URLs (masked secret inputs) ✅ (Session 17)
+- [x] LLM API key management (Gemini, OpenAI, Claude) ✅ (Session 17)
+- [x] Supplier-aware prompt templates (CJ vs AliExpress) ✅ (Session 16)
+- [x] SEO metadata generation logic ✅ (Session 16)
+- [x] Product editor "Generate with AI" button ✅ (Session 16)
+- [x] n8n workflow guide (`n8n_content_workflows_guide.md`) ✅ (Session 16)
+- [ ] Build n8n WF5 workflow (product → GPT/Gemini → bilingual desc)
+- [ ] Social media post generation (Instagram carousels, UGC)
+- [ ] Social media auto-scheduling (Blotato or direct API)
+- [ ] Product inbox quality gate flow
+
 ### Phase 5 — Wallet & Payments
 > Top-up flow + financial operations
 
-- [ ] Bank transfer: upload receipt → admin approval → wallet_credit()
-- [ ] Moyasar integration (Mada/Visa/MC wallet top-up)
-- [ ] Stripe integration (card top-up)
+- [x] Bank transfer: upload receipt → admin approval → wallet_credit() ✅
+- [x] Bank transfers FK ambiguity fix (separate query pattern) ✅ (Session 17)
+- [ ] Moyasar integration (Mada/Visa/MC wallet top-up) — 🔒 Blocked
+- [ ] Stripe integration (card top-up) — 🔒 Blocked
 - [ ] Transaction history with running balance
 - [ ] Auto top-up (charge when balance < threshold)
 
@@ -685,6 +721,7 @@ sequenceDiagram
 - [x] Product push to Zid (bilingual name, images, variants) ✅
 - [x] Import + push routes updated for dual-platform support ✅
 - [x] Zid category sync (useZidCategories hook + zid_category_id + PATCH/push)
+- [x] **Zid categories endpoint fix** — `/products/categories` → `/managers/store/categories` ✅ (Session 17)
 - [ ] CJ order creation API (auto-fulfillment engine)
 - [ ] CJ webhook listener
 - [ ] Zid webhook integration (blocked: app not selectable in dashboard)
@@ -696,8 +733,9 @@ sequenceDiagram
 
 - [x] aaPanel WebHook plugin installed and configured (`Deploy_Dropshipping`)
 - [x] GitHub Webhook configured on `drjimmy1990/dropshipping` — triggers on every push
-- [x] Deployment script: `git pull` → `npm run build` → `pm2 restart` → clear Nginx cache
+- [x] Deployment script: `git pull` → stop PM2 → `npm run build` → start PM2 → clear Nginx cache
 - [x] PM2 environment fix: `HOME=/root` + `PM2_HOME=/root/.pm2` in webhook script
+- [x] **PM2 race condition fix** — stop before build, start after (prevents middleware-manifest crash) ✅ (Session 17)
 
 ### Phase 8 — i18n + Polish
 > Bilingual + production readiness

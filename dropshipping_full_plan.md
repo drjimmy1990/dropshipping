@@ -1,7 +1,7 @@
 # DropLinker — Full Dropshipping Lifecycle Plan
 
-> **Date:** 2026-05-20  
-> **Status:** Phase 7A, 7B, 4E-Store, Multi-Store & DevOps Complete ✅ — CJDropshipping Integration (API Client ✅, Search ✅, Import ✅, Categories ✅, Freight ✅, Discovery UI ✅, Auth Connect ✅, SAR Normalization ✅, Feed Tabs ✅) + Zid Platform + Store Settings + Multi-Store + Auto-Deployment
+> **Date:** 2026-05-20 (Session 17)  
+> **Status:** Phase 4C-AI Infrastructure Complete ✅ — AI Content Engine (Admin UI ✅, Webhook Config ✅, Content Automation DB ✅, n8n Guide ✅) + CJDropshipping ✅ + Zid Platform ✅ + Store Settings ✅ + Multi-Store ✅ + Auto-Deployment ✅ + Bugfixes (Zid Categories ✅, Bank Transfers FK ✅, Deploy Race Condition ✅)
 
 ---
 
@@ -55,7 +55,13 @@
 | **CJ shipping in SAR** | ✅ Working — `getCJFreight` returns SAR-converted values |
 | **CJ feed tabs** | ✅ Working — Trending, New Arrivals, Video + category-based tabs |
 | **CJ-specific sorting** | ✅ Working — Best Match, Most Popular, Price ASC/DESC, Newest, Most Stock |
-| **Auto-deployment (CI/CD)** | ✅ Working — aaPanel webhook triggers on `git push` → pull, build, restart PM2, clear cache |
+| **Auto-deployment (CI/CD)** | ✅ Working — aaPanel webhook triggers on `git push` → stop PM2, build, start PM2, clear cache |
+| **AI Content Engine — Admin UI** | ✅ Working — `AIContentEngineCard` with webhook URL management + LLM API key storage |
+| **AI Content Engine — DB Schema** | ✅ Working — `phase_content_automation.sql` (7 tables) + `phase_content_image_templates.sql` |
+| **AI Content Engine — n8n Guide** | ✅ Written — `n8n_content_workflows_guide.md` with full workflow specs |
+| **Admin webhook URL management** | ✅ Working — Editable, masked secret inputs for all n8n workflow webhooks |
+| **Zid categories fix** | ✅ Fixed — Endpoint corrected from `/products/categories` → `/managers/store/categories` |
+| **Bank transfers FK fix** | ✅ Fixed — Removed ambiguous merchants FK join, uses separate query pattern |
 
 ---
 
