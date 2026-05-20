@@ -205,6 +205,8 @@
 | Integrations page CJ connect card | ✅ | CJ account connection modal with token validation |
 | CJ order creation API | 📋 | Phase 3 — order fulfillment engine |
 | CJ webhooks | 📋 | Phase 4 — webhook event listener |
+| **CJ Price Normalization** | ✅ | Enforced SAR conversion (×3.75) for all prices, variants, shipping, and search filters |
+| **Automated Deployment** | ✅ | aaPanel Webhook integration with PM2 auto-restart and NGINX cache clearing |
 
 ### ✅ Phase 7B: Zid Platform Integration (Session 10 & 12)
 

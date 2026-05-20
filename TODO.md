@@ -471,6 +471,8 @@
 - [x] Product cards show dynamic supplier badge
 - [x] AliExpress feed tabs only show when AliExpress selected
 - [x] Integrations page CJ connect card + modal
+- [x] CJ Price Normalization (Enforced SAR conversion ×3.75 everywhere)
+- [x] Automated VPS Deployment Webhook (aaPanel + PM2 + GitHub)
 - [ ] CJ order creation API (Phase 6 — auto-fulfillment engine)
 - [ ] CJ webhook listener
 - [ ] Supplier fallback logic (AliExpress → CJ)

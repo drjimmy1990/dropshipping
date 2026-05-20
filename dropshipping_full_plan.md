@@ -50,6 +50,8 @@
 | **CJ auth connect** | ✅ Working — `POST /api/auth/cj/connect` validates token + saves to supplier_accounts |
 | **Dual-supplier Discovery UI** | ✅ Working — Dropdown switcher (AliExpress / CJDropshipping) with independent search flows |
 | **Dynamic supplier badges** | ✅ Working — Product cards show "AliExpress" or "CJDropshipping" badge |
+| **CJ Price Normalization** | ✅ Working — Enforced SAR conversion (×3.75) for all prices, variants, shipping, and search filters |
+| **Automated VPS Deployment** | ✅ Working — aaPanel Webhook integration with PM2 auto-restart and NGINX cache clearing |
 
 ---
 

@@ -27,7 +27,8 @@ graph LR
 | **Payment Gateways** | Moyasar + Stripe + Manual Bank Transfer |
 | **Language** | Bilingual (Arabic + English) with switcher |
 | **Target Market** | Saudi merchants initially, architecture ready for Gulf-wide expansion |
-| **Supplier Priority** | AliExpress first (developer account exists), then CJDropshipping |
+| **Supplier Priority** | AliExpress first, then CJDropshipping (Both Integrated ✅) |
+| **Base Currency** | SAR (Saudi Riyal) is strictly enforced. All USD supplier prices (e.g., CJDropshipping) are auto-converted to SAR (×3.75) via the normalization layer. |
 | **Commission** | Configurable from admin panel (commission % per tier OR subscription-only) |
 | **Backend Logic** | n8n workflows (replaces BullMQ + Redis) |
 | **AliExpress Status** | ✅ Developer account already exists |

@@ -119,16 +119,44 @@ sudo systemctl reload nginx
 1. Go to `https://droplinker.asra3.com/admin/settings` in your browser.
 2. Click the **Connect** button under the AliExpress section.
 3. You should be redirected to AliExpress, prompted to log in, and then successfully redirected back to your settings page!
+## 8. Automated Deployment (GitHub to aaPanel)
 
+To automatically deploy changes when you push to GitHub, you can use the built-in aaPanel WebHook plugin:
 
+1. In aaPanel, go to **App Store** and install **WebHook**.
+2. Open the plugin and click **Add Hook**. Name it `Deploy_Dropshipping`.
+3. Paste the following script:
+
+```bash
+#!/bin/bash
+echo "===================================="
+date --date='0 days ago' "+%Y-%m-%d %H:%M:%S"
+echo "Start Deployment..."
+
+# Tell PM2 where to look for processes
+export HOME=/root
+export PM2_HOME=/root/.pm2
+
+# 1. Pull latest changes
 cd /www/wwwroot/dropshipping
 git pull origin main
-cd app && npm run build
-pm2 restart droplinker
-rm -rf /www/server/nginx/proxy_cache_dir/*
 
-cd /www/wwwroot/dropshipping
-git pull origin main
-cd app && npm run build
-pm2 restart droplinker
-rm -rf /www/server/nginx/proxy_cache_dir/*
+# 2. Build the Next.js app
+cd app
+npm run build
+
+# 3. Restart PM2 process
+/usr/local/bin/pm2 restart droplinker || pm2 restart droplinker
+
+# 4. Clear NGINX Cache
+rm -rf /www/server/nginx/proxy_cache_dir/* 
+
+echo "Deployment Successful!"
+echo "===================================="
+```
+
+4. Click **View Key** to get the webhook URL (e.g. `https://panel.yourdomain.com/hook?access_key=...`).
+5. Go to your GitHub repository -> **Settings** -> **Webhooks** -> **Add webhook**.
+6. Paste the URL, set Content-Type to `application/json`, and save. 
+
+Now, every `git push origin main` will automatically rebuild and restart the app on your VPS.
