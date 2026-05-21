@@ -82,7 +82,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Fetch CJ product detail
-    const product = await getCJProductDetail(cjProductId, cjToken, "SA");
+    let product;
+    try {
+      product = await getCJProductDetail(cjProductId, cjToken, "SA");
+    } catch (apiErr) {
+      console.error("[CJ Import] ❌ Supplier API error:", apiErr);
+      const msg = apiErr instanceof Error ? apiErr.message : "Supplier API unavailable";
+      return NextResponse.json(
+        { error: `Supplier API error: ${msg}` },
+        { status: 502 }
+      );
+    }
 
     // 5. Calculate retail price (CJ prices are in USD)
     const supplierCost = product.price;
@@ -240,7 +250,10 @@ export async function POST(request: NextRequest) {
       pushError,
     });
   } catch (error: any) {
-    console.error("[CJ Import] Unexpected error:", error);
+    console.error("[CJ Import] ❌ Unexpected error:", error);
+    if (error instanceof Error) {
+      console.error("[CJ Import] Stack:", error.stack);
+    }
     return NextResponse.json(
       { error: error.message || "Import failed" },
       { status: 500 }

@@ -75,7 +75,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Fetch full product detail using PLATFORM-level app key
-    const product = await getProductDetail(productId);
+    let product;
+    try {
+      product = await getProductDetail(productId);
+    } catch (apiErr) {
+      console.error("[AliExpress Import] ❌ Supplier API error:", apiErr);
+      const msg = apiErr instanceof Error ? apiErr.message : "Supplier API unavailable";
+      return NextResponse.json(
+        { error: `Supplier API error: ${msg}` },
+        { status: 502 }
+      );
+    }
 
     // 4. Calculate retail price
     const supplierCost = product.price;
@@ -264,7 +274,10 @@ export async function POST(request: NextRequest) {
       pushError,
     });
   } catch (error) {
-    console.error("[Import] Unexpected error:", error);
+    console.error("[AliExpress Import] ❌ Unexpected error:", error);
+    if (error instanceof Error) {
+      console.error("[AliExpress Import] Stack:", error.stack);
+    }
 
     const message =
       error instanceof Error ? error.message : "Import failed";
