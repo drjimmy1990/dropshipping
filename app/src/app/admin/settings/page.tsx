@@ -393,7 +393,7 @@ function AIContentEngineCard({ config, saving, updateConfig }: {
         </div>
         <p className="text-[10px] text-text-muted mt-2">
           <Icon name="info" className="text-xs align-middle mr-0.5" />
-          Paste n8n webhook URLs here. They are stored encrypted and never exposed to the frontend.
+          Paste n8n webhook URLs here. Stored in admin-only platform config — readable only by admins, never by merchants.
         </p>
       </div>
 
