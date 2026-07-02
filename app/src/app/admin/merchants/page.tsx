@@ -9,7 +9,7 @@ export default function MerchantsPage() {
   const [filterPlan, setFilterPlan] = useState("all");
 
   const filtered = merchants.filter((m) => {
-    const matchSearch = m.business_name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (m.business_name || "").toLowerCase().includes(search.toLowerCase()) || (m.email || "").toLowerCase().includes(search.toLowerCase());
     const matchPlan = filterPlan === "all" || m.plan === filterPlan;
     return matchSearch && matchPlan;
   });

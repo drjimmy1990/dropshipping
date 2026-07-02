@@ -143,6 +143,8 @@ export default function WalletPage() {
 
   const balance = wallet?.balance ?? 0;
   const reserved = wallet?.reserved ?? 0;
+  // Available = total balance minus funds reserved against pending orders.
+  const available = Math.max(0, balance - reserved);
 
   // Calculate month's spending from transactions
   const thisMonth = new Date().toISOString().slice(0, 7);
@@ -180,7 +182,7 @@ export default function WalletPage() {
             <Skeleton className="h-10 w-48 mb-4" />
           ) : (
             <div className="text-4xl font-bold text-text mb-4 tracking-tight">
-              SAR {balance.toLocaleString("en", { minimumFractionDigits: 2 })}
+              SAR {available.toLocaleString("en", { minimumFractionDigits: 2 })}
             </div>
           )}
           <div className="flex gap-2">

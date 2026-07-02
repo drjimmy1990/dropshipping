@@ -492,7 +492,7 @@ export default function MyProductsPage() {
                 </tr>
               ) : (
                 filteredProducts.map((p) => {
-                  const { profit, margin } = getProfit(p.retail_price, p.supplier_cost);
+                  const { profit, margin } = getProfit(p.retail_price, p.supplier_cost + (p.shipping_cost || 0));
                   const isLoading = !!actionLoading[p.id];
                   const loadingAction = actionLoading[p.id];
 

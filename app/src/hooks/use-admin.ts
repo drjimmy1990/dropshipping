@@ -19,6 +19,7 @@ export function useAdminMerchants() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
     const { data, error: err } = await supabase
       .from("merchants")
@@ -43,6 +44,7 @@ export function useAdminOrders() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
     const { data, error: err } = await supabase
       .from("orders")
@@ -68,6 +70,7 @@ export function useAdminTransfers() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
     
     // Fetch transfers without joining (avoids FK ambiguity with approved_by)
@@ -151,6 +154,7 @@ export function useAdminRevenue() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
     const { data, error: err } = await supabase
       .from("subscription_tiers")
@@ -176,6 +180,7 @@ export function usePlatformConfig() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
     const { data, error: err } = await supabase
       .from("platform_config")
