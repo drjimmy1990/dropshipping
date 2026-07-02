@@ -444,7 +444,7 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "={{ $env.SUPABASE_URL + '/rest/v1/stores?platform=eq.salla&is_active=eq.true' }}",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/stores?platform=eq.salla&salla_merchant_id=eq.' + $('Route by Event').item.json.body.merchant }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

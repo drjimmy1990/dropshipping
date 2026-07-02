@@ -2,6 +2,20 @@
 
 > Build this workflow manually in n8n, node by node.
 
+> [!WARNING]
+> **The in-app route `/api/webhooks/salla` is the supported, HMAC-verified webhook
+> handler.** This n8n workflow (`wf1-salla-order-webhook.json`) is weaker (static
+> token only, no signature check) and must **not** be imported as-is:
+> - The `app.store.authorize` upsert node hardcodes a single `merchant_id` — there
+>   is no field in the Salla webhook payload that maps to a DropLinker merchant
+>   UUID, so store connection must go through the OAuth flow (`/api/auth/salla`),
+>   not this node.
+> - The `app.uninstalled` deactivation was fixed to scope by `salla_merchant_id`
+>   (it previously deactivated **all** merchants' Salla stores).
+>
+> Prefer the in-app route. Only use this workflow after resolving the merchant
+> mapping and adding signature verification.
+
 ---
 
 ## Overview
