@@ -103,52 +103,39 @@ export function useAdminTransfers() {
     setLoading(false);
   }, []);
 
-  const approve = useCallback(async (transferId: string, adminId: string) => {
-    const supabase = createClient();
-
-    // Find the transfer to get amount + merchant_id
-    const transfer = transfers.find((t) => t.id === transferId);
-    if (!transfer) return false;
-
-    // 1. Update transfer status to approved
-    const { error: updateErr } = await supabase
-      .from("bank_transfers")
-      .update({ status: "approved", approved_by: adminId, reviewed_at: new Date().toISOString() })
-      .eq("id", transferId);
-
-    if (updateErr) return false;
-
-    // 2. Credit the merchant's wallet via RPC (atomic: updates balance + creates transaction)
-    const { error: creditErr } = await supabase.rpc("wallet_credit", {
-      p_merchant_id: transfer.merchant_id,
-      p_amount: transfer.amount,
-      p_method: "bank_transfer",
-      p_description: `Bank transfer approved — Ref: ${transfer.reference_number || transferId.slice(0, 8)}`,
-      p_reference: transferId,
+  // approve/reject run server-side (/api/admin/transfers): the wallet credit
+  // and the transfer status change require admin auth + service role. The admin
+  // identity is derived from the session server-side, not passed from here.
+  const approve = useCallback(async (transferId: string) => {
+    setError(null);
+    const res = await globalThis.fetch("/api/admin/transfers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transferId, action: "approve" }),
     });
-
-    if (creditErr) {
-      console.error("wallet_credit failed:", creditErr.message);
-      // Revert approval status since credit failed
-      await supabase
-        .from("bank_transfers")
-        .update({ status: "pending", approved_by: null, reviewed_at: null })
-        .eq("id", transferId);
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setError(j.error || "Failed to approve transfer");
       return false;
     }
-
     fetch();
     return true;
-  }, [fetch, transfers]);
+  }, [fetch]);
 
-  const reject = useCallback(async (transferId: string, adminId: string, notes: string) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("bank_transfers")
-      .update({ status: "rejected", approved_by: adminId, admin_notes: notes, reviewed_at: new Date().toISOString() })
-      .eq("id", transferId);
-    if (!error) fetch();
-    return !error;
+  const reject = useCallback(async (transferId: string, notes: string) => {
+    setError(null);
+    const res = await globalThis.fetch("/api/admin/transfers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transferId, action: "reject", notes }),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setError(j.error || "Failed to reject transfer");
+      return false;
+    }
+    fetch();
+    return true;
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);

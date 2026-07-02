@@ -69,8 +69,8 @@ export default function TransfersPage() {
                   <div className="text-xl font-bold text-text mb-2">SAR {t.amount.toLocaleString()}</div>
                   {t.status === "pending" ? (
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => user && approve(t.id, user.id)}>Approve</Button>
-                      <Button size="sm" variant="secondary" className="!border-error/30 !text-error hover:!bg-error/10" onClick={() => user && reject(t.id, user.id, "Rejected by admin")}>Reject</Button>
+                      <Button size="sm" onClick={() => user && approve(t.id)}>Approve</Button>
+                      <Button size="sm" variant="secondary" className="!border-error/30 !text-error hover:!bg-error/10" onClick={() => user && reject(t.id, "Rejected by admin")}>Reject</Button>
                     </div>
                   ) : (
                     <Badge variant={t.status === "approved" ? "success" : "error"}>{t.status}</Badge>
