@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { resolveOrigin, verifyOAuthCallback, clearOAuthNonce } from "@/lib/oauth/state";
 
 /**
  * GET /api/auth/salla/callback
@@ -16,9 +17,7 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state"); // This is the DropLinker merchant UUID
   const errorParam = searchParams.get("error");
 
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "droplinker.asra3.com";
-  const proto = request.headers.get("x-forwarded-proto") || "https";
-  const origin = `${proto}://${host}`;
+  const origin = resolveOrigin(request);
 
   // --- Handle errors from Salla (e.g. user denied access) ---
   if (errorParam) {
@@ -32,6 +31,17 @@ export async function GET(request: NextRequest) {
     console.error("[Salla Callback] Missing code or state parameter");
     return NextResponse.redirect(
       new URL(`/dashboard/integrations?error=salla_invalid_callback`, origin)
+    );
+  }
+
+  // --- Verify this callback belongs to the signed-in merchant (CRIT-7) ---
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  const merchantId = verifyOAuthCallback(request, "salla_oauth_nonce", state, user?.id);
+  if (!merchantId) {
+    console.error("[Salla Callback] Session/state mismatch — refusing to attach store");
+    return NextResponse.redirect(
+      new URL(`/dashboard/integrations?error=salla_auth_mismatch`, origin)
     );
   }
 
@@ -106,8 +116,8 @@ export async function GET(request: NextRequest) {
     const sallaMerchantId = String(userInfo.id || userInfo.data?.id || "");
 
     // ========== STEP 3: Upsert store into Supabase ==========
+    // merchantId was verified above against the signed-in session.
     const adminClient = createAdminClient();
-    const merchantId = state; // The DropLinker user UUID we passed as the OAuth state
 
     console.log("[Salla Callback] Saving store for merchant:", merchantId, "Store:", storeName);
 
@@ -171,9 +181,11 @@ export async function GET(request: NextRequest) {
     );
 
     // ========== STEP 4: Redirect to dashboard ==========
-    return NextResponse.redirect(
+    const res = NextResponse.redirect(
       new URL(`/dashboard/integrations?success=salla_connected`, origin)
     );
+    clearOAuthNonce(res, "salla_oauth_nonce");
+    return res;
   } catch (error) {
     console.error("[Salla Callback] Unexpected error:", error);
     return NextResponse.redirect(

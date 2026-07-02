@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveOrigin, buildOAuthState, setOAuthNonce } from "@/lib/oauth/state";
 
 /**
  * GET /api/auth/zid
@@ -58,15 +59,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // 3. Build the callback URL (use forwarded headers behind Nginx proxy)
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "droplinker.asra3.com";
-  const proto = request.headers.get("x-forwarded-proto") || "https";
-  const origin = `${proto}://${host}`;
+  // 3. Build the callback URL (pinned to PUBLIC_BASE_URL when set)
+  const origin = resolveOrigin(request);
   const redirectUri = `${origin}/api/auth/zid/callback`;
 
-  // 4. Use the merchant's DropLinker user ID as the OAuth state parameter
-  //    to map the callback back to the correct merchant
-  const state = user.id;
+  // 4. Bind the OAuth state to the merchant id + a random CSRF nonce
+  const { state, nonce } = buildOAuthState(user.id);
 
   // 5. Build the Zid authorization URL
   const authUrl = new URL(`${oauthUrl}/oauth/authorize`);
@@ -77,5 +75,7 @@ export async function GET(request: NextRequest) {
 
   console.log("[Zid OAuth] Redirecting merchant to Zid authorization:", authUrl.toString());
 
-  return NextResponse.redirect(authUrl.toString());
+  const res = NextResponse.redirect(authUrl.toString());
+  setOAuthNonce(res, "zid_oauth_nonce", nonce);
+  return res;
 }

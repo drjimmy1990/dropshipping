@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
 
 const APP_KEY = process.env.ALIEXPRESS_APP_KEY || "";
@@ -25,6 +25,24 @@ export async function GET(req: NextRequest) {
 
   if (!code) {
     return NextResponse.redirect(new URL("/admin/settings?error=no_code", baseUrl));
+  }
+
+  // --- Admin-only: this callback overwrites the PLATFORM AliExpress tokens,
+  //     so require an authenticated admin session (CRIT-7). ---
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  if (!user) {
+    return NextResponse.redirect(new URL("/auth/login", baseUrl));
+  }
+  const roleClient = createAdminClient();
+  const { data: me } = await roleClient
+    .from("merchants")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (!me || me.role !== "admin") {
+    console.error("[AliExpress Auth] Non-admin attempted to connect platform tokens:", user.id);
+    return NextResponse.redirect(new URL("/admin/settings?error=not_admin", baseUrl));
   }
 
   try {

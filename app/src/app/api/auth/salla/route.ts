@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveOrigin, buildOAuthState, setOAuthNonce } from "@/lib/oauth/state";
 
 /**
  * GET /api/auth/salla
@@ -56,10 +57,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // 3. Build the callback URL (dynamically based on the request origin)
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "droplinker.asra3.com";
-  const proto = request.headers.get("x-forwarded-proto") || "https";
-  const origin = `${proto}://${host}`;
+  // 3. Build the callback URL (pinned to PUBLIC_BASE_URL when set)
+  const origin = resolveOrigin(request);
   const redirectUri = `${origin}/api/auth/salla/callback`;
 
   // 4. Scopes we need from the Salla store
@@ -73,9 +72,8 @@ export async function GET(request: NextRequest) {
     "shippings.read_write",
   ].join(" ");
 
-  // 5. Use the merchant's DropLinker user ID as the OAuth state parameter
-  //    to map the callback back to the correct merchant
-  const state = user.id;
+  // 5. Bind the OAuth state to the merchant id + a random CSRF nonce
+  const { state, nonce } = buildOAuthState(user.id);
 
   // 6. Build the Salla authorization URL
   const authUrl = new URL("https://accounts.salla.sa/oauth2/auth");
@@ -85,5 +83,7 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set("scope", scopes);
   authUrl.searchParams.set("state", state);
 
-  return NextResponse.redirect(authUrl.toString());
+  const res = NextResponse.redirect(authUrl.toString());
+  setOAuthNonce(res, "salla_oauth_nonce", nonce);
+  return res;
 }
