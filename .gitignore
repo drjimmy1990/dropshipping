@@ -33,3 +33,9 @@ next-env.d.ts
 # Misc
 *.log
 .impeccable/
+
+# Leaked-secret prevention (do not commit dev scripts / debug dumps)
+check-*.js
+fix*.js
+received-webhooks.txt
+app/src/test-*.ts

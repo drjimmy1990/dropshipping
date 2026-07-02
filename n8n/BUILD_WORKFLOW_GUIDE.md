@@ -28,7 +28,7 @@ Go to **n8n → Settings → Variables** and add:
 
 | Variable Name | Value |
 |---------------|-------|
-| `SALLA_WEBHOOK_SECRET` | `1fa9f43728db4d22c0f82baea9a1b7165ac0addf8d381301effb222028dcf4e5` |
+| `SALLA_WEBHOOK_SECRET` | `<SET_IN_ENV — generate with: openssl rand -hex 32>` |
 | `SUPABASE_URL` | `https://cqvkzakyztxknihifqlh.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | *(your service role key from `.env.local`)* |
 

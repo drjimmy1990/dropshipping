@@ -35,7 +35,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 
 ALIEXPRESS_APP_KEY="534306"
-ALIEXPRESS_APP_SECRET="2Nm8YDXEYUsDfwtICrZUlHISeWPTAADN"
+ALIEXPRESS_APP_SECRET="<your-aliexpress-app-secret>"
 ```
 
 ## 3. Install Dependencies and Build

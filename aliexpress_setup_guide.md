@@ -5,7 +5,7 @@
 | Item | Value |
 |------|-------|
 | **App Key** | `534306` |
-| **App Secret** | `2Nm8YDXEYUsDfwtICrZUlHISeWPTAADN` |
+| **App Secret** | `<ROTATED — stored in .env, never commit>` |
 | **App Status** | `Test` ⚠️ |
 | **API Permissions** | `System Tool` ✅ + `AliExpress-dropship` ✅ |
 | **Code Status** | All routes built, TypeScript clean ✅ |
@@ -146,7 +146,7 @@ Once your app status changes from **Test → Online**:
 ┌──────────────────────────────────────────────────┐
 │                   .env.local                      │
 │  ALIEXPRESS_APP_KEY=534306                        │
-│  ALIEXPRESS_APP_SECRET=2Nm8YDXEYUsDfwtICrZUlHISeW │
+│  ALIEXPRESS_APP_SECRET=<rotated — see .env>       │
 │  (Platform-level, set once by super admin)        │
 └──────────────────┬───────────────────────────────┘
                    │
