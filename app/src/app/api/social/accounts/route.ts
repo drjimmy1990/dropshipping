@@ -54,6 +54,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ownership check (IDOR): a linked store must belong to this merchant.
+    if (body.store_id) {
+      const { data: s } = await supabase.from("stores").select("id").eq("id", body.store_id).eq("merchant_id", user.id).maybeSingle();
+      if (!s) return NextResponse.json({ error: "store_id not found" }, { status: 404 });
+    }
+
     const { data, error } = await supabase
       .from("social_accounts")
       .upsert(

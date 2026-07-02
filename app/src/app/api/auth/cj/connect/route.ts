@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("[CJ Auth] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to connect CJ" },
+      { error: "Failed to connect CJ" },
       { status: 500 }
     );
   }

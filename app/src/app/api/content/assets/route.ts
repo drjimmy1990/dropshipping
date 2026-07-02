@@ -62,6 +62,16 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
+    // Ownership check (IDOR): referenced product/store must belong to the caller.
+    if (body.product_id) {
+      const { data: p } = await supabase.from("products").select("id").eq("id", body.product_id).eq("merchant_id", user.id).maybeSingle();
+      if (!p) return NextResponse.json({ error: "product_id not found" }, { status: 404 });
+    }
+    if (body.store_id) {
+      const { data: s } = await supabase.from("stores").select("id").eq("id", body.store_id).eq("merchant_id", user.id).maybeSingle();
+      if (!s) return NextResponse.json({ error: "store_id not found" }, { status: 404 });
+    }
+
     const { data, error } = await supabase
       .from("content_assets")
       .insert({

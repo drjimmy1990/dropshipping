@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("[CJ Freight] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to calculate shipping" },
+      { error: "Failed to calculate shipping" },
       { status: 500 }
     );
   }

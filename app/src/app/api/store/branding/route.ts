@@ -50,6 +50,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "store_id is required" }, { status: 400 });
     }
 
+    // Ownership check (HIGH-5): the store must belong to this merchant, else a
+    // merchant could claim/overwrite another merchant's UNIQUE(store_id) branding.
+    const { data: ownedStore } = await supabase
+      .from("stores")
+      .select("id")
+      .eq("id", body.store_id)
+      .eq("merchant_id", user.id)
+      .maybeSingle();
+    if (!ownedStore) {
+      return NextResponse.json({ error: "Store not found" }, { status: 404 });
+    }
+
     const { data, error } = await supabase
       .from("store_branding")
       .upsert(

@@ -39,7 +39,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("[CJ Categories] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch categories" },
+      { error: "Failed to fetch categories" },
       { status: 500 }
     );
   }

@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error("[CJ Search] Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to search CJ products" },
+      { error: "Failed to search CJ products" },
       { status: 500 }
     );
   }

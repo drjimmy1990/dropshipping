@@ -58,6 +58,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ownership check (IDOR): both referenced rows must belong to this merchant.
+    const [{ data: asset }, { data: account }] = await Promise.all([
+      supabase.from("content_assets").select("id").eq("id", body.content_asset_id).eq("merchant_id", user.id).maybeSingle(),
+      supabase.from("social_accounts").select("id").eq("id", body.social_account_id).eq("merchant_id", user.id).maybeSingle(),
+    ]);
+    if (!asset || !account) {
+      return NextResponse.json(
+        { error: "content_asset_id or social_account_id not found" },
+        { status: 404 }
+      );
+    }
+
     const { data, error } = await supabase
       .from("scheduled_posts")
       .insert({

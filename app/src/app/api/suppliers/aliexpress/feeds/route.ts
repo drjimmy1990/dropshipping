@@ -103,7 +103,7 @@ export async function PUT(request: NextRequest) {
 
     if (error) {
       console.error("[Feeds Save] DB Error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Failed to save feeds" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, savedCount: feeds.length });

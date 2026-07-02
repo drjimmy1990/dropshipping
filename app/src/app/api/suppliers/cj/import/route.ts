@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
       console.error("[CJ Import] Stack:", error.stack);
     }
     return NextResponse.json(
-      { error: error.message || "Import failed" },
+      { error: "Import failed" },
       { status: 500 }
     );
   }
