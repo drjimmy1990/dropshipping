@@ -239,7 +239,8 @@ export function mapDroplinkerToZid(product: Product): ZidCreateProductPayload {
     requires_shipping: true,
     is_taxable: true,
     short_description,
-    ...(product.zid_category_id ? { categories: [{ id: product.zid_category_id }] } : {}),
+    // Categories cannot be set at creation (Zid forbids it) — assigned after
+    // create via POST /products/{id}/categories/ (see assignZidCategory).
   };
 }
 
@@ -467,16 +468,49 @@ async function createProductVariants(
     await withAutoRefresh(tokens, (accessToken, partnerToken) =>
       zidRequest({
         method: "POST",
-        path: `/products/${zidProductId}/variants`,
+        // Path MUST end in a slash — Django APPEND_SLASH 301-redirects and fetch
+        // then drops the POST body (this is why variants silently never created).
+        // KNOWN LIMITATION: Zid's variants API expects
+        //   { variants: [{ sku, price, attributes: [{ slug, value }], stocks: [...] }] }
+        // with product attributes/presets created first. The { options } shape
+        // below is a placeholder pending a proper rewrite + live Zid testing.
+        path: `/products/${zidProductId}/variants/`,
         body: { options },
         accessToken,
         partnerToken,
         storeId: tokens.storeId,
       })
     );
-    console.log(`[Zid] ✅ Variants created successfully`);
+    console.log(`[Zid] ✅ Variants request sent`);
   } catch (error) {
     console.warn(`[Zid] ⚠️ Variant creation failed (non-blocking):`, error);
+  }
+}
+
+/**
+ * Assigns a Zid product to a category. Zid forbids setting categories at product
+ * creation, so this runs after create/update.
+ * POST /products/{id}/categories/  body: { id: <categoryId> }
+ */
+async function assignZidCategory(
+  tokens: ZidStoreTokens,
+  zidProductId: string,
+  categoryId: string | number
+): Promise<void> {
+  try {
+    await withAutoRefresh(tokens, (accessToken, partnerToken) =>
+      zidRequest({
+        method: "POST",
+        path: `/products/${zidProductId}/categories/`,
+        body: { id: categoryId },
+        accessToken,
+        partnerToken,
+        storeId: tokens.storeId,
+      })
+    );
+    console.log(`[Zid] ✅ Product ${zidProductId} assigned to category ${categoryId}`);
+  } catch (error) {
+    console.warn(`[Zid] ⚠️ Category assignment failed (non-blocking):`, error);
   }
 }
 
@@ -530,6 +564,11 @@ export async function pushProductToZid(
     );
   }
 
+  // Step 4: Assign category (Zid forbids categories at creation)
+  if (product.zid_category_id) {
+    await assignZidCategory(tokens, zidProductId, product.zid_category_id);
+  }
+
   return {
     zidProductId,
     zidUrl: result.html_url || undefined,
@@ -548,7 +587,7 @@ export async function deleteZidProduct(
   await withAutoRefresh(tokens, (accessToken, partnerToken) =>
     zidRequest({
       method: "DELETE",
-      path: `/products/${zidProductId}`,
+      path: `/products/${zidProductId}/`,
       accessToken,
       partnerToken,
       storeId: tokens.storeId,
@@ -576,16 +615,25 @@ export async function updateZidProduct(
 ): Promise<void> {
   console.log(`[Zid] Updating product ${zidProductId} on store ${tokens.storeId}`);
 
+  // Categories can't go in the product PATCH — assign them separately.
+  const { categories, ...patch } = updates;
+
   await withAutoRefresh(tokens, (accessToken, partnerToken) =>
     zidRequest({
       method: "PATCH",
-      path: `/products/${zidProductId}`,
-      body: updates,
+      path: `/products/${zidProductId}/`,
+      body: patch,
       accessToken,
       partnerToken,
       storeId: tokens.storeId,
     })
   );
+
+  if (categories && categories.length > 0) {
+    for (const c of categories) {
+      await assignZidCategory(tokens, zidProductId, c.id);
+    }
+  }
 
   console.log(`[Zid] ✅ Product ${zidProductId} updated`);
 }
