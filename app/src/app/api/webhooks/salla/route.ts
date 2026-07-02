@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/server";
 
+/** Constant-time string compare that is safe on unequal lengths. */
+function safeEqual(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ba, bb);
+}
+
 /**
  * POST /api/webhooks/salla
  *
@@ -21,6 +29,12 @@ import { createAdminClient } from "@/lib/supabase/server";
 export async function POST(request: NextRequest) {
   const webhookSecret = process.env.SALLA_WEBHOOK_SECRET;
 
+  // --- Fail closed: never accept unauthenticated webhooks (HIGH-1) ---
+  if (!webhookSecret) {
+    console.error("[Salla Webhook] SALLA_WEBHOOK_SECRET is not set — rejecting");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+
   // --- Read raw body for signature verification ---
   const rawBody = await request.text();
   let payload: SallaWebhookPayload;
@@ -31,40 +45,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // --- Verify security (supports both Token and Signature strategies) ---
-  if (webhookSecret) {
-    const signature = request.headers.get("x-salla-signature");
-    const authHeader = request.headers.get("authorization");
+  // --- Verify security (timing-safe; Signature or Token strategy) (HIGH-4) ---
+  const signature = request.headers.get("x-salla-signature");
+  const authHeader = request.headers.get("authorization");
 
-    if (signature) {
-      // === SIGNATURE STRATEGY (HMAC-SHA256) ===
-      const computedHmac = crypto
-        .createHmac("sha256", webhookSecret)
-        .update(rawBody)
-        .digest("hex");
-
-      if (signature !== computedHmac) {
-        console.warn("[Salla Webhook] Signature mismatch");
-        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-      }
-    } else if (authHeader) {
-      // === TOKEN STRATEGY (Bearer token comparison) ===
-      const token = authHeader.replace(/^Bearer\s+/i, "");
-      if (token !== webhookSecret) {
-        console.warn("[Salla Webhook] Token mismatch");
-        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-      }
-    } else {
-      console.warn("[Salla Webhook] No security headers found (expected x-salla-signature or Authorization)");
-      return NextResponse.json({ error: "Missing authentication" }, { status: 401 });
+  if (signature) {
+    const computedHmac = crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
+    if (!safeEqual(signature, computedHmac)) {
+      console.warn("[Salla Webhook] Signature mismatch");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
+  } else if (authHeader) {
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!safeEqual(token, webhookSecret)) {
+      console.warn("[Salla Webhook] Token mismatch");
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+  } else {
+    console.warn("[Salla Webhook] No security headers found (expected x-salla-signature or Authorization)");
+    return NextResponse.json({ error: "Missing authentication" }, { status: 401 });
+  }
+
+  const adminClient = createAdminClient();
+
+  // --- Replay protection: claim this exact body once (HIGH-4) ---
+  const eventKey = crypto.createHash("sha256").update(rawBody).digest("hex");
+  const { error: dedupErr } = await adminClient
+    .from("processed_webhook_events")
+    .insert({ event_key: eventKey });
+  if (dedupErr) {
+    console.log(`[Salla Webhook] Duplicate event ${eventKey.slice(0, 12)} — skipping`);
+    return NextResponse.json({ status: "duplicate" });
   }
 
   // --- Route the event ---
   const { event, merchant: sallaMerchantId, data } = payload;
   console.log(`[Salla Webhook] Received event: ${event} from merchant: ${sallaMerchantId}`);
-
-  const adminClient = createAdminClient();
 
   try {
     switch (event) {

@@ -164,7 +164,8 @@ export async function GET(request: NextRequest) {
         store_url: storeDomain ? `https://${storeDomain}` : null,
         access_token,
         refresh_token,
-        webhook_secret: process.env.SALLA_WEBHOOK_SECRET || null,
+        // webhook_secret intentionally NOT stored: Salla signs with the single
+        // global app secret (env). Persisting it here leaked it to merchants.
         is_active: true,
         last_sync: new Date().toISOString(),
       });
