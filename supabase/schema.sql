@@ -1,6 +1,17 @@
 -- ================================================================
--- DropLinker — Full Supabase Schema
--- Run this in Supabase SQL Editor (in order)
+-- DropLinker — Base Supabase Schema (NOT the authoritative live schema)
+-- ================================================================
+-- WARNING: this file is the ORIGINAL base schema and has diverged from the live
+-- database. The migration chain in supabase/migrations/ is authoritative. This
+-- file is MISSING product_listings and the AI-content tables (store_branding,
+-- content_assets, social_accounts, scheduled_posts, content_templates) and still
+-- defines products.store_id (dropped by phase13_multi_store). Do NOT run this on
+-- a fresh database and expect it to match production — apply the migrations too,
+-- and apply the 20260703_* security migrations for the hardened RLS/functions.
+--
+-- Table count: 22 tables here + 8 in migrations (product_listings, the 5 content
+-- tables, platform_feeds, rate_limits/processed_webhook_events). Older docs
+-- citing 19/20/21/27/28 are stale.
 -- ================================================================
 
 -- ======================== ENUMS ========================
