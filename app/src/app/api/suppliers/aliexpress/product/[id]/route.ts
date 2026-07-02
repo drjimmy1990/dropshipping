@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 import { getProductDetail } from "@/lib/aliexpress/client";
 
 /**
@@ -21,6 +22,10 @@ export async function GET(
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!(await checkRateLimit(user.id, "ae_product", 60, 60))) {
+      return NextResponse.json(rateLimitedResponse(), { status: 429 });
     }
 
     const { id: productId } = await params;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rateLimit";
 import { getProductDetail } from "@/lib/aliexpress/client";
 import { pushProductToSalla, SallaApiError } from "@/lib/salla/client";
 import { pushProductToZid, ZidApiError } from "@/lib/zid/client";
@@ -33,6 +34,13 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (
+      !(await checkRateLimit(user.id, "ae_import", 20, 60)) ||
+      !(await checkRateLimit(user.id, "ae_import_day", 200, 86400))
+    ) {
+      return NextResponse.json(rateLimitedResponse(), { status: 429 });
     }
 
     const body = await request.json();
