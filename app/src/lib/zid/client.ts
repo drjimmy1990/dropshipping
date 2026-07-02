@@ -26,6 +26,7 @@ import type {
   ZidLocalizedString,
 } from "./types";
 import type { Product } from "@/lib/supabase/types";
+import { isSafeImageUrl } from "@/lib/net/validateImageUrl";
 
 const ZID_API_BASE = "https://api.zid.sa/v1";
 const ZID_OAUTH_URL = process.env.ZID_OAUTH_URL || "https://oauth.zid.sa";
@@ -264,6 +265,13 @@ export async function uploadProductImages(
 
   for (let i = 0; i < urls.length; i++) {
     try {
+      // SSRF guard: only fetch https supplier-CDN URLs that don't resolve to
+      // private/loopback IPs (HIGH-3).
+      if (!(await isSafeImageUrl(urls[i]))) {
+        console.warn(`[Zid] ⚠️ Skipping disallowed/unsafe image URL: ${urls[i]}`);
+        continue;
+      }
+
       // Step 1: Download the image
       const imgResponse = await fetch(urls[i]);
       if (!imgResponse.ok) {
