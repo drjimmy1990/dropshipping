@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, Button, Icon, ThemeToggle } from "@/components/shared";
 import { FEATURES } from "@/data/mockData";
 
@@ -11,7 +12,10 @@ export default function FeaturesPage() {
       {/* Navbar */}
       <nav className="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-sm border-b border-border-subtle">
         <div className="flex justify-between items-center px-6 md:px-12 py-3 max-w-7xl mx-auto">
-          <Link href="/" className="text-xl font-bold text-text">DropLinker</Link>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={36} height={36} className="object-contain" />
+            <span className="text-xl font-bold text-text">TMTECH</span>
+          </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button size="sm">

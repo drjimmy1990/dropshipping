@@ -1,5 +1,5 @@
 /* ================================================================
-   DropLinker — Supabase Database Types
+   TMTECH — Supabase Database Types
    Mirrors the schema in supabase/schema.sql
    ================================================================ */
 

@@ -63,15 +63,15 @@ export default function PlatformSettingsPage() {
           <Card className="p-6">
             <h3 className="text-base font-semibold text-text mb-4">Platform Branding</h3>
             <div className="grid md:grid-cols-2 gap-4">
-              <InputField label="Platform Name" value={(config.platform_name as string) || "DropLinker"} />
-              <InputField label="Support Email" value={(config.support_email as string) || "support@droplinker.com"} />
+              <InputField label="Platform Name" value={(config.platform_name as string) || "TMTECH تم تك"} />
+              <InputField label="Support Email" value={(config.support_email as string) || "mostafacitydoctor@gmail.com"} />
               <InputField label="Support Phone" value={(config.support_phone as string) || "+966 11 234 5678"} />
-              <InputField label="Website URL" value={(config.website_url as string) || "https://droplinker.com"} />
+              <InputField label="Website URL" value={(config.website_url as string) || "https://tmtech.sa"} />
             </div>
             <div className="mt-4">
               <label className="block text-sm font-medium text-text mb-1.5">Platform Logo</label>
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-lg bg-accent flex items-center justify-center text-accent-on text-lg font-bold">DL</div>
+                <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center overflow-hidden"><img src="/tmtech-logo.png" alt="TMTECH" className="w-12 h-12 object-contain" /></div>
                 <Button variant="secondary" size="sm">Upload Logo</Button>
               </div>
             </div>

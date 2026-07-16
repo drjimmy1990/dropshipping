@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon, ThemeToggle } from "@/components/shared";
 import { DASHBOARD_NAV_ITEMS } from "@/data/mockData";
@@ -46,12 +47,10 @@ export default function DashboardLayout({
         {/* Logo */}
         <div className="h-14 flex items-center px-4 border-b border-border-subtle">
           <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center text-accent-on text-sm font-bold shrink-0">
-              D
-            </div>
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={32} height={32} className="object-contain shrink-0" />
             {!collapsed && (
               <span className="text-base font-semibold text-text truncate">
-                DropLinker
+                TMTECH
               </span>
             )}
           </Link>

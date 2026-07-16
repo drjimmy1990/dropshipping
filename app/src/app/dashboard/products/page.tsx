@@ -403,7 +403,7 @@ export default function MyProductsPage() {
           className="bg-surface text-text-secondary text-sm rounded-md px-3 py-2 border border-border outline-none cursor-pointer"
         >
           <option value="all">All Sources ({total})</option>
-          <option value="aliexpress">🔗 DropLinker ({droplinkerCount})</option>
+          <option value="aliexpress">🔗 TMTECH ({droplinkerCount})</option>
           <option value="direct">🏪 Direct ({directCount})</option>
         </select>
         <select

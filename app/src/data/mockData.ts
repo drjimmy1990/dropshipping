@@ -1,5 +1,5 @@
 // ================================================================
-// DropLinker — Mock Data & Static Content
+// TMTECH — Mock Data & Static Content
 // Source of truth for all UI text, product data, and page content.
 // ================================================================
 

@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, Button, Icon, ThemeToggle } from "@/components/shared";
 import {
   LANDING_NAV_ITEMS,
@@ -14,15 +15,16 @@ import {
 } from "@/data/mockData";
 
 /* ================================================================
-   LANDING PAGE — DropLinker Public Marketing Page
+   LANDING PAGE — TMTECH Public Marketing Page
    ================================================================ */
 
 function Navbar() {
   return (
     <nav className="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-sm border-b border-border-subtle">
       <div className="flex justify-between items-center px-6 md:px-12 py-3 max-w-7xl mx-auto">
-        <Link href="/" className="text-xl font-bold text-text">
-          DropLinker
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/tmtech-logo.png" alt="TMTECH" width={36} height={36} className="object-contain" />
+          <span className="text-xl font-bold text-text">TMTECH</span>
         </Link>
         <div className="hidden md:flex gap-1">
           {LANDING_NAV_ITEMS.map((item) => (
@@ -249,7 +251,7 @@ function CTABanner() {
         </h2>
         <p className="text-base text-accent-on/80 mb-8 max-w-2xl mx-auto">
           Join 5,000+ Saudi merchants who have reclaimed their time with
-          DropLinker automation.
+          TMTECH automation.
         </p>
         <Link href="/auth/login" className="inline-block bg-white text-accent px-8 py-3 rounded-md text-base font-semibold hover:bg-white/90 transition-colors">
           Get Started Now
@@ -264,13 +266,16 @@ function Footer() {
     <footer className="w-full bg-surface border-t border-border mt-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-6 md:px-12 py-10 max-w-7xl mx-auto gap-6">
         <div className="flex flex-col gap-2 max-w-sm">
-          <div className="text-lg font-bold text-text">DropLinker</div>
+          <div className="flex items-center gap-2">
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={28} height={28} className="object-contain" />
+            <span className="text-lg font-bold text-text">TMTECH تم تك</span>
+          </div>
           <p className="text-sm text-text-secondary">
             Precision automation for the modern Saudi merchant. Streamlining
             e-commerce from sourcing to fulfillment.
           </p>
           <p className="text-xs text-text-muted">
-            © 2026 DropLinker. All rights reserved.
+            © 2026 TMTECH تم تك. All rights reserved.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-12">

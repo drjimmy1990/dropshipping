@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Icon, ThemeToggle } from "@/components/shared";
 import { createClient } from "@/lib/supabase/client";
@@ -41,13 +42,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         {/* Logo + Admin indicator */}
         <div className="h-14 flex items-center px-4 border-b border-border-subtle">
           <Link href="/admin" className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center text-accent-on text-xs font-bold shrink-0">
-              SA
-            </div>
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={32} height={32} className="object-contain shrink-0" />
             {!collapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-semibold text-text truncate">
-                  DropLinker
+                  TMTECH
                 </span>
                 <span className="text-xs text-accent font-medium">Admin</span>
               </div>

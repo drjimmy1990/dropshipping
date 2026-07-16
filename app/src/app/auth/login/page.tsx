@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, Button, Icon, ThemeToggle } from "@/components/shared";
 import { signIn, signUp } from "@/app/auth/actions";
 
@@ -29,8 +30,9 @@ export default function LoginPage() {
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-accent items-center justify-center p-12">
         <div className="max-w-md text-accent-on">
-          <Link href="/" className="text-2xl font-bold mb-8 block">
-            DropLinker
+          <Link href="/" className="flex items-center gap-3 mb-8">
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={44} height={44} className="object-contain" />
+            <span className="text-2xl font-bold">TMTECH</span>
           </Link>
           <h2 className="text-3xl font-bold mb-4 leading-tight">
             Automate your dropshipping business
@@ -58,8 +60,9 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 bg-bg">
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
-            <Link href="/" className="lg:hidden text-xl font-bold text-text">
-              DropLinker
+            <Link href="/" className="lg:hidden flex items-center gap-2">
+              <Image src="/tmtech-logo.png" alt="TMTECH" width={32} height={32} className="object-contain" />
+              <span className="text-xl font-bold text-text">TMTECH</span>
             </Link>
             <ThemeToggle />
           </div>

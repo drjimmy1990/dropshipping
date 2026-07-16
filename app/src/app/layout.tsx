@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DropLinker — Automate Your Dropshipping Business",
+  title: "TMTECH تم تك — Automate Your Dropshipping Business",
   description:
-    "DropLinker connects Saudi merchants on Salla and Zid to global suppliers. Automate product imports, order fulfillment, and inventory sync.",
+    "TMTECH تم تك connects Saudi merchants on Salla and Zid to global suppliers. Automate product imports, order fulfillment, and inventory sync.",
 };
 
 export default function RootLayout({
