@@ -41,10 +41,6 @@ function getConfig(): AliExpressConfig {
 // ---------- Master Token ----------
 
 async function getMasterAccessToken(): Promise<string | undefined> {
-  if (process.env.ALIEXPRESS_ACCESS_TOKEN) {
-    return process.env.ALIEXPRESS_ACCESS_TOKEN;
-  }
-
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -58,13 +54,13 @@ async function getMasterAccessToken(): Promise<string | undefined> {
       if (token.startsWith('"') && token.endsWith('"')) {
         token = token.slice(1, -1);
       }
-      return token;
+      if (token) return token;
     }
   } catch (err) {
     console.warn("[AliExpress] Failed to fetch access token from platform config:", err);
   }
 
-  return undefined;
+  return process.env.ALIEXPRESS_ACCESS_TOKEN;
 }
 
 /**

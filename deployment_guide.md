@@ -1,6 +1,8 @@
-# DropLinker Production Deployment Guide
+# TMTECH Production Deployment Guide
 
-This guide covers deploying the DropLinker Next.js application to your VPS, ensuring it runs on a custom port (e.g., `4000` instead of the default `3000`) and is served securely via Nginx and PM2.
+This guide covers deploying the TMTECH Next.js application to your VPS, ensuring it runs on a custom port (e.g., `4000` instead of the default `3000`) and is served securely via Nginx and PM2.
+
+> **PM2 binary path on this VPS:** `/www/server/nodejs/v24.14.0/bin/pm2`
 
 ## 1. Get the Code on the VPS
 
@@ -153,14 +155,14 @@ cd /www/wwwroot/dropshipping
 git pull origin main
 
 # 2. Stop PM2 BEFORE building (prevents restart during .next rebuild)
-/usr/local/bin/pm2 stop droplinker 2>/dev/null || true
+/www/server/nodejs/v24.14.0/bin/pm2 stop droplinker 2>/dev/null || true
 
 # 3. Build the Next.js app
 cd app
 npm run build
 
 # 4. Restart PM2 (start if stopped, restart if running)
-/usr/local/bin/pm2 start droplinker 2>/dev/null || /usr/local/bin/pm2 restart droplinker
+/www/server/nodejs/v24.14.0/bin/pm2 start droplinker 2>/dev/null || /www/server/nodejs/v24.14.0/bin/pm2 restart droplinker
 
 # 5. Clear NGINX Cache
 rm -rf /www/server/nginx/proxy_cache_dir/*

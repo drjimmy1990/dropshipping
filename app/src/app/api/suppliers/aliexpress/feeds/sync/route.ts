@@ -24,9 +24,6 @@ function getAliExpressConfig() {
 }
 
 async function getAccessToken(): Promise<string | undefined> {
-  if (process.env.ALIEXPRESS_ACCESS_TOKEN) {
-    return process.env.ALIEXPRESS_ACCESS_TOKEN;
-  }
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -37,10 +34,10 @@ async function getAccessToken(): Promise<string | undefined> {
     if (data?.value) {
       let token = data.value as string;
       if (token.startsWith('"') && token.endsWith('"')) token = token.slice(1, -1);
-      return token;
+      if (token) return token;
     }
   } catch {}
-  return undefined;
+  return process.env.ALIEXPRESS_ACCESS_TOKEN;
 }
 
 function generateSignature(params: Record<string, string>, appSecret: string, apiName: string): string {

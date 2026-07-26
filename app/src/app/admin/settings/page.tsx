@@ -102,7 +102,7 @@ export default function PlatformSettingsPage() {
                 icon="shopping_bag" 
                 connected={!!config.aliexpress_access_token} 
                 onConnect={() => {
-                  const clientId = process.env.NEXT_PUBLIC_ALIEXPRESS_APP_KEY || "534306";
+                  const clientId = process.env.NEXT_PUBLIC_ALIEXPRESS_APP_KEY || (config.aliexpress_app_key as string) || "538258";
                   const redirectUri = `${window.location.origin}/api/auth/aliexpress/callback`;
                   window.location.href = `https://api-sg.aliexpress.com/oauth/authorize?response_type=code&force_auth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
                 }}
