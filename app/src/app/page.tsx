@@ -22,8 +22,8 @@ function Navbar() {
   return (
     <nav className="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-sm border-b border-border-subtle">
       <div className="flex justify-between items-center px-6 md:px-12 py-3 max-w-7xl mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/tmtech-logo.png" alt="TMTECH" width={36} height={36} className="object-contain" />
+        <Link href="/" className="flex items-center gap-3">
+          <Image src="/tmtech-logo.png" alt="TMTECH" width={160} height={48} className="h-10 w-auto object-contain" priority />
           <span className="text-xl font-bold text-text">TMTECH</span>
         </Link>
         <div className="hidden md:flex gap-1">
@@ -266,9 +266,9 @@ function Footer() {
     <footer className="w-full bg-surface border-t border-border mt-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-6 md:px-12 py-10 max-w-7xl mx-auto gap-6">
         <div className="flex flex-col gap-2 max-w-sm">
-          <div className="flex items-center gap-2">
-            <Image src="/tmtech-logo.png" alt="TMTECH" width={28} height={28} className="object-contain" />
-            <span className="text-lg font-bold text-text">TMTECH تم تك</span>
+          <div className="flex items-center gap-3">
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={140} height={44} className="h-10 w-auto object-contain" />
+            <span className="text-xl font-bold text-text">TMTECH تم تك</span>
           </div>
           <p className="text-sm text-text-secondary">
             Precision automation for the modern Saudi merchant. Streamlining

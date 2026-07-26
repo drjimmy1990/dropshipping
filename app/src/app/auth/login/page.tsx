@@ -31,7 +31,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-accent items-center justify-center p-12">
         <div className="max-w-md text-accent-on">
           <Link href="/" className="flex items-center gap-3 mb-8">
-            <Image src="/tmtech-logo.png" alt="TMTECH" width={44} height={44} className="object-contain" />
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={180} height={54} className="h-12 w-auto object-contain bg-white/90 p-1.5 rounded-lg shadow-sm" priority />
             <span className="text-2xl font-bold">TMTECH</span>
           </Link>
           <h2 className="text-3xl font-bold mb-4 leading-tight">
@@ -60,8 +60,8 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 bg-bg">
         <div className="w-full max-w-md">
           <div className="flex items-center justify-between mb-8">
-            <Link href="/" className="lg:hidden flex items-center gap-2">
-              <Image src="/tmtech-logo.png" alt="TMTECH" width={32} height={32} className="object-contain" />
+            <Link href="/" className="lg:hidden flex items-center gap-3">
+              <Image src="/tmtech-logo.png" alt="TMTECH" width={140} height={44} className="h-10 w-auto object-contain" priority />
               <span className="text-xl font-bold text-text">TMTECH</span>
             </Link>
             <ThemeToggle />

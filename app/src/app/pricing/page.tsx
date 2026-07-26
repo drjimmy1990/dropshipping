@@ -12,8 +12,8 @@ export default function PricingPage() {
       {/* Navbar */}
       <nav className="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-sm border-b border-border-subtle">
         <div className="flex justify-between items-center px-6 md:px-12 py-3 max-w-7xl mx-auto">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/tmtech-logo.png" alt="TMTECH" width={36} height={36} className="object-contain" />
+          <Link href="/" className="flex items-center gap-3">
+            <Image src="/tmtech-logo.png" alt="TMTECH" width={160} height={48} className="h-10 w-auto object-contain" priority />
             <span className="text-xl font-bold text-text">TMTECH</span>
           </Link>
           <div className="flex items-center gap-2">

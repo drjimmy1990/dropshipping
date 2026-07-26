@@ -46,10 +46,17 @@ export default function DashboardLayout({
       >
         {/* Logo */}
         <div className="h-14 flex items-center px-4 border-b border-border-subtle">
-          <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
-            <Image src="/tmtech-logo.png" alt="TMTECH" width={32} height={32} className="object-contain shrink-0" />
+          <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
+            <Image
+              src="/tmtech-logo.png"
+              alt="TMTECH"
+              width={140}
+              height={44}
+              className={`${collapsed ? "h-8 w-8 object-contain" : "h-10 w-auto object-contain"} shrink-0`}
+              priority
+            />
             {!collapsed && (
-              <span className="text-base font-semibold text-text truncate">
+              <span className="text-lg font-bold text-text truncate">
                 TMTECH
               </span>
             )}

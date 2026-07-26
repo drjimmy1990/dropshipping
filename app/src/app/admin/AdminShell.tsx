@@ -41,11 +41,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       >
         {/* Logo + Admin indicator */}
         <div className="h-14 flex items-center px-4 border-b border-border-subtle">
-          <Link href="/admin" className="flex items-center gap-2 min-w-0">
-            <Image src="/tmtech-logo.png" alt="TMTECH" width={32} height={32} className="object-contain shrink-0" />
+          <Link href="/admin" className="flex items-center gap-3 min-w-0">
+            <Image
+              src="/tmtech-logo.png"
+              alt="TMTECH"
+              width={140}
+              height={44}
+              className={`${collapsed ? "h-8 w-8 object-contain" : "h-10 w-auto object-contain"} shrink-0`}
+              priority
+            />
             {!collapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold text-text truncate">
+                <span className="text-base font-bold text-text truncate">
                   TMTECH
                 </span>
                 <span className="text-xs text-accent font-medium">Admin</span>

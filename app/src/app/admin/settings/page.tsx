@@ -71,7 +71,7 @@ export default function PlatformSettingsPage() {
             <div className="mt-4">
               <label className="block text-sm font-medium text-text mb-1.5">Platform Logo</label>
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center overflow-hidden"><img src="/tmtech-logo.png" alt="TMTECH" className="w-12 h-12 object-contain" /></div>
+                <div className="h-16 px-3 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-border"><img src="/tmtech-logo.png" alt="TMTECH" className="h-12 w-auto object-contain" /></div>
                 <Button variant="secondary" size="sm">Upload Logo</Button>
               </div>
             </div>
