@@ -155,11 +155,23 @@ export async function POST(request: NextRequest) {
       estimated_delivery: estimatedDelivery || null,
     };
 
-    const { data: insertedProduct, error: insertError } = await adminClient
+    let { data: insertedProduct, error: insertError } = await adminClient
       .from("products")
       .insert(productData)
       .select("*")
       .single();
+
+    if (insertError && insertError.message?.includes("store_id")) {
+      console.warn("[Import] store_id column missing on products table, retrying without store_id...");
+      const { store_id, ...dataWithoutStoreId } = productData;
+      const retry = await adminClient
+        .from("products")
+        .insert(dataWithoutStoreId)
+        .select("*")
+        .single();
+      insertedProduct = retry.data;
+      insertError = retry.error;
+    }
 
     if (insertError) {
       console.error("[Import] ❌ Product INSERT failed:", insertError);
