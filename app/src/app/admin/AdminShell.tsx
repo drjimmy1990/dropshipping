@@ -40,19 +40,19 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         } shrink-0 bg-surface border-r border-border flex flex-col transition-all duration-200`}
       >
         {/* Logo + Admin indicator */}
-        <div className="h-14 flex items-center px-4 border-b border-border-subtle">
+        <div className="h-16 flex items-center px-4 border-b border-border-subtle">
           <Link href="/admin" className="flex items-center gap-3 min-w-0">
             <Image
               src="/tmtech-logo.png"
               alt="TMTECH"
-              width={140}
-              height={44}
-              className={`${collapsed ? "h-8 w-8 object-contain" : "h-10 w-auto object-contain"} shrink-0`}
+              width={180}
+              height={56}
+              className={`${collapsed ? "h-10 w-10 object-contain" : "h-12 w-auto object-contain"} shrink-0`}
               priority
             />
             {!collapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-base font-bold text-text truncate">
+                <span className="text-lg font-bold text-text truncate tracking-tight">
                   TMTECH
                 </span>
                 <span className="text-xs text-accent font-medium">Admin</span>
@@ -114,7 +114,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-14 shrink-0 bg-surface border-b border-border flex items-center justify-between px-6">
+        <header className="h-16 shrink-0 bg-surface border-b border-border flex items-center justify-between px-6">
           <span className="text-xs font-medium text-accent bg-accent-subtle px-2 py-1 rounded">
             ADMIN MODE
           </span>
