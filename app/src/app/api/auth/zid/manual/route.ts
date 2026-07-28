@@ -172,12 +172,22 @@ export async function POST(request: NextRequest) {
     const adminClient = createAdminClient();
     const merchantId = user.id;
 
-    // Ensure merchant row exists to prevent foreign key errors
-    await adminClient.from("merchants").upsert({
-      id: merchantId,
-      email: user?.email || "",
-      business_name: "My Store"
-    }, { onConflict: "id" }).select("id").single();
+    // Ensure merchant row exists to prevent foreign key errors.
+    // ignoreDuplicates: true => ON CONFLICT DO NOTHING, so reconnecting never resets
+    // an existing merchant's real business_name back to "My Store".
+    const { error: merchantErr } = await adminClient
+      .from("merchants")
+      .upsert(
+        { id: merchantId, email: user?.email || "", business_name: "My Store" },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    if (merchantErr) {
+      console.error("[Zid Manual] merchant ensure failed:", merchantErr);
+      return NextResponse.json(
+        { error: "Failed to save store record" },
+        { status: 500 }
+      );
+    }
 
     // Check if merchant already has a Zid store
     const { data: existingStore } = await adminClient

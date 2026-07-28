@@ -140,12 +140,21 @@ export async function GET(request: NextRequest) {
 
     console.log("[Zid Callback] Saving store for merchant:", merchantId, "Store:", storeName);
 
-    // Ensure merchant row exists to prevent foreign key errors
-    await adminClient.from("merchants").upsert({
-      id: merchantId,
-      email: user?.email || "",
-      business_name: "My Store"
-    }, { onConflict: "id" }).select("id").single();
+    // Ensure merchant row exists to prevent foreign key errors.
+    // ignoreDuplicates: true => ON CONFLICT DO NOTHING, so reconnecting never resets
+    // an existing merchant's real business_name back to "My Store".
+    const { error: merchantErr } = await adminClient
+      .from("merchants")
+      .upsert(
+        { id: merchantId, email: user?.email || "", business_name: "My Store" },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    if (merchantErr) {
+      console.error("[Zid Callback] merchant ensure failed:", merchantErr);
+      return NextResponse.redirect(
+        new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
+      );
+    }
 
     // Check if this merchant already has a Zid store connected
     const { data: existingStore, error: findError } = await adminClient
@@ -156,7 +165,12 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (findError) {
+      // Do NOT fall through: without a definitive answer we would take the INSERT
+      // branch and duplicate an existing store, then still report success.
       console.error("[Zid Callback] Error finding existing store:", findError);
+      return NextResponse.redirect(
+        new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
+      );
     }
 
     const storeRecord = {
@@ -180,6 +194,9 @@ export async function GET(request: NextRequest) {
 
       if (updateError) {
         console.error("[Zid Callback] ❌ Store UPDATE failed:", updateError);
+        return NextResponse.redirect(
+          new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
+        );
       } else {
         console.log("[Zid Callback] ✅ Store updated successfully");
       }
@@ -193,6 +210,9 @@ export async function GET(request: NextRequest) {
 
       if (insertError) {
         console.error("[Zid Callback] ❌ Store INSERT failed:", insertError);
+        return NextResponse.redirect(
+          new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
+        );
       } else {
         console.log("[Zid Callback] ✅ Store inserted successfully");
       }

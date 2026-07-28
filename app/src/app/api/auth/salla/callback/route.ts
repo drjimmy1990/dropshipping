@@ -109,11 +109,26 @@ export async function GET(request: NextRequest) {
 
     const userInfo = await userInfoResponse.json();
 
-    // userInfo shape: { id, name, email, shop: { id, name, domain } }
-    const sallaShop = userInfo.shop || userInfo.data?.shop || {};
-    const storeName = sallaShop.name || userInfo.name || "Salla Store";
-    const storeDomain = sallaShop.domain || null;
-    const sallaMerchantId = String(userInfo.id || userInfo.data?.id || "");
+    // Real shape per the bundled `Merchant APIs V2.7.6.postman_collection.json`
+    // (request "Store / User Information Details"):
+    //   { data: { id, name, email, merchant: { id, name, domain, ... } } }
+    // `data.id` is the *user* who authorized the app — NOT the merchant. The Salla
+    // webhook payload's `merchant` field is `data.merchant.id`, and that is what
+    // `stores.salla_merchant_id` must hold or every order is dropped.
+    // No `shop` fallback on purpose: a silent fallback is what hid this outage.
+    const info = userInfo.data ?? userInfo;
+    const sallaMerchant = info?.merchant ?? {};
+    const storeName = sallaMerchant.name || info?.name || "Salla Store";
+    // Already an absolute URL (e.g. "https://www.domain.com") — do NOT prefix it.
+    const storeDomain = sallaMerchant.domain || null;
+    const sallaMerchantId = String(sallaMerchant.id ?? "");
+
+    if (!sallaMerchantId) {
+      console.error("[Salla Callback] user/info returned no merchant.id — refusing to save an unroutable store");
+      return NextResponse.redirect(
+        new URL(`/dashboard/integrations?error=salla_userinfo_failed`, origin)
+      );
+    }
 
     // ========== STEP 3: Upsert store into Supabase ==========
     // merchantId was verified above against the signed-in session.
@@ -121,12 +136,24 @@ export async function GET(request: NextRequest) {
 
     console.log("[Salla Callback] Saving store for merchant:", merchantId, "Store:", storeName);
 
-    // Ensure merchant row exists to prevent foreign key errors
-    await adminClient.from("merchants").upsert({
-      id: merchantId,
-      email: user?.email || "",
-      business_name: "My Store"
-    }, { onConflict: "id" }).select("id").single();
+    // Ensure merchant row exists to prevent foreign key errors.
+    // ignoreDuplicates: true => ON CONFLICT DO NOTHING. Without it supabase-js sends
+    // Prefer: resolution=merge-duplicates (ON CONFLICT DO UPDATE), which resets an
+    // existing merchant's real business_name to "My Store" on every reconnect.
+    // No .select().single() either — that returns PGRST116 on the DO NOTHING path,
+    // which (the row is created at signup) is the normal path.
+    const { error: merchantErr } = await adminClient
+      .from("merchants")
+      .upsert(
+        { id: merchantId, email: user?.email || "", business_name: "My Store" },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    if (merchantErr) {
+      console.error("[Salla Callback] merchant ensure failed:", merchantErr);
+      return NextResponse.redirect(
+        new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
+      );
+    }
 
     // Check if this merchant already has a Salla store connected
     const { data: existingStore, error: findError } = await adminClient
@@ -139,7 +166,7 @@ export async function GET(request: NextRequest) {
     if (findError) {
       console.error("[Salla Callback] DB find error:", findError);
       return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=salla_unexpected&details=${encodeURIComponent(findError.message)}`, origin)
+        new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
       );
     }
 
@@ -149,8 +176,9 @@ export async function GET(request: NextRequest) {
         .from("stores")
         .update({
           store_name: storeName,
-          store_url: storeDomain ? `https://${storeDomain}` : null,
+          store_url: storeDomain,
           salla_merchant_id: sallaMerchantId,
+          platform_store_id: sallaMerchantId,
           access_token,
           refresh_token,
           is_active: true,
@@ -162,7 +190,7 @@ export async function GET(request: NextRequest) {
       if (updateError) {
         console.error("[Salla Callback] ❌ Store UPDATE failed:", updateError);
         return NextResponse.redirect(
-          new URL(`/dashboard/integrations?error=salla_unexpected&details=${encodeURIComponent(updateError.message)}`, origin)
+          new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
         );
       } else {
         console.log("[Salla Callback] ✅ Store updated successfully");
@@ -173,8 +201,9 @@ export async function GET(request: NextRequest) {
         merchant_id: merchantId,
         platform: "salla" as const,
         salla_merchant_id: sallaMerchantId,
+        platform_store_id: sallaMerchantId,
         store_name: storeName,
-        store_url: storeDomain ? `https://${storeDomain}` : null,
+        store_url: storeDomain,
         access_token,
         refresh_token,
         // webhook_secret intentionally NOT stored: Salla signs with the single
@@ -186,7 +215,7 @@ export async function GET(request: NextRequest) {
       if (insertError) {
         console.error("[Salla Callback] ❌ Store INSERT failed:", insertError);
         return NextResponse.redirect(
-          new URL(`/dashboard/integrations?error=salla_unexpected&details=${encodeURIComponent(insertError.message)}`, origin)
+          new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
         );
       } else {
         console.log("[Salla Callback] ✅ Store inserted successfully");
