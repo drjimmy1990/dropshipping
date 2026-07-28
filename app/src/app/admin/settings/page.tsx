@@ -101,10 +101,11 @@ export default function PlatformSettingsPage() {
                 name="AliExpress Open Platform" 
                 icon="shopping_bag" 
                 connected={!!config.aliexpress_access_token} 
+                // The authorize URL is built server-side by /api/auth/aliexpress so it
+                // uses the same ALIEXPRESS_APP_KEY the callback signs the exchange with,
+                // and so it can issue the CSRF nonce cookie the callback now requires.
                 onConnect={() => {
-                  const clientId = process.env.NEXT_PUBLIC_ALIEXPRESS_APP_KEY || (config.aliexpress_app_key as string) || "538258";
-                  const redirectUri = `${window.location.origin}/api/auth/aliexpress/callback`;
-                  window.location.href = `https://api-sg.aliexpress.com/oauth/authorize?response_type=code&force_auth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+                  window.location.href = "/api/auth/aliexpress";
                 }}
                 fields={[
                   { label: "App Key", value: "350****12" },

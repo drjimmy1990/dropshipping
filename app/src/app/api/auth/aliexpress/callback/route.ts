@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { resolveOrigin, verifyOAuthCallback, clearOAuthNonce } from "@/lib/oauth/state";
+import { redact } from "@/lib/log/redact";
 import crypto from "crypto";
 
 const APP_KEY = process.env.ALIEXPRESS_APP_KEY || "";
@@ -16,33 +18,58 @@ function generateSignature(params: Record<string, string>): string {
 }
 
 export async function GET(req: NextRequest) {
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "droplinker.asra3.com";
-  const proto = req.headers.get("x-forwarded-proto") || "https";
-  const baseUrl = `${proto}://${host}`;
+  // Pinned to PUBLIC_BASE_URL when set — never derived from req.url, which a
+  // spoofed x-forwarded-host could point at another origin.
+  const baseUrl = resolveOrigin(req);
 
-  const { searchParams } = new URL(req.url);
-  const code = searchParams.get("code");
-
-  if (!code) {
-    return NextResponse.redirect(new URL("/admin/settings?error=no_code", baseUrl));
-  }
+  // Every exit from this route burns the nonce cookie so a single-use flow
+  // cannot be replayed for the rest of its 600s TTL.
+  const failRedirect = (slug: string) => {
+    const res = NextResponse.redirect(new URL(`/admin/settings?error=${slug}`, baseUrl));
+    clearOAuthNonce(res, "aliexpress_oauth_nonce");
+    return res;
+  };
 
   // --- Admin-only: this callback overwrites the PLATFORM AliExpress tokens,
-  //     so require an authenticated admin session (CRIT-7). ---
+  //     so require an authenticated admin session (CRIT-7). This check runs
+  //     FIRST — before `code` is even read — so a stranger's forged callback
+  //     never reaches the exchange and never learns whether a code was valid. ---
   const authClient = await createClient();
   const { data: { user } } = await authClient.auth.getUser();
   if (!user) {
-    return NextResponse.redirect(new URL("/auth/login", baseUrl));
+    const res = NextResponse.redirect(new URL("/auth/login", baseUrl));
+    clearOAuthNonce(res, "aliexpress_oauth_nonce");
+    return res;
   }
   const roleClient = createAdminClient();
-  const { data: me } = await roleClient
+  const { data: me, error: roleError } = await roleClient
     .from("merchants")
     .select("role")
     .eq("id", user.id)
     .single();
   if (!me || me.role !== "admin") {
-    console.error("[AliExpress Auth] Non-admin attempted to connect platform tokens:", user.id);
-    return NextResponse.redirect(new URL("/admin/settings?error=not_admin", baseUrl));
+    console.error(
+      "[AliExpress Auth] Non-admin attempted to connect platform tokens:",
+      user.id,
+      roleError
+    );
+    return failRedirect("not_admin");
+  }
+
+  // --- CSRF: the `state` must carry the nonce issued by GET /api/auth/aliexpress
+  //     to this same admin session. Without it an attacker could get an admin's
+  //     browser to exchange the ATTACKER's code into platform_config. ---
+  const state = req.nextUrl.searchParams.get("state") ?? "";
+  const verified = verifyOAuthCallback(req, "aliexpress_oauth_nonce", state, user.id);
+  if (!verified) {
+    console.error("[AliExpress Auth] Session/state mismatch — refusing token exchange");
+    return failRedirect("aliexpress_auth_mismatch");
+  }
+
+  const code = req.nextUrl.searchParams.get("code");
+
+  if (!code) {
+    return failRedirect("no_code");
   }
 
   try {
@@ -65,15 +92,15 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
 
     if (data.code && data.code !== "0" && data.code !== 0) {
-      console.error("[AliExpress Auth] API error:", data);
-      return NextResponse.redirect(new URL("/admin/settings?error=auth_failed", baseUrl));
+      console.error("[AliExpress Auth] API error:", JSON.stringify(redact(data)));
+      return failRedirect("auth_failed");
     }
 
     const { access_token, refresh_token } = data;
 
     if (!access_token) {
-      console.error("[AliExpress Auth] No token in response:", data);
-      return NextResponse.redirect(new URL("/admin/settings?error=no_token", baseUrl));
+      console.error("[AliExpress Auth] No token in response:", JSON.stringify(redact(data)));
+      return failRedirect("no_token");
     }
 
     // Save to Supabase using admin client
@@ -98,9 +125,11 @@ export async function GET(req: NextRequest) {
       if (err2) console.error("[AliExpress Auth] Failed to save refresh token:", err2);
     }
 
-    return NextResponse.redirect(new URL("/admin/settings?aliexpress=success", baseUrl));
+    const res = NextResponse.redirect(new URL("/admin/settings?aliexpress=success", baseUrl));
+    clearOAuthNonce(res, "aliexpress_oauth_nonce");
+    return res;
   } catch (error) {
     console.error("[AliExpress Auth] Route error:", error);
-    return NextResponse.redirect(new URL("/admin/settings?error=internal", baseUrl));
+    return failRedirect("internal");
   }
 }

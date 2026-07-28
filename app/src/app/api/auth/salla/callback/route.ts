@@ -19,19 +19,26 @@ export async function GET(request: NextRequest) {
 
   const origin = resolveOrigin(request);
 
+  // Every exit from this route must burn the nonce cookie. Clearing it only on
+  // success left a valid nonce alive for the rest of its 600s TTL after a
+  // denied / token_failed / mismatch / catch outcome.
+  const failRedirect = (slug: string) => {
+    const res = NextResponse.redirect(
+      new URL(`/dashboard/integrations?error=${slug}`, origin)
+    );
+    clearOAuthNonce(res, "salla_oauth_nonce");
+    return res;
+  };
+
   // --- Handle errors from Salla (e.g. user denied access) ---
   if (errorParam) {
     console.error("[Salla Callback] Authorization denied:", errorParam);
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=salla_denied`, origin)
-    );
+    return failRedirect("salla_denied");
   }
 
   if (!code || !state) {
     console.error("[Salla Callback] Missing code or state parameter");
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=salla_invalid_callback`, origin)
-    );
+    return failRedirect("salla_invalid_callback");
   }
 
   // --- Verify this callback belongs to the signed-in merchant (CRIT-7) ---
@@ -40,9 +47,7 @@ export async function GET(request: NextRequest) {
   const merchantId = verifyOAuthCallback(request, "salla_oauth_nonce", state, user?.id);
   if (!merchantId) {
     console.error("[Salla Callback] Session/state mismatch — refusing to attach store");
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=salla_auth_mismatch`, origin)
-    );
+    return failRedirect("salla_auth_mismatch");
   }
 
   // --- Validate env vars ---
@@ -51,9 +56,7 @@ export async function GET(request: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error("[Salla Callback] SALLA_CLIENT_ID or SALLA_CLIENT_SECRET missing");
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=salla_not_configured`, origin)
-    );
+    return failRedirect("salla_not_configured");
   }
 
   const redirectUri = `${origin}/api/auth/salla/callback`;
@@ -78,9 +81,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.text();
       console.error("[Salla Callback] Token exchange failed:", tokenResponse.status, errorBody);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=salla_token_failed`, origin)
-      );
+      return failRedirect("salla_token_failed");
     }
 
     const tokenData = await tokenResponse.json();
@@ -102,9 +103,7 @@ export async function GET(request: NextRequest) {
     if (!userInfoResponse.ok) {
       const uiErrorBody = await userInfoResponse.text();
       console.error("[Salla Callback] Failed to fetch user info:", userInfoResponse.status, uiErrorBody);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=salla_userinfo_failed`, origin)
-      );
+      return failRedirect("salla_userinfo_failed");
     }
 
     const userInfo = await userInfoResponse.json();
@@ -125,9 +124,7 @@ export async function GET(request: NextRequest) {
 
     if (!sallaMerchantId) {
       console.error("[Salla Callback] user/info returned no merchant.id — refusing to save an unroutable store");
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=salla_userinfo_failed`, origin)
-      );
+      return failRedirect("salla_userinfo_failed");
     }
 
     // ========== STEP 3: Upsert store into Supabase ==========
@@ -150,9 +147,7 @@ export async function GET(request: NextRequest) {
       );
     if (merchantErr) {
       console.error("[Salla Callback] merchant ensure failed:", merchantErr);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
-      );
+      return failRedirect("salla_unexpected");
     }
 
     // Check if this merchant already has a Salla store connected
@@ -165,9 +160,7 @@ export async function GET(request: NextRequest) {
 
     if (findError) {
       console.error("[Salla Callback] DB find error:", findError);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
-      );
+      return failRedirect("salla_unexpected");
     }
 
     if (existingStore) {
@@ -189,9 +182,7 @@ export async function GET(request: NextRequest) {
 
       if (updateError) {
         console.error("[Salla Callback] ❌ Store UPDATE failed:", updateError);
-        return NextResponse.redirect(
-          new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
-        );
+        return failRedirect("salla_unexpected");
       } else {
         console.log("[Salla Callback] ✅ Store updated successfully");
       }
@@ -214,9 +205,7 @@ export async function GET(request: NextRequest) {
 
       if (insertError) {
         console.error("[Salla Callback] ❌ Store INSERT failed:", insertError);
-        return NextResponse.redirect(
-          new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
-        );
+        return failRedirect("salla_unexpected");
       } else {
         console.log("[Salla Callback] ✅ Store inserted successfully");
       }
@@ -234,8 +223,6 @@ export async function GET(request: NextRequest) {
     return res;
   } catch (error) {
     console.error("[Salla Callback] Unexpected error:", error);
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=salla_unexpected`, origin)
-    );
+    return failRedirect("salla_unexpected");
   }
 }

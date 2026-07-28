@@ -20,19 +20,26 @@ export async function GET(request: NextRequest) {
   // Detect real origin (pinned to PUBLIC_BASE_URL when set)
   const origin = resolveOrigin(request);
 
+  // Every exit from this route must burn the nonce cookie. Clearing it only on
+  // success left a valid nonce alive for the rest of its 600s TTL after a
+  // denied / token_failed / mismatch / catch outcome.
+  const failRedirect = (slug: string) => {
+    const res = NextResponse.redirect(
+      new URL(`/dashboard/integrations?error=${slug}`, origin)
+    );
+    clearOAuthNonce(res, "zid_oauth_nonce");
+    return res;
+  };
+
   // --- Handle errors from Zid (e.g. user denied access) ---
   if (errorParam) {
     console.error("[Zid Callback] Authorization denied:", errorParam);
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=zid_denied`, origin)
-    );
+    return failRedirect("zid_denied");
   }
 
   if (!code || !state) {
     console.error("[Zid Callback] Missing code or state parameter");
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=zid_invalid_callback`, origin)
-    );
+    return failRedirect("zid_invalid_callback");
   }
 
   // --- Verify this callback belongs to the signed-in merchant (CRIT-7) ---
@@ -41,9 +48,7 @@ export async function GET(request: NextRequest) {
   const merchantId = verifyOAuthCallback(request, "zid_oauth_nonce", state, user?.id);
   if (!merchantId) {
     console.error("[Zid Callback] Session/state mismatch — refusing to attach store");
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=zid_auth_mismatch`, origin)
-    );
+    return failRedirect("zid_auth_mismatch");
   }
 
   // --- Validate env vars ---
@@ -53,9 +58,7 @@ export async function GET(request: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error("[Zid Callback] ZID_CLIENT_ID or ZID_CLIENT_SECRET missing");
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=zid_not_configured`, origin)
-    );
+    return failRedirect("zid_not_configured");
   }
 
   const redirectUri = `${origin}/api/auth/zid/callback`;
@@ -81,9 +84,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.text();
       console.error("[Zid Callback] Token exchange failed:", tokenResponse.status, errorBody);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=zid_token_failed`, origin)
-      );
+      return failRedirect("zid_token_failed");
     }
 
     const tokenData = await tokenResponse.json();
@@ -151,9 +152,7 @@ export async function GET(request: NextRequest) {
       );
     if (merchantErr) {
       console.error("[Zid Callback] merchant ensure failed:", merchantErr);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
-      );
+      return failRedirect("zid_unexpected");
     }
 
     // Check if this merchant already has a Zid store connected
@@ -168,9 +167,7 @@ export async function GET(request: NextRequest) {
       // Do NOT fall through: without a definitive answer we would take the INSERT
       // branch and duplicate an existing store, then still report success.
       console.error("[Zid Callback] Error finding existing store:", findError);
-      return NextResponse.redirect(
-        new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
-      );
+      return failRedirect("zid_unexpected");
     }
 
     const storeRecord = {
@@ -194,9 +191,7 @@ export async function GET(request: NextRequest) {
 
       if (updateError) {
         console.error("[Zid Callback] ❌ Store UPDATE failed:", updateError);
-        return NextResponse.redirect(
-          new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
-        );
+        return failRedirect("zid_unexpected");
       } else {
         console.log("[Zid Callback] ✅ Store updated successfully");
       }
@@ -210,9 +205,7 @@ export async function GET(request: NextRequest) {
 
       if (insertError) {
         console.error("[Zid Callback] ❌ Store INSERT failed:", insertError);
-        return NextResponse.redirect(
-          new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
-        );
+        return failRedirect("zid_unexpected");
       } else {
         console.log("[Zid Callback] ✅ Store inserted successfully");
       }
@@ -230,8 +223,6 @@ export async function GET(request: NextRequest) {
     return res;
   } catch (error) {
     console.error("[Zid Callback] Unexpected error:", error);
-    return NextResponse.redirect(
-      new URL(`/dashboard/integrations?error=zid_unexpected`, origin)
-    );
+    return failRedirect("zid_unexpected");
   }
 }
