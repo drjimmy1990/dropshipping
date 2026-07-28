@@ -44,11 +44,18 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages.
+  // getUser() above may have rotated the refresh token and written the new auth
+  // cookies onto `supabaseResponse` via setAll. A fresh NextResponse.redirect()
+  // carries none of them, so the rotated tokens would never reach the browser
+  // while the old refresh token is already spent — an intermittent login loop.
+  // Copy them across before returning.
   if (user && pathname.startsWith("/auth/")) {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = "/dashboard";
-    return NextResponse.redirect(dashboardUrl);
+    const redirectRes = NextResponse.redirect(dashboardUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => redirectRes.cookies.set(c));
+    return redirectRes;
   }
 
   return supabaseResponse;

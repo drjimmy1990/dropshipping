@@ -5,6 +5,31 @@ import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
 import { useIntegrations } from "@/hooks/use-integrations";
 import { useSearchParams } from "next/navigation";
 
+/**
+ * Machine-readable error slug -> user-facing copy.
+ *
+ * Module scope on purpose: two callers share it. The OAuth routes surface slugs via the
+ * `?error=` query param, and /api/auth/zid/manual returns them in a JSON body. Both must
+ * translate the same slug to the same sentence, so the copy lives in exactly one place.
+ */
+const ERROR_MESSAGES: Record<string, string> = {
+  salla_denied: "Authorization was denied. Please try again.",
+  salla_not_configured: "Salla is not configured. Contact support.",
+  salla_token_failed: "Failed to get access token from Salla.",
+  salla_userinfo_failed: "Failed to fetch store info from Salla.",
+  salla_invalid_callback: "Invalid callback. Please try again.",
+  salla_unexpected: "An unexpected error occurred. Please try again.",
+  zid_denied: "Zid authorization was denied. Please try again.",
+  zid_not_configured: "Zid is not configured. Contact support.",
+  zid_token_failed: "Failed to get access token from Zid.",
+  zid_invalid_callback: "Invalid Zid callback. Please try again.",
+  zid_unexpected: "An unexpected Zid error occurred. Please try again.",
+  max_stores_reached: "You've reached your plan's store limit. Upgrade to connect more.",
+  store_count_failed: "Could not verify your plan limits. Please try again.",
+  salla_auth_mismatch: "Session mismatch — please sign in again and retry.",
+  zid_auth_mismatch: "Session mismatch — please sign in again and retry.",
+};
+
 export default function IntegrationsPage() {
   return (
     <Suspense fallback={<IntegrationsSkeleton />}>
@@ -86,23 +111,13 @@ function IntegrationsContent() {
     if (success === "salla_connected") {
       setToast({ type: "success", message: "✅ Salla store connected successfully!" });
       refetch(); // Refresh the stores list
+    } else if (success === "zid_connected") {
+      setToast({ type: "success", message: "✅ Zid store connected successfully!" });
+      refetch(); // Refresh the stores list
     } else if (errorParam) {
-      const errorMessages: Record<string, string> = {
-        salla_denied: "Authorization was denied. Please try again.",
-        salla_not_configured: "Salla is not configured. Contact support.",
-        salla_token_failed: "Failed to get access token from Salla.",
-        salla_userinfo_failed: "Failed to fetch store info from Salla.",
-        salla_invalid_callback: "Invalid callback. Please try again.",
-        salla_unexpected: "An unexpected error occurred. Please try again.",
-        zid_denied: "Zid authorization was denied. Please try again.",
-        zid_not_configured: "Zid is not configured. Contact support.",
-        zid_token_failed: "Failed to get access token from Zid.",
-        zid_invalid_callback: "Invalid Zid callback. Please try again.",
-        zid_unexpected: "An unexpected Zid error occurred. Please try again.",
-      };
       setToast({
         type: "error",
-        message: errorMessages[errorParam] || "An error occurred connecting your store.",
+        message: ERROR_MESSAGES[errorParam] || "An error occurred connecting your store.",
       });
     }
 
@@ -136,7 +151,14 @@ function IntegrationsContent() {
         setZidTokenForm({ managerToken: "", storeId: "" });
         refetch();
       } else {
-        setToast({ type: "error", message: data.error || "Failed to connect Zid store." });
+        // Translate machine-readable slugs (e.g. "max_stores_reached") through the shared map.
+        // This route also returns already-human sentences (invalid token, etc.), so an
+        // unmapped `data.error` passes through unchanged before the generic fallback.
+        setToast({
+          type: "error",
+          message:
+            ERROR_MESSAGES[data.error] || data.error || "Failed to connect Zid store.",
+        });
       }
     } catch {
       setToast({ type: "error", message: "Network error. Please try again." });
@@ -147,7 +169,9 @@ function IntegrationsContent() {
 
   const hasSallaStore = stores.some((s) => s.platform === "salla");
   const hasZidStore = stores.some((s) => s.platform === "zid");
-  const storesAtLimit = stores.length >= maxStores;
+  // `maxStores === null` means the limit is unknown — never treat unknown as at-limit.
+  // The server routes fail closed, so they remain the authority.
+  const storesAtLimit = maxStores !== null && stores.length >= maxStores;
 
   return (
     <>
@@ -185,7 +209,7 @@ function IntegrationsContent() {
       {/* Store Connections */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider">
-          Store Platforms ({stores.length} / {maxStores})
+          Store Platforms ({stores.length} / {maxStores ?? "—"})
         </h3>
         <Badge variant={storesAtLimit ? "warning" : "neutral"}>
           {planName} plan

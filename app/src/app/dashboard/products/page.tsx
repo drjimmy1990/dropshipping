@@ -218,7 +218,11 @@ export default function MyProductsPage() {
     try {
       const response = await fetch(endpoint, { method: "POST" });
       const data = await response.json();
-      if (response.ok && data.success) {
+      // Gate the refresh on transport success, not on data.success. A partial sync
+      // returns 200 with success:false (some products failed) — but the ones that
+      // did import are really in the DB, so the grid and the last-sync chip still
+      // need refreshing. The toast severity carries the partial failure instead.
+      if (response.ok) {
         setToast({
           type: data.errors > 0 ? "error" : "success",
           message: `${label}: Synced ${data.synced} products (${data.created} new, ${data.updated} updated${data.errors ? `, ${data.errors} errors` : ""})`,

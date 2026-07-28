@@ -9,8 +9,10 @@ import type { NextRequest, NextResponse } from "next/server";
  * - buildOAuthState / setOAuthNonce: bind the OAuth `state` to the merchant id
  *   and a random CSRF nonce stored in an HttpOnly cookie (double-submit pattern).
  * - verifyOAuthCallback: require a logged-in user whose id matches the state,
- *   and — when both a state nonce and its cookie are present — require them to
- *   match. A missing nonce/cookie degrades to the id check, never to "no check".
+ *   AND a state nonce that matches the HttpOnly cookie. Both are MANDATORY:
+ *   a colon-free (nonce-less) state used to short-circuit the comparison, so an
+ *   attacker who knew a victim's user UUID could bind their own store to it.
+ *   Missing separator / missing cookie / length mismatch all fail closed.
  */
 
 const NONCE_MAX_AGE = 600; // seconds
@@ -61,13 +63,19 @@ export function verifyOAuthCallback(
   sessionUserId: string | undefined
 ): string | null {
   const sep = state.indexOf(":");
-  const stateUserId = sep === -1 ? state : state.slice(0, sep);
-  const stateNonce = sep === -1 ? null : state.slice(sep + 1);
+  if (sep === -1) return null;                      // nonce is now MANDATORY
+  const stateUserId = state.slice(0, sep);
+  const stateNonce  = state.slice(sep + 1);
 
   if (!sessionUserId || sessionUserId !== stateUserId) return null;
 
-  const cookieNonce = request.cookies.get(cookieName)?.value || null;
-  if (stateNonce && cookieNonce && stateNonce !== cookieNonce) return null;
+  const cookieNonce = request.cookies.get(cookieName)?.value;
+  if (!cookieNonce) return null;
+
+  const a = Buffer.from(stateNonce);
+  const b = Buffer.from(cookieNonce);
+  if (a.length !== b.length) return null;           // timingSafeEqual THROWS on length mismatch
+  if (!crypto.timingSafeEqual(a, b)) return null;
 
   return stateUserId;
 }

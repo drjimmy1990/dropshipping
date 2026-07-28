@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
  * POST /api/salla/products
  *
  * Syncs ALL products from the merchant's Salla store into the local DB.
- * - Products already tracked (matching store_product_id) → updates local record
+ * - Products already tracked (matching product_listings.store_product_id) → updates local record
  * - New products (not in our DB) → inserts as supplier: "direct"
  *
  * Returns: { synced: number, created: number, updated: number }
@@ -150,29 +150,30 @@ export async function POST(request: NextRequest) {
             ? sallaProduct.images.map((img) => typeof img === 'string' ? img : img.url)
             : sallaProduct.main_image ? [sallaProduct.main_image] : [];
 
-          // Check if product already exists in our DB (match salla_product_id or legacy store_product_id)
+          // 1. Dedupe via product_listings. Phase 13 dropped products.salla_product_id,
+          //    products.salla_store_id, products.store_product_id and products.store_id —
+          //    the store↔product linkage now lives only in product_listings.
           const sallaId = String(sallaProduct.id);
-          let existing = null;
-          const { data: bySallaId } = await adminClient
-            .from("products")
-            .select("id")
-            .eq("salla_product_id", sallaId)
-            .eq("merchant_id", user.id)
+          const { data: listing, error: listingErr } = await adminClient
+            .from("product_listings")
+            .select("id, product_id")
+            .eq("store_id", store.id)
+            .eq("store_product_id", sallaId)
             .maybeSingle();
-          existing = bySallaId;
 
-          if (!existing) {
-            const { data: byStoreId } = await adminClient
-              .from("products")
-              .select("id")
-              .eq("store_product_id", sallaId)
-              .eq("merchant_id", user.id)
-              .maybeSingle();
-            existing = byStoreId;
+          if (listingErr) {
+            // NEVER discard this — swallowing it is what made the sync silently import zero products.
+            console.error(`[Salla Sync] ❌ Listing lookup failed for "${sallaProduct.name}":`, listingErr.message);
+            errors++;
+            continue;
           }
 
-          if (existing) {
-            // Update existing product (sync latest data from Salla)
+          const isNew = !listing;
+          const marginValue = Math.max(0, priceAmount - costPrice);
+          let productId = listing?.product_id ?? null;
+
+          if (productId) {
+            // 2a. Known product — sync the latest data from Salla.
             const { error: updateErr } = await adminClient
               .from("products")
               .update({
@@ -182,53 +183,84 @@ export async function POST(request: NextRequest) {
                 is_active: sallaProduct.status === "sale",
                 in_stock: sallaProduct.status !== "out",
                 images: imageUrls,
-                salla_product_id: sallaId,
-                salla_store_id: store.id,
-                store_product_id: sallaId,
-                store_id: store.id,
                 updated_at: new Date().toISOString(),
               })
-              .eq("id", existing.id);
+              .eq("id", productId);
 
             if (updateErr) {
               console.error(`[Salla Sync] ⚠️ Update failed for "${sallaProduct.name}":`, updateErr.message);
               errors++;
-            } else {
-              updated++;
+              continue;
             }
           } else {
-            // Insert as "direct" product (merchant's own Salla product)
+            // 2b. Upsert as a "direct" product on the real unique key
+            //     (uq_products_supplier: merchant_id, supplier, supplier_product_id).
             const categoryId = sallaProduct.categories?.[0]?.id || null;
 
-            const { error: insertErr } = await adminClient.from("products").insert({
-              merchant_id: user.id,
-              store_id: store.id,
-              supplier: "direct",
-              supplier_product_id: sallaId,
-              title_en: sallaProduct.name,
-              description_en: sallaProduct.description || null,
-              supplier_cost: costPrice,
-              supplier_currency: (typeof sallaProduct.price === 'object' ? sallaProduct.price.currency : 'SAR') || "SAR",
-              retail_price: priceAmount,
-              margin_type: "fixed",
-              margin_value: priceAmount - costPrice,
-              stock_quantity: stockQty,
-              is_active: sallaProduct.status === "sale",
-              in_stock: sallaProduct.status !== "out",
-              images: imageUrls,
-              store_product_id: sallaId,
-              salla_product_id: sallaId,
-              salla_store_id: store.id,
-              salla_category_id: categoryId,
-              category: sallaProduct.categories?.[0]?.name || null,
-            });
+            const { data: upserted, error: upsertErr } = await adminClient
+              .from("products")
+              .upsert(
+                {
+                  merchant_id: user.id,
+                  supplier: "direct",
+                  supplier_product_id: sallaId,
+                  title_en: sallaProduct.name,
+                  description_en: sallaProduct.description || null,
+                  supplier_cost: costPrice,
+                  supplier_currency: (typeof sallaProduct.price === 'object' ? sallaProduct.price.currency : 'SAR') || "SAR",
+                  retail_price: priceAmount,
+                  margin_type: "fixed",
+                  margin_value: marginValue,
+                  stock_quantity: stockQty,
+                  is_active: sallaProduct.status === "sale",
+                  in_stock: sallaProduct.status !== "out",
+                  images: imageUrls,
+                  salla_category_id: categoryId,
+                  category: sallaProduct.categories?.[0]?.name || null,
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: "merchant_id,supplier,supplier_product_id" }
+              )
+              .select("id")
+              .single();
 
-            if (insertErr) {
-              console.error(`[Salla Sync] ❌ Insert failed for "${sallaProduct.name}":`, insertErr.message);
+            if (upsertErr || !upserted) {
+              console.error(`[Salla Sync] ❌ Product upsert failed for "${sallaProduct.name}":`, upsertErr?.message);
               errors++;
-            } else {
-              created++;
+              continue;
             }
+
+            productId = upserted.id;
+          }
+
+          // 3. Upsert the store listing — this is the linkage that replaced the dropped columns.
+          const { error: listingUpsertErr } = await adminClient
+            .from("product_listings")
+            .upsert(
+              {
+                product_id: productId,
+                store_id: store.id,
+                merchant_id: user.id,
+                store_product_id: sallaId,
+                margin_type: "fixed",
+                margin_value: marginValue,
+                retail_price: priceAmount,
+                is_active: sallaProduct.status === "sale",
+                last_sync_at: new Date().toISOString(),
+              },
+              { onConflict: "product_id,store_id" }
+            );
+
+          if (listingUpsertErr) {
+            console.error(`[Salla Sync] ❌ Listing upsert failed for "${sallaProduct.name}":`, listingUpsertErr.message);
+            errors++;
+            continue;
+          }
+
+          if (isNew) {
+            created++;
+          } else {
+            updated++;
           }
         } catch (productErr) {
           console.error(`[Salla Sync] ❌ Error processing "${sallaProduct.name}":`, productErr);
@@ -250,11 +282,16 @@ export async function POST(request: NextRequest) {
       .eq("id", store.id);
 
     return NextResponse.json({
-      success: true,
+      // Never claim success while products failed to import — that is what hid
+      // the phase 13 column drift for weeks.
+      success: errors === 0,
       synced: created + updated,
       created,
       updated,
       errors,
+      ...(errors > 0
+        ? { error: `Salla sync completed with ${errors} failed product(s). ${created + updated} synced.` }
+        : {}),
     });
   } catch (error) {
     console.error("[Salla Sync] Error:", error);

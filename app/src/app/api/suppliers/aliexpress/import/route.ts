@@ -15,7 +15,7 @@ import type { Product } from "@/lib/supabase/types";
  * 1. Fetches full product detail from AliExpress
  * 2. Calculates retail price based on margin settings
  * 3. Inserts into the `products` table in Supabase
- * 4. (Optional) Pushes to Salla store and saves store_product_id
+ * 4. (Optional) Pushes to the store and records the link in `product_listings`
  *
  * Request body:
  *  - productId: AliExpress product ID
@@ -127,7 +127,8 @@ export async function POST(request: NextRequest) {
     const productData = {
       merchant_id: user.id,
       supplier_account_id: null, // Platform-level, no per-merchant supplier account
-      store_id: store?.id || null,
+      // NOTE: no store_id here — phase 13 dropped it. Store linkage is written to
+      // product_listings after a successful push (step 7 below).
       supplier: "aliexpress" as const,
       supplier_product_id: String(productId),
       supplier_url: product.url,
@@ -155,23 +156,11 @@ export async function POST(request: NextRequest) {
       estimated_delivery: estimatedDelivery || null,
     };
 
-    let { data: insertedProduct, error: insertError } = await adminClient
+    const { data: insertedProduct, error: insertError } = await adminClient
       .from("products")
       .insert(productData)
       .select("*")
       .single();
-
-    if (insertError && insertError.message?.includes("store_id")) {
-      console.warn("[Import] store_id column missing on products table, retrying without store_id...");
-      const { store_id, ...dataWithoutStoreId } = productData;
-      const retry = await adminClient
-        .from("products")
-        .insert(dataWithoutStoreId)
-        .select("*")
-        .single();
-      insertedProduct = retry.data;
-      insertError = retry.error;
-    }
 
     if (insertError) {
       console.error("[Import] ❌ Product INSERT failed:", insertError);
@@ -255,14 +244,31 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Save the store product ID
-        await adminClient
-          .from("products")
-          .update({
-            store_product_id: storeProductId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", insertedProduct.id);
+        // Save the store linkage in product_listings (phase 13 replacement for
+        // the dropped products.store_product_id / products.store_id columns).
+        if (storeProductId) {
+          const { error: listingError } = await adminClient
+            .from("product_listings")
+            .upsert(
+              {
+                product_id: insertedProduct.id,
+                store_id: store.id,
+                merchant_id: user.id,
+                store_product_id: String(storeProductId),
+                margin_type: marginType,
+                margin_value: Math.max(0, marginValue),
+                retail_price: finalRetailPrice,
+                is_active: true,
+                last_sync_at: new Date().toISOString(),
+              },
+              { onConflict: "product_id,store_id" }
+            );
+
+          if (listingError) {
+            console.error("[Import] ❌ product_listings upsert failed:", listingError);
+            pushError = `Product pushed to the store but the local link failed: ${listingError.message}`;
+          }
+        }
       } catch (err) {
         pushError =
           err instanceof SallaApiError

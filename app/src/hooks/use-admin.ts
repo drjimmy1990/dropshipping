@@ -172,6 +172,17 @@ export function useAdminRevenue() {
 
 // ---------- Platform Config ----------
 
+/**
+ * `platform_config.value` is JSONB, so a correctly-written row already comes back
+ * as an object/number/boolean and passes straight through. Rows written by the
+ * older double-encoding save path come back as a JSON *string* — parse those so
+ * they still work until the data-repair migration runs. Idempotent by design.
+ */
+function parseConfigValue(raw: unknown): unknown {
+  if (typeof raw !== "string") return raw;
+  try { return JSON.parse(raw); } catch { return raw; }
+}
+
 export function usePlatformConfig() {
   const [config, setConfig] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
@@ -190,7 +201,7 @@ export function usePlatformConfig() {
     else {
       const obj: Record<string, unknown> = {};
       (data as PlatformConfig[]).forEach((row) => {
-        obj[row.key] = row.value;
+        obj[row.key] = parseConfigValue(row.value);
       });
       setConfig(obj);
     }
@@ -203,13 +214,18 @@ export function usePlatformConfig() {
     const { error } = await supabase
       .from("platform_config")
       .upsert(
-        { key, value: JSON.stringify(value), updated_at: new Date().toISOString() },
+        // `value` is JSONB — supabase-js serialises the whole row body itself, so
+        // pass the object through unchanged. Pre-stringifying stored a JSON string
+        // scalar instead of the object, which silently erased the config on reload.
+        { key, value, updated_at: new Date().toISOString() },
         { onConflict: "key" }
       );
 
     setSaving(false);
     if (error) { setError(error.message); return false; }
-    setConfig((prev) => ({ ...prev, [key]: value }));
+    // Same normalisation as the fetch path, so optimistic state and a later
+    // refetch always agree on shape.
+    setConfig((prev) => ({ ...prev, [key]: parseConfigValue(value) }));
     return true;
   }, []);
 

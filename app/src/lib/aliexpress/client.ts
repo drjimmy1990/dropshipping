@@ -5,6 +5,7 @@
 
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/server";
+import { redact } from "@/lib/log/redact";
 import type {
   AliExpressConfig,
   AliExpressTokenResponse,
@@ -120,7 +121,7 @@ async function refreshAccessToken(): Promise<string | undefined> {
     });
 
     const data = await response.json();
-    console.log("[AliExpress] Token refresh response:", JSON.stringify(data, null, 2).substring(0, 500));
+    console.log("[AliExpress] Token refresh response:", JSON.stringify(redact(data)));
 
     if (data.access_token) {
       // Save the new access token
@@ -143,7 +144,7 @@ async function refreshAccessToken(): Promise<string | undefined> {
       return data.access_token;
     }
 
-    console.error("[AliExpress] Token refresh failed - no access_token in response:", data);
+    console.error("[AliExpress] Token refresh failed - no access_token in response:", JSON.stringify(redact(data)));
     return undefined;
   } catch (err) {
     console.error("[AliExpress] Token refresh error:", err);
@@ -235,8 +236,10 @@ async function apiRequest<T>(
 
   const data = await response.json();
 
-  // DEBUG: Log full raw response
-  console.log(`[AliExpress] RAW RESPONSE for ${method}:`, JSON.stringify(data, null, 2).substring(0, 2000));
+  // DEBUG: Log full raw response. Redacted: this is an unbounded dump of a gateway
+  // body in the same file that handles the platform access/refresh tokens, and the
+  // AliExpress `error_response` shape is not contractually free of echoed params.
+  console.log(`[AliExpress] RAW RESPONSE for ${method}:`, JSON.stringify(redact(data), null, 2).substring(0, 2000));
 
   // Check for error_response (returned on auth/param failures)
   if (data.error_response) {

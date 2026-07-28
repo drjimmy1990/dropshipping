@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { getStoreLimit } from "@/lib/plan/storeLimit";
 
 /**
  * POST /api/auth/zid/manual
@@ -23,33 +24,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 1.5. Validate subscription limits
-  const { data: merchantData } = await supabase
-    .from("merchants")
-    .select("plan")
-    .eq("id", user.id)
-    .single();
+  // 1.5. Validate subscription limits (fails CLOSED; JSON only — the caller parses data.error)
+  const limit = await getStoreLimit(supabase, user.id);
+  if ("error" in limit) {
+    console.error("[Zid Manual] plan limit lookup failed:", limit.error);
+    return NextResponse.json({ error: "Could not verify plan limits" }, { status: 500 });
+  }
 
-  const planName = merchantData?.plan || "free";
-  const { data: tierData } = await supabase
-    .from("subscription_tiers")
-    .select("max_stores")
-    .ilike("name", planName)
-    .single();
-
-  const maxStores = tierData?.max_stores || 1;
-
-  const { count: currentStoreCount } = await supabase
+  const { count: currentStoreCount, error: storeCountError } = await supabase
     .from("stores")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("merchant_id", user.id);
 
-  if (currentStoreCount !== null && currentStoreCount >= maxStores) {
-    console.error(`[Zid Manual] Merchant ${user.id} reached max stores (${maxStores})`);
-    return NextResponse.json(
-      { error: `You have reached the maximum number of stores allowed for your plan (${maxStores}).` },
-      { status: 403 }
-    );
+  if (storeCountError || currentStoreCount === null) {
+    console.error("[Zid Manual] store count failed:", storeCountError);
+    return NextResponse.json({ error: "Could not verify plan limits" }, { status: 500 });
+  }
+
+  if (currentStoreCount >= limit.maxStores) {
+    return NextResponse.json({ error: "max_stores_reached" }, { status: 403 });
   }
 
   // 2. Parse the body
@@ -179,20 +172,40 @@ export async function POST(request: NextRequest) {
     const adminClient = createAdminClient();
     const merchantId = user.id;
 
-    // Ensure merchant row exists to prevent foreign key errors
-    await adminClient.from("merchants").upsert({
-      id: merchantId,
-      email: user?.email || "",
-      business_name: "My Store"
-    }, { onConflict: "id" }).select("id").single();
+    // Ensure merchant row exists to prevent foreign key errors.
+    // ignoreDuplicates: true => ON CONFLICT DO NOTHING, so reconnecting never resets
+    // an existing merchant's real business_name back to "My Store".
+    const { error: merchantErr } = await adminClient
+      .from("merchants")
+      .upsert(
+        { id: merchantId, email: user?.email || "", business_name: "My Store" },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    if (merchantErr) {
+      console.error("[Zid Manual] merchant ensure failed:", merchantErr);
+      return NextResponse.json(
+        { error: "Failed to save store record" },
+        { status: 500 }
+      );
+    }
 
     // Check if merchant already has a Zid store
-    const { data: existingStore } = await adminClient
+    const { data: existingStore, error: findError } = await adminClient
       .from("stores")
       .select("id")
       .eq("merchant_id", merchantId)
       .eq("platform", "zid")
       .maybeSingle();
+
+    if (findError) {
+      // Do NOT fall through: without a definitive answer we would take the INSERT
+      // branch and duplicate an existing store, then still return { success: true }.
+      console.error("[Zid Manual] Error finding existing store:", findError);
+      return NextResponse.json(
+        { error: "Failed to look up existing store" },
+        { status: 500 }
+      );
+    }
 
     const storeRecord = {
       store_name: storeName,

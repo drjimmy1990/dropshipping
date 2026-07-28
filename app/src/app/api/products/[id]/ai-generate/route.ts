@@ -36,18 +36,32 @@ export async function POST(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // 2. Fetch store branding (if available)
+    // 2. Resolve the store through product_listings — phase 13 dropped products.store_id.
+    const { data: listing, error: listingError } = await supabase
+      .from("product_listings")
+      .select("store_id")
+      .eq("product_id", id)
+      .limit(1)
+      .maybeSingle();
+
+    if (listingError) {
+      console.error("[ai-generate] listing lookup failed:", listingError.message);
+    }
+
+    const storeId: string | null = listing?.store_id ?? null;
+
+    // 3. Fetch store branding (if available)
     let branding = null;
-    if (product.store_id) {
+    if (storeId) {
       const { data: brandData } = await supabase
         .from("store_branding")
         .select("*")
-        .eq("store_id", product.store_id)
-        .single();
+        .eq("store_id", storeId)
+        .maybeSingle();
       branding = brandData;
     }
 
-    // 3. Fetch template (if specified)
+    // 4. Fetch template (if specified)
     let template = null;
     if (body.template_id) {
       const { data: tplData } = await supabase
@@ -58,7 +72,7 @@ export async function POST(
       template = tplData;
     }
 
-    // 4. Get n8n webhook URL from platform_config
+    // 5. Get n8n webhook URL from platform_config
     const admin = createAdminClient();
     const { data: configData } = await admin
       .from("platform_config")
@@ -78,7 +92,7 @@ export async function POST(
         .insert({
           merchant_id: user.id,
           product_id: id,
-          store_id: product.store_id,
+          store_id: storeId,
           type: contentType,
           status: "pending_review",
           ai_prompt: buildPrompt(product, branding, contentType, language, template),
@@ -98,13 +112,13 @@ export async function POST(
       }, { status: 202 });
     }
 
-    // 5. Create content asset record (status: generating)
+    // 6. Create content asset record (status: generating)
     const { data: asset, error: assetError } = await supabase
       .from("content_assets")
       .insert({
         merchant_id: user.id,
         product_id: id,
-        store_id: product.store_id,
+        store_id: storeId,
         type: contentType,
         status: "generating",
         ai_prompt: buildPrompt(product, branding, contentType, language, template),
@@ -115,7 +129,7 @@ export async function POST(
 
     if (assetError) throw assetError;
 
-    // 6. Call n8n webhook
+    // 7. Call n8n webhook
     try {
       const n8nPayload = {
         asset_id: asset.id,

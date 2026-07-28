@@ -39,3 +39,7 @@ check-*.js
 fix*.js
 received-webhooks.txt
 app/src/test-*.ts
+
+.superpowers/
+REVIEW_*.md
+DEPLOY_RUNBOOK.md
