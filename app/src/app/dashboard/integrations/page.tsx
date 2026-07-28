@@ -86,6 +86,9 @@ function IntegrationsContent() {
     if (success === "salla_connected") {
       setToast({ type: "success", message: "✅ Salla store connected successfully!" });
       refetch(); // Refresh the stores list
+    } else if (success === "zid_connected") {
+      setToast({ type: "success", message: "✅ Zid store connected successfully!" });
+      refetch(); // Refresh the stores list
     } else if (errorParam) {
       const errorMessages: Record<string, string> = {
         salla_denied: "Authorization was denied. Please try again.",
@@ -99,6 +102,10 @@ function IntegrationsContent() {
         zid_token_failed: "Failed to get access token from Zid.",
         zid_invalid_callback: "Invalid Zid callback. Please try again.",
         zid_unexpected: "An unexpected Zid error occurred. Please try again.",
+        max_stores_reached: "You've reached your plan's store limit. Upgrade to connect more.",
+        store_count_failed: "Could not verify your plan limits. Please try again.",
+        salla_auth_mismatch: "Session mismatch — please sign in again and retry.",
+        zid_auth_mismatch: "Session mismatch — please sign in again and retry.",
       };
       setToast({
         type: "error",
@@ -147,7 +154,9 @@ function IntegrationsContent() {
 
   const hasSallaStore = stores.some((s) => s.platform === "salla");
   const hasZidStore = stores.some((s) => s.platform === "zid");
-  const storesAtLimit = stores.length >= maxStores;
+  // `maxStores === null` means the limit is unknown — never treat unknown as at-limit.
+  // The server routes fail closed, so they remain the authority.
+  const storesAtLimit = maxStores !== null && stores.length >= maxStores;
 
   return (
     <>
@@ -185,7 +194,7 @@ function IntegrationsContent() {
       {/* Store Connections */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider">
-          Store Platforms ({stores.length} / {maxStores})
+          Store Platforms ({stores.length} / {maxStores ?? "—"})
         </h3>
         <Badge variant={storesAtLimit ? "warning" : "neutral"}>
           {planName} plan

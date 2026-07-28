@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { resolveOrigin, buildOAuthState, setOAuthNonce } from "@/lib/oauth/state";
+import { getStoreLimit } from "@/lib/plan/storeLimit";
 
 /**
  * GET /api/auth/zid
@@ -22,29 +23,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", origin));
   }
 
-  // 1.5. Validate subscription limits
-  const { data: merchantData } = await supabase
-    .from("merchants")
-    .select("plan")
-    .eq("id", user.id)
-    .maybeSingle();
+  // 1.5. Validate subscription limits (fails CLOSED)
+  const limit = await getStoreLimit(supabase, user.id);
+  if ("error" in limit) {
+    console.error("[Zid OAuth] plan limit lookup failed:", limit.error);
+    return NextResponse.redirect(
+      new URL("/dashboard/integrations?error=store_count_failed", origin)
+    );
+  }
 
-  const planName = merchantData?.plan || "free";
-  const { data: tierData } = await supabase
-    .from("subscription_tiers")
-    .select("max_stores")
-    .ilike("name", planName)
-    .single();
-
-  const maxStores = tierData?.max_stores || 10;
-
-  const { count: currentStoreCount } = await supabase
+  const { count: currentStoreCount, error: storeCountError } = await supabase
     .from("stores")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("merchant_id", user.id);
 
-  if (currentStoreCount !== null && currentStoreCount >= maxStores) {
-    console.error(`[Zid OAuth] Merchant ${user.id} reached max stores (${maxStores})`);
+  if (storeCountError || currentStoreCount === null) {
+    console.error("[Zid OAuth] store count failed:", storeCountError);
+    return NextResponse.redirect(
+      new URL("/dashboard/integrations?error=store_count_failed", origin)
+    );
+  }
+
+  if (currentStoreCount >= limit.maxStores) {
+    console.error(`[Zid OAuth] Merchant ${user.id} reached max stores (${limit.maxStores})`);
     return NextResponse.redirect(
       new URL("/dashboard/integrations?error=max_stores_reached", origin)
     );
