@@ -190,12 +190,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if merchant already has a Zid store
-    const { data: existingStore } = await adminClient
+    const { data: existingStore, error: findError } = await adminClient
       .from("stores")
       .select("id")
       .eq("merchant_id", merchantId)
       .eq("platform", "zid")
       .maybeSingle();
+
+    if (findError) {
+      // Do NOT fall through: without a definitive answer we would take the INSERT
+      // branch and duplicate an existing store, then still return { success: true }.
+      console.error("[Zid Manual] Error finding existing store:", findError);
+      return NextResponse.json(
+        { error: "Failed to look up existing store" },
+        { status: 500 }
+      );
+    }
 
     const storeRecord = {
       store_name: storeName,
