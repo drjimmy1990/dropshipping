@@ -121,6 +121,13 @@ export async function GET(request: NextRequest) {
 
     console.log("[Salla Callback] Saving store for merchant:", merchantId, "Store:", storeName);
 
+    // Ensure merchant row exists to prevent foreign key errors
+    await adminClient.from("merchants").upsert({
+      id: merchantId,
+      email: user?.email || "",
+      business_name: "My Store"
+    }, { onConflict: "id" }).select("id").single();
+
     // Check if this merchant already has a Salla store connected
     const { data: existingStore, error: findError } = await adminClient
       .from("stores")

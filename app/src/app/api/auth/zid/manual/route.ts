@@ -179,6 +179,13 @@ export async function POST(request: NextRequest) {
     const adminClient = createAdminClient();
     const merchantId = user.id;
 
+    // Ensure merchant row exists to prevent foreign key errors
+    await adminClient.from("merchants").upsert({
+      id: merchantId,
+      email: user?.email || "",
+      business_name: "My Store"
+    }, { onConflict: "id" }).select("id").single();
+
     // Check if merchant already has a Zid store
     const { data: existingStore } = await adminClient
       .from("stores")

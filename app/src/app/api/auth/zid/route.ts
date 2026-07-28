@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     .from("merchants")
     .select("plan")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   const planName = merchantData?.plan || "free";
   const { data: tierData } = await supabase

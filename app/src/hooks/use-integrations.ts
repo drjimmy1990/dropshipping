@@ -36,7 +36,7 @@ export function useIntegrations(): IntegrationsState {
     const [storesRes, suppliersRes, merchantRes] = await Promise.all([
       supabase.from("stores").select("*").eq("merchant_id", user.id),
       supabase.from("supplier_accounts").select("*").eq("merchant_id", user.id),
-      supabase.from("merchants").select("plan").eq("id", user.id).single(),
+      supabase.from("merchants").select("plan").eq("id", user.id).maybeSingle(),
     ]);
 
     if (storesRes.error) { setError(storesRes.error.message); }
