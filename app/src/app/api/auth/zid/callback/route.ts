@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { resolveOrigin, verifyOAuthCallback, clearOAuthNonce } from "@/lib/oauth/state";
-import { redact } from "@/lib/log/redact";
 
 /**
  * GET /api/auth/zid/callback
@@ -119,13 +118,20 @@ export async function GET(request: NextRequest) {
 
     if (profileResponse.ok) {
       const profileData = await profileResponse.json();
-      console.log("[Zid Callback] Profile data:", JSON.stringify(redact(profileData)));
 
       // Extract store info from profile response
       const store = profileData?.user?.store || profileData?.store || profileData?.data?.store || {};
       storeName = store.name || store.title || profileData?.user?.name || "Zid Store";
       storeUrl = store.url || store.link || null;
       zidStoreId = String(store.id || profileData?.user?.store_id || "");
+
+      // Never log the raw profile body: it carries manager and store PII (name, email,
+      // mobile, address) that redaction-by-key-name does not cover. Log only the opaque
+      // store id we extracted — storeName is already logged at the upsert below.
+      console.log(
+        "[Zid Callback] Profile fetched successfully ✅ store_id:",
+        zidStoreId || "(none)"
+      );
     } else {
       const profileErrorBody = await profileResponse.text();
       console.warn(
