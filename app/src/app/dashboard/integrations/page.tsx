@@ -31,7 +31,7 @@ function IntegrationsSkeleton() {
 }
 
 function IntegrationsContent() {
-  const { stores, suppliers, loading, error, refetch } = useIntegrations();
+  const { stores, suppliers, maxStores, planName, loading, error, refetch } = useIntegrations();
   const searchParams = useSearchParams();
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
@@ -147,6 +147,7 @@ function IntegrationsContent() {
 
   const hasSallaStore = stores.some((s) => s.platform === "salla");
   const hasZidStore = stores.some((s) => s.platform === "zid");
+  const storesAtLimit = stores.length >= maxStores;
 
   return (
     <>
@@ -182,9 +183,21 @@ function IntegrationsContent() {
       )}
 
       {/* Store Connections */}
-      <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-3">
-        Store Platforms
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider">
+          Store Platforms ({stores.length} / {maxStores})
+        </h3>
+        <Badge variant={storesAtLimit ? "warning" : "neutral"}>
+          {planName} plan
+        </Badge>
+      </div>
+
+      {storesAtLimit && (
+        <div className="mb-4 p-3 rounded-md bg-warning/10 border border-warning/30 text-warning text-sm flex items-center gap-2">
+          <Icon name="info" className="text-base" />
+          You have reached the maximum number of stores for your plan. Disconnect a store or upgrade to connect more.
+        </div>
+      )}
       <div className="grid md:grid-cols-2 gap-4 mb-8">
         {loading ? (
           Array.from({ length: 2 }).map((_, i) => (
@@ -280,12 +293,19 @@ function IntegrationsContent() {
                 <p className="text-xs text-text-muted mb-3">
                   Link your Salla store to automatically sync orders, products, and inventory.
                 </p>
-                <a href="/api/auth/salla">
-                  <Button size="sm" className="w-full">
-                    <Icon name="link" className="text-sm" />
-                    Connect Salla
+                {storesAtLimit ? (
+                  <Button size="sm" className="w-full" disabled title="Store limit reached">
+                    <Icon name="lock" className="text-sm" />
+                    Limit Reached
                   </Button>
-                </a>
+                ) : (
+                  <a href="/api/auth/salla">
+                    <Button size="sm" className="w-full">
+                      <Icon name="link" className="text-sm" />
+                      Connect Salla
+                    </Button>
+                  </a>
+                )}
               </Card>
 
             {/* Connected Zid stores */}
@@ -374,25 +394,32 @@ function IntegrationsContent() {
                 <p className="text-xs text-text-muted mb-3">
                   Connect your Zid store to import and manage products.
                 </p>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setShowZidTokenModal(true)}
-                  >
-                    <Icon name="link" className="text-sm" />
-                    Direct Connect
+                {storesAtLimit ? (
+                  <Button size="sm" className="w-full" disabled title="Store limit reached">
+                    <Icon name="lock" className="text-sm" />
+                    Limit Reached
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="flex-1"
-                    onClick={() => window.location.href = "/api/auth/zid"}
-                  >
-                    <Icon name="lock_open" className="text-sm" />
-                    OAuth
-                  </Button>
-                </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setShowZidTokenModal(true)}
+                    >
+                      <Icon name="link" className="text-sm" />
+                      Direct Connect
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="flex-1"
+                      onClick={() => window.location.href = "/api/auth/zid"}
+                    >
+                      <Icon name="lock_open" className="text-sm" />
+                      OAuth
+                    </Button>
+                  </div>
+                )}
             </Card>
           </>
         )}
