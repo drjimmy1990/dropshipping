@@ -75,7 +75,16 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set("response_type", "code");
   authUrl.searchParams.set("state", state);
 
-  console.log("[Zid OAuth] Redirecting merchant to Zid authorization:", authUrl.toString());
+  // Destination only — NEVER authUrl.toString(). The query string carries
+  // `state=<userId>:<nonce>`, and the nonce is now the SOLE CSRF control for the
+  // callback. Writing it to ~/.pm2/logs would hand anyone with log access a
+  // userId:nonce pair valid for 600s — enough to forge
+  // /api/auth/zid/callback?code=<attacker>&state=<uuid>:<nonce> and bind their own
+  // store to this merchant's account: exactly the attack the mandatory nonce closes.
+  console.log(
+    "[Zid OAuth] Redirecting merchant to Zid authorization:",
+    `${authUrl.origin}${authUrl.pathname}`
+  );
 
   const res = NextResponse.redirect(authUrl.toString());
   setOAuthNonce(res, "zid_oauth_nonce", nonce);

@@ -1,12 +1,54 @@
 "use client";
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Card, Button, Badge, Icon, Skeleton } from "@/components/shared";
 import { usePlatformConfig } from "@/hooks/use-admin";
+import { useSearchParams } from "next/navigation";
 
 const inputClass = "w-full bg-surface rounded-md px-3 py-2.5 text-text text-sm border border-border focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-colors";
 
+/**
+ * Machine-readable error slug -> user-facing copy.
+ *
+ * Module scope, mirroring `dashboard/integrations/page.tsx`. Every slug below is
+ * emitted by GET /api/auth/aliexpress or GET /api/auth/aliexpress/callback, both of
+ * which redirect back here. Adding an `?error=` slug to either route means adding it
+ * here too — otherwise the admin lands on a page that looks completely unchanged and
+ * cannot tell "not an admin" from "nonce expired" from "AliExpress denied".
+ */
+const ERROR_MESSAGES: Record<string, string> = {
+  not_admin: "Only platform admins can connect AliExpress.",
+  aliexpress_not_configured:
+    "AliExpress is not configured on the server (ALIEXPRESS_APP_KEY is missing). Contact support.",
+  aliexpress_auth_mismatch:
+    "Session mismatch, or the connection took longer than 10 minutes. Please click Connect and try again.",
+  no_code: "AliExpress did not return an authorization code. Please try again.",
+  auth_failed: "AliExpress rejected the authorization. Please try again.",
+  no_token: "AliExpress did not return an access token. Please try again.",
+  internal: "An unexpected error occurred. Please try again.",
+};
+
 export default function PlatformSettingsPage() {
+  return (
+    <Suspense fallback={<SettingsSkeleton />}>
+      <PlatformSettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Card key={i} className="p-6"><Skeleton className="h-32 w-full" /></Card>
+      ))}
+    </div>
+  );
+}
+
+function PlatformSettingsContent() {
   const { config, loading, saving, updateConfig } = usePlatformConfig();
+  const searchParams = useSearchParams();
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [showCJModal, setShowCJModal] = useState(false);
   const [cjToken, setCjToken] = useState("");
   const [cjConnecting, setCjConnecting] = useState(false);
@@ -46,12 +88,52 @@ export default function PlatformSettingsPage() {
     }
   };
 
+  // Surface the redirect query params from the AliExpress OAuth routes. Both
+  // /api/auth/aliexpress and /api/auth/aliexpress/callback redirect here on every
+  // outcome; without this the page rendered identically for all eight of them.
+  useEffect(() => {
+    const aliexpress = searchParams.get("aliexpress");
+    const errorParam = searchParams.get("error");
+
+    if (aliexpress === "success") {
+      setToast({ type: "success", message: "✅ AliExpress connected successfully!" });
+    } else if (errorParam) {
+      setToast({
+        type: "error",
+        message: ERROR_MESSAGES[errorParam] || "An error occurred connecting AliExpress.",
+      });
+    }
+
+    // Auto-dismiss toast after 8 seconds
+    if (aliexpress || errorParam) {
+      const timer = setTimeout(() => setToast(null), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
   return (
     <>
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-text">Platform Settings</h1>
         <p className="text-sm text-text-secondary">Configure payment gateways, APIs, and branding</p>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`mb-4 p-3 rounded-md text-sm flex items-center gap-2 transition-all ${
+            toast.type === "success"
+              ? "bg-success/10 border border-success/30 text-success"
+              : "bg-error/10 border border-error/30 text-error"
+          }`}
+        >
+          <Icon name={toast.type === "success" ? "check_circle" : "error"} className="text-base" />
+          {toast.message}
+          <button onClick={() => setToast(null)} className="ml-auto hover:opacity-70">
+            <Icon name="close" className="text-base" />
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-4">
