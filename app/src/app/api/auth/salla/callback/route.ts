@@ -130,7 +130,10 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (findError) {
-      console.error("[Salla Callback] Error finding existing store:", findError);
+      console.error("[Salla Callback] DB find error:", findError);
+      return NextResponse.redirect(
+        new URL(`/dashboard/integrations?error=salla_unexpected&details=${encodeURIComponent(findError.message)}`, origin)
+      );
     }
 
     if (existingStore) {
@@ -151,6 +154,9 @@ export async function GET(request: NextRequest) {
 
       if (updateError) {
         console.error("[Salla Callback] ❌ Store UPDATE failed:", updateError);
+        return NextResponse.redirect(
+          new URL(`/dashboard/integrations?error=salla_unexpected&details=${encodeURIComponent(updateError.message)}`, origin)
+        );
       } else {
         console.log("[Salla Callback] ✅ Store updated successfully");
       }
@@ -172,6 +178,9 @@ export async function GET(request: NextRequest) {
 
       if (insertError) {
         console.error("[Salla Callback] ❌ Store INSERT failed:", insertError);
+        return NextResponse.redirect(
+          new URL(`/dashboard/integrations?error=salla_unexpected&details=${encodeURIComponent(insertError.message)}`, origin)
+        );
       } else {
         console.log("[Salla Callback] ✅ Store inserted successfully");
       }
