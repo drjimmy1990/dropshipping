@@ -133,7 +133,8 @@ export async function POST(request: NextRequest) {
     const productData = {
       merchant_id: user.id,
       supplier_account_id: null,
-      store_id: store?.id || null,
+      // NOTE: no store_id here — phase 13 dropped it. Store linkage is written to
+      // product_listings after a successful push (step 8 below).
       supplier: "cj" as const,
       supplier_product_id: String(cjProductId),
       supplier_url: product.url,
@@ -161,23 +162,11 @@ export async function POST(request: NextRequest) {
       estimated_delivery: estimatedDelivery || null,
     };
 
-    let { data: insertedProduct, error: insertError } = await adminClient
+    const { data: insertedProduct, error: insertError } = await adminClient
       .from("products")
       .insert(productData)
       .select("*")
       .single();
-
-    if (insertError && insertError.message?.includes("store_id")) {
-      console.warn("[CJ Import] store_id column missing on products table, retrying without store_id...");
-      const { store_id, ...dataWithoutStoreId } = productData;
-      const retry = await adminClient
-        .from("products")
-        .insert(dataWithoutStoreId)
-        .select("*")
-        .single();
-      insertedProduct = retry.data;
-      insertError = retry.error;
-    }
 
     if (insertError) {
       console.error("[CJ Import] ❌ Product INSERT failed:", insertError);
@@ -240,18 +229,30 @@ export async function POST(request: NextRequest) {
           pushedToStore = true;
         }
 
-        // Save product_listing if pushed
+        // Save product_listing if pushed. Upsert (not insert) so a re-import of the
+        // same product/store pair cannot throw 23505 on UNIQUE(product_id, store_id).
         if (pushedToStore && storeProductId) {
-          await adminClient.from("product_listings").insert({
-            product_id: insertedProduct.id,
-            store_id: store.id,
-            merchant_id: user.id,
-            store_product_id: storeProductId,
-            margin_type: marginType,
-            margin_value: marginValue,
-            retail_price: finalRetailPrice,
-            is_active: true,
-          });
+          const { error: listingError } = await adminClient
+            .from("product_listings")
+            .upsert(
+              {
+                product_id: insertedProduct.id,
+                store_id: store.id,
+                merchant_id: user.id,
+                store_product_id: String(storeProductId),
+                margin_type: marginType,
+                margin_value: Math.max(0, marginValue),
+                retail_price: finalRetailPrice,
+                is_active: true,
+                last_sync_at: new Date().toISOString(),
+              },
+              { onConflict: "product_id,store_id" }
+            );
+
+          if (listingError) {
+            console.error("[CJ Import] ❌ product_listings upsert failed:", listingError);
+            pushError = `Product pushed to the store but the local link failed: ${listingError.message}`;
+          }
         }
       } catch (err: any) {
         pushError = err.message || "Push failed";

@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
  * POST /api/zid/products
  *
  * Syncs ALL products from the merchant's Zid store into the local DB.
- * - Products already tracked (matching store_product_id) → updates local record
+ * - Products already tracked (matching product_listings.store_product_id) → updates local record
  * - New products (not in our DB) → inserts as supplier: "direct"
  *
  * Returns: { synced: number, created: number, updated: number }
@@ -163,41 +163,39 @@ export async function POST() {
           }
           console.log(`[Zid Sync] Product "${processed.title_en}": ${productImages.length} images, URLs: ${JSON.stringify(productImages.slice(0, 2))}`);
 
-          // Check if product already exists in our DB (match on zid_product_id or legacy store_product_id)
-          let existing = null;
+          // 1. Dedupe via product_listings. Phase 13 dropped products.zid_product_id,
+          //    products.zid_store_id, products.store_product_id and products.store_id —
+          //    the store↔product linkage now lives only in product_listings.
           const zidId = String(zidProduct.id);
-          const { data: byZidId } = await adminClient
-            .from("products")
-            .select("id")
-            .eq("zid_product_id", zidId)
-            .eq("merchant_id", user.id)
+          const { data: listing, error: listingErr } = await adminClient
+            .from("product_listings")
+            .select("id, product_id")
+            .eq("store_id", store.id)
+            .eq("store_product_id", zidId)
             .maybeSingle();
-          existing = byZidId;
 
-          if (!existing) {
-            const { data: byStoreId } = await adminClient
-              .from("products")
-              .select("id")
-              .eq("store_product_id", zidId)
-              .eq("merchant_id", user.id)
-              .maybeSingle();
-            existing = byStoreId;
+          if (listingErr) {
+            // NEVER discard this — swallowing it is what made the sync silently import zero products.
+            console.error(`[Zid Sync] ❌ Listing lookup failed for "${processed.title_en}":`, listingErr.message);
+            errors++;
+            continue;
           }
 
-          if (existing) {
-            // Update existing product (sync latest data from Zid)
+          const isNew = !listing;
+          const isActive = !zidProduct.is_draft;
+          const inStock = (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true;
+          let productId = listing?.product_id ?? null;
+
+          if (productId) {
+            // 2a. Known product — sync the latest data from Zid.
             // Only update images if we actually got some — avoid wiping existing ones
             const updatePayload: Record<string, unknown> = {
               title_en: processed.title_en,
               title_ar: processed.title_ar,
               retail_price: processed.price,
               description_en: processed.description || null,
-              is_active: !zidProduct.is_draft,
-              in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
-              zid_product_id: zidId,
-              zid_store_id: store.id,
-              store_product_id: zidId,
-              store_id: store.id,
+              is_active: isActive,
+              in_stock: inStock,
               updated_at: new Date().toISOString(),
             };
             if (productImages.length > 0) {
@@ -207,45 +205,80 @@ export async function POST() {
             const { error: updateErr } = await adminClient
               .from("products")
               .update(updatePayload)
-              .eq("id", existing.id);
+              .eq("id", productId);
 
             if (updateErr) {
               console.error(`[Zid Sync] ⚠️ Update failed for "${processed.title_en}":`, updateErr.message);
               errors++;
-            } else {
-              updated++;
+              continue;
             }
           } else {
-            // Insert as "direct" product (merchant's own Zid product)
-            const { error: insertErr } = await adminClient.from("products").insert({
-              merchant_id: user.id,
-              store_id: store.id,
-              supplier: "direct",
-              supplier_product_id: zidId,
-              title_en: processed.title_en,
-              title_ar: processed.title_ar,
-              description_en: processed.description || null,
-              supplier_cost: processed.price,
-              supplier_currency: zidProduct.currency || "SAR",
-              retail_price: processed.price,
-              margin_type: "fixed",
-              margin_value: 0,
-              stock_quantity: zidProduct.quantity ?? 0,
-              is_active: !zidProduct.is_draft,
-              in_stock: (zidProduct.quantity ?? 0) > 0 || zidProduct.is_infinite === true,
-              images: productImages,
-              store_product_id: zidId,
-              zid_product_id: zidId,
-              zid_store_id: store.id,
-              category: processed.category || null,
-            });
+            // 2b. Upsert as a "direct" product on the real unique key
+            //     (uq_products_supplier: merchant_id, supplier, supplier_product_id).
+            const { data: upserted, error: upsertErr } = await adminClient
+              .from("products")
+              .upsert(
+                {
+                  merchant_id: user.id,
+                  supplier: "direct",
+                  supplier_product_id: zidId,
+                  title_en: processed.title_en,
+                  title_ar: processed.title_ar,
+                  description_en: processed.description || null,
+                  supplier_cost: processed.price,
+                  supplier_currency: zidProduct.currency || "SAR",
+                  retail_price: processed.price,
+                  margin_type: "fixed",
+                  margin_value: 0,
+                  stock_quantity: zidProduct.quantity ?? 0,
+                  is_active: isActive,
+                  in_stock: inStock,
+                  images: productImages,
+                  category: processed.category || null,
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: "merchant_id,supplier,supplier_product_id" }
+              )
+              .select("id")
+              .single();
 
-            if (insertErr) {
-              console.error(`[Zid Sync] ❌ Insert failed for "${processed.title_en}":`, insertErr.message);
+            if (upsertErr || !upserted) {
+              console.error(`[Zid Sync] ❌ Product upsert failed for "${processed.title_en}":`, upsertErr?.message);
               errors++;
-            } else {
-              created++;
+              continue;
             }
+
+            productId = upserted.id;
+          }
+
+          // 3. Upsert the store listing — this is the linkage that replaced the dropped columns.
+          const { error: listingUpsertErr } = await adminClient
+            .from("product_listings")
+            .upsert(
+              {
+                product_id: productId,
+                store_id: store.id,
+                merchant_id: user.id,
+                store_product_id: zidId,
+                margin_type: "fixed",
+                margin_value: 0,
+                retail_price: processed.price,
+                is_active: isActive,
+                last_sync_at: new Date().toISOString(),
+              },
+              { onConflict: "product_id,store_id" }
+            );
+
+          if (listingUpsertErr) {
+            console.error(`[Zid Sync] ❌ Listing upsert failed for "${processed.title_en}":`, listingUpsertErr.message);
+            errors++;
+            continue;
+          }
+
+          if (isNew) {
+            created++;
+          } else {
+            updated++;
           }
         } catch (productErr) {
           console.error(`[Zid Sync] ❌ Error processing product ${zidProduct.id}:`, productErr);
@@ -267,11 +300,16 @@ export async function POST() {
       .eq("id", store.id);
 
     return NextResponse.json({
-      success: true,
+      // Never claim success while products failed to import — that is what hid
+      // the phase 13 column drift for weeks.
+      success: errors === 0,
       synced: created + updated,
       created,
       updated,
       errors,
+      ...(errors > 0
+        ? { error: `Zid sync completed with ${errors} failed product(s). ${created + updated} synced.` }
+        : {}),
     });
   } catch (error) {
     console.error("[Zid Sync] Error:", error);
