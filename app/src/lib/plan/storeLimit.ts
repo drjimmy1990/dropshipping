@@ -5,8 +5,14 @@ export async function getStoreLimit(
   supabase: SupabaseClient,
   userId: string
 ): Promise<{ maxStores: number; planName: string } | { error: string }> {
-  const { data: m } = await supabase
+  const { data: m, error: merchantError } = await supabase
     .from("merchants").select("plan").eq("id", userId).maybeSingle();
+
+  // A *failed* read must not silently resolve to "free" — that would pick whichever
+  // tier happens to be smallest rather than failing closed on purpose.
+  // A *missing* row (data null, no error) legitimately means "free".
+  if (merchantError) return { error: merchantError.message };
+
   const planName = m?.plan ?? "free";
 
   const { data: tier, error } = await supabase
