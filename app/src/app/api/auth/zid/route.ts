@@ -10,6 +10,8 @@ import { resolveOrigin, buildOAuthState, setOAuthNonce } from "@/lib/oauth/state
  * On success, Zid redirects back to /api/auth/zid/callback with an auth code.
  */
 export async function GET(request: NextRequest) {
+  const origin = resolveOrigin(request);
+
   // 1. Ensure the user is logged in to DropLinker first
   const supabase = await createClient();
   const {
@@ -17,7 +19,7 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+    return NextResponse.redirect(new URL("/auth/login", origin));
   }
 
   // 1.5. Validate subscription limits
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest) {
   if (currentStoreCount !== null && currentStoreCount >= maxStores) {
     console.error(`[Zid OAuth] Merchant ${user.id} reached max stores (${maxStores})`);
     return NextResponse.redirect(
-      new URL("/dashboard/integrations?error=max_stores_reached", request.url)
+      new URL("/dashboard/integrations?error=max_stores_reached", origin)
     );
   }
 
@@ -55,12 +57,11 @@ export async function GET(request: NextRequest) {
   if (!clientId) {
     console.error("[Zid OAuth] ZID_CLIENT_ID is not configured in .env.local");
     return NextResponse.redirect(
-      new URL("/dashboard/integrations?error=zid_not_configured", request.url)
+      new URL("/dashboard/integrations?error=zid_not_configured", origin)
     );
   }
 
   // 3. Build the callback URL (pinned to PUBLIC_BASE_URL when set)
-  const origin = resolveOrigin(request);
   const redirectUri = `${origin}/api/auth/zid/callback`;
 
   // 4. Bind the OAuth state to the merchant id + a random CSRF nonce
