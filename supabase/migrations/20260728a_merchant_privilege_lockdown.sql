@@ -76,13 +76,20 @@ GRANT UPDATE (
 --    service_role, postgres and supabase_admin are exempt so that server routes
 --    (/api/admin/*) and the SQL editor can still administer accounts.
 -- ----------------------------------------------------------------
+-- NOTE: deliberately SECURITY INVOKER (the default) — do NOT add SECURITY DEFINER here.
+-- Inside a SECURITY DEFINER function `current_user` is the function OWNER, not the caller,
+-- so the exemption below would match on every single call and the three checks would never
+-- run. The function only compares NEW/OLD and raises — it queries no table — so it needs no
+-- elevated privileges. `search_path` is still pinned because the RAISE/comparison path
+-- should not be resolvable through a caller-controlled schema.
 CREATE OR REPLACE FUNCTION guard_merchant_privileges()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
+  -- current_user is the invoking role: `authenticated` for a browser write,
+  -- `service_role` for createAdminClient(), `postgres` in the SQL editor.
   IF current_user IN ('service_role', 'postgres', 'supabase_admin') THEN
     RETURN NEW;
   END IF;
@@ -111,12 +118,28 @@ CREATE TRIGGER trg_merchants_guard
 COMMIT;
 
 -- ================================================================
--- VERIFY (run after COMMIT; expect exactly the 6 granted columns)
+-- VERIFY — run all three after COMMIT
 -- ================================================================
--- SELECT column_name FROM information_schema.column_privileges
+-- 1. Expect exactly 6 rows: auto_fulfill_enabled, business_name, locale,
+--    min_wallet_balance, phone, preferred_shipping.
+--    grantee includes PUBLIC and anon deliberately: a table-level grant to PUBLIC
+--    would make the REVOKE above a no-op, and filtering to 'authenticated' alone
+--    would hide that.
+-- SELECT grantee, column_name FROM information_schema.column_privileges
 -- WHERE table_schema='public' AND table_name='merchants'
---   AND grantee='authenticated' AND privilege_type='UPDATE'
--- ORDER BY column_name;
+--   AND privilege_type='UPDATE' AND grantee IN ('authenticated','anon','PUBLIC')
+-- ORDER BY grantee, column_name;
+--
+-- 2. Expect ZERO rows. A table-level (column_name IS NULL) UPDATE grant to anon,
+--    authenticated or PUBLIC overrides everything above.
+-- SELECT grantee, privilege_type FROM information_schema.role_table_grants
+-- WHERE table_schema='public' AND table_name='merchants'
+--   AND privilege_type='UPDATE' AND grantee IN ('authenticated','anon','PUBLIC');
+--
+-- 3. Expect the trigger present and its function to be SECURITY INVOKER
+--    (prosecdef = false). If prosecdef is true the guard is INERT.
+-- SELECT p.proname, p.prosecdef AS is_security_definer
+-- FROM pg_proc p WHERE p.proname = 'guard_merchant_privileges';
 --
 -- ================================================================
 -- ROLLBACK (if this breaks something unexpected)
