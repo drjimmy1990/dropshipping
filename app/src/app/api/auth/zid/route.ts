@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     .ilike("name", planName)
     .single();
 
-  const maxStores = tierData?.max_stores || 1;
+  const maxStores = tierData?.max_stores || 10;
 
   const { count: currentStoreCount } = await supabase
     .from("stores")
