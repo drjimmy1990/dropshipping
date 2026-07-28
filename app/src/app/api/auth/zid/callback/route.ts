@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { resolveOrigin, verifyOAuthCallback, clearOAuthNonce } from "@/lib/oauth/state";
+import { redact } from "@/lib/log/redact";
 
 /**
  * GET /api/auth/zid/callback
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
 
     if (profileResponse.ok) {
       const profileData = await profileResponse.json();
-      console.log("[Zid Callback] Profile data:", JSON.stringify(profileData, null, 2));
+      console.log("[Zid Callback] Profile data:", JSON.stringify(redact(profileData)));
 
       // Extract store info from profile response
       const store = profileData?.user?.store || profileData?.store || profileData?.data?.store || {};
