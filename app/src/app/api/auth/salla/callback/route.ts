@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { resolveOrigin, verifyOAuthCallback, clearOAuthNonce } from "@/lib/oauth/state";
+import { SALLA_USER_AGENT } from "@/lib/salla/client";
 
 /**
  * GET /api/auth/salla/callback
@@ -72,9 +73,16 @@ export async function GET(request: NextRequest) {
       client_secret: clientSecret,
     });
 
+    // Salla's edge/WAF answers 403 with an HTML "human verification" page when a
+    // server-to-server request carries no identifying User-Agent and does not ask
+    // for JSON. Identify the app honestly and negotiate JSON explicitly.
     const tokenResponse = await fetch("https://accounts.salla.sa/oauth2/token", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+        "User-Agent": SALLA_USER_AGENT,
+      },
       body: tokenBody.toString(),
     });
 
@@ -96,6 +104,8 @@ export async function GET(request: NextRequest) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${access_token}`,
+          Accept: "application/json",
+          "User-Agent": SALLA_USER_AGENT,
         },
       }
     );

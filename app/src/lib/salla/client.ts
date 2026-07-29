@@ -31,6 +31,17 @@ import type { Product } from "@/lib/supabase/types";
 const SALLA_API_BASE = "https://api.salla.dev/admin/v2";
 const SALLA_TOKEN_URL = "https://accounts.salla.sa/oauth2/token";
 
+/**
+ * Honest identification for server-to-server calls to Salla.
+ *
+ * accounts.salla.sa sits behind an edge/WAF that answers 403 with an HTML
+ * "التحقق البشري" (human verification) page when a request carries no
+ * identifying User-Agent — Node's fetch sends none by default. Sending a real
+ * app identifier plus `Accept: application/json` is standard API hygiene, not
+ * evasion: it tells Salla exactly which application is calling.
+ */
+export const SALLA_USER_AGENT = "DropLinker/1.0 (+https://tmtech.sa)";
+
 // ---------- Error Class ----------
 
 export class SallaApiError extends Error {
@@ -72,7 +83,11 @@ export async function refreshSallaToken(
 
   const response = await fetch(SALLA_TOKEN_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+      "User-Agent": SALLA_USER_AGENT,
+    },
     body: body.toString(),
   });
 
@@ -105,6 +120,7 @@ async function sallaRequest<T>(options: SallaRequestOptions): Promise<T> {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
     Accept: "application/json",
+    "User-Agent": SALLA_USER_AGENT,
   };
 
   if (body) {
