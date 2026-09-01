@@ -165,14 +165,14 @@ export const PRICING_TIERS: readonly PricingTier[] = [
 // --- Footer ---
 export const FOOTER_LINKS = {
   product: [
-    { label: "Features", href: "#" },
-    { label: "Pricing", href: "#" },
-    { label: "API Documentation", href: "#" },
+    { label: "الميزات (Features)", href: "/features" },
+    { label: "الباقات والأسعار (Pricing)", href: "/pricing" },
+    { label: "الربط مع سلة (Salla Integration)", href: "/dashboard/integrations" },
   ],
   company: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Help Center", href: "#" },
+    { label: "سياسة الخصوصية (Privacy Policy)", href: "/privacy" },
+    { label: "الشروط والأحكام (Terms of Service)", href: "/terms" },
+    { label: "الأسئلة الشائعة والدعم (FAQ & Help)", href: "/faq" },
   ],
   social: [
     { label: "Twitter", href: "#" },
