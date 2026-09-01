@@ -73,10 +73,10 @@
 
 | الحقل في سلة | الرابط الفعلي المباشر (Production URL) |
 | :--- | :--- |
-| **رابط الموقع الرئيسي (App Website)** | `https://droplinker.asra3.com` |
-| **رابط سياسة الخصوصية (Privacy Policy)** | `https://droplinker.asra3.com/privacy` |
-| **رابط الأسئلة الشائعة (FAQ)** | `https://droplinker.asra3.com/faq` |
-| **رابط الشروط والأحكام (Terms of Service)** | `https://droplinker.asra3.com/terms` |
+| **رابط الموقع الرئيسي (App Website)** | `https://tmtech.sa` |
+| **رابط سياسة الخصوصية (Privacy Policy)** | `https://tmtech.sa/privacy` |
+| **رابط الأسئلة الشائعة (FAQ)** | `https://tmtech.sa/faq` |
+| **رابط الشروط والأحكام (Terms of Service)** | `https://tmtech.sa/terms` |
 
 ---
 
@@ -84,9 +84,9 @@
 
 | نوع البريد في سلة | البريد الإلكتروني المعتمد |
 | :--- | :--- |
-| **بريد الدعم الفني (Support Email)** | `support@tmtech.sa` *(أو `support@asra3.com`)* |
-| **بريد الإشعارات (Notification Email)** | `notifications@tmtech.sa` *(أو `notifications@asra3.com`)* |
-| **بريد الطلبات (Orders Email)** | `orders@tmtech.sa` *(أو `orders@asra3.com`)* |
+| **بريد الدعم الفني (Support Email)** | `support@tmtech.sa` |
+| **بريد الإشعارات (Notification Email)** | `notifications@tmtech.sa` |
+| **بريد الطلبات (Orders Email)** | `orders@tmtech.sa` |
 
 ---
 
@@ -95,11 +95,11 @@
 ### 🔹 عناوين الربط البرمجي (OAuth & Webhook URLs)
 * **Webhook Endpoint URL:**
   ```text
-  https://droplinker.asra3.com/api/webhooks/salla
+  https://tmtech.sa/api/webhooks/salla
   ```
 * **OAuth Callback / Redirect URI:**
   ```text
-  https://droplinker.asra3.com/api/auth/salla/callback
+  https://tmtech.sa/api/auth/salla/callback
   ```
 * **Security & Strategy:** 
   * يدعم النظام كلاً من توثيق **HMAC-SHA256 Signature** عبر ترويسة `x-salla-signature` أو **Bearer Token**.
